@@ -1,0 +1,121 @@
+.hero {
+  background: linear-gradient(160deg, var(--primary) 0%, var(--primary-container) 50%, #1a3a7a 100%);
+  padding: 80px 0 100px;
+  overflow: hidden;
+}
+
+.heroInner {
+  display: flex;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+.heroText { flex: 1; }
+
+.badge {
+  display: inline-flex;
+  color: rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 20px;
+}
+
+.heroText h1 { color: #fff; }
+
+.badges { display: flex; flex-direction: column; gap: 12px; max-width: 300px; }
+
+.storeBadge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.20);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  transition: background 0.15s;
+}
+.storeBadge:hover { background: rgba(255,255,255,0.18); }
+
+.badgeSub { font-size: 10px; opacity: 0.65; }
+.badgeMain { font-size: 17px; font-weight: 700; }
+
+.qrDownload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.qrBox {
+  width: 80px;
+  height: 80px;
+  background: var(--plate-white);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.heroPhones {
+  flex-shrink: 0;
+  display: flex;
+  gap: -20px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.phone1 {
+  width: 220px;
+  height: 440px;
+  transform: rotate(-4deg);
+  z-index: 2;
+}
+
+.phone2 {
+  width: 220px;
+  height: 440px;
+  transform: rotate(4deg) translateX(-20px);
+  z-index: 1;
+  margin-top: 40px;
+  opacity: 0.85;
+}
+
+.screenshotsSection { padding: 100px 0; }
+
+.screenshotsRow {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.screenshotItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.screenshotLabel {
+  color: var(--outline);
+  letter-spacing: 0.08em;
+}
+
+.screenshotPhone { width: 200px; height: 400px; }
+
+@media (max-width: 1024px) {
+  .heroInner { flex-direction: column; gap: 48px; }
+  .heroPhones { display: none; }
+}
+
+@media (max-width: 768px) {
+  .badges { max-width: 100%; }
+}
