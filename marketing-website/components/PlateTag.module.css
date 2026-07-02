@@ -1,0 +1,71 @@
+.plate {
+  background: var(--plate-white);
+  border: 2px solid var(--asphalt);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 180px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  border-bottom: 1px solid rgba(26,26,26,0.12);
+}
+
+.ind {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--outline);
+}
+
+.rivet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--outline-variant);
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+}
+
+.number {
+  font-size: 18px;
+  color: var(--asphalt);
+  letter-spacing: 0.06em;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--verified-green);
+  background: rgba(30,142,90,0.10);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* Sizes */
+.sm .number { font-size: 13px; }
+.sm .plate { min-width: 130px; }
+
+.lg .number { font-size: 26px; }
+.lg { min-width: 240px; }
+
+.xl .number { font-size: 36px; }
+.xl { min-width: 320px; }
+
+/* Variants */
+.hero {
+  border-width: 3px;
+  box-shadow: 0 8px 32px rgba(26,26,26,0.15);
+}
