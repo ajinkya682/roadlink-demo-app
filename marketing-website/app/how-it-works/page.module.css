@@ -1,0 +1,104 @@
+.hero {
+  padding: 80px 0 64px;
+  background: linear-gradient(180deg, var(--surface-container-low) 0%, var(--fog) 100%);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary-container);
+  background: rgba(27,75,143,0.08);
+  border: 1px solid rgba(27,75,143,0.15);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 16px;
+}
+
+.journeySection { padding: 80px 0; }
+
+.journeyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+}
+
+.journeyHead { margin-bottom: 40px; }
+
+.journeyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border: 1px solid;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  margin-bottom: 16px;
+}
+
+.timeline { display: flex; flex-direction: column; }
+
+.timelineItem { display: flex; gap: 20px; }
+
+.timelineLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.timelineDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.timelineLine {
+  flex: 1;
+  width: 2px;
+  margin: 4px 0;
+  min-height: 24px;
+}
+
+.timelineContent {
+  padding-bottom: 28px;
+  flex: 1;
+}
+
+.stepNum {
+  font-size: 10px;
+  color: var(--outline);
+  letter-spacing: 0.1em;
+}
+
+.faqSection {
+  padding: 80px 0 100px;
+  background: var(--surface-container-low);
+}
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.faqCard {
+  background: var(--plate-white);
+  border: 1px solid rgba(26,26,26,0.08);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+}
+
+@media (max-width: 1024px) {
+  .journeyGrid { gap: 48px; }
+}
+
+@media (max-width: 768px) {
+  .journeyGrid { grid-template-columns: 1fr; }
+  .faqGrid { grid-template-columns: 1fr; }
+}
