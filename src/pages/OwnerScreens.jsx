@@ -255,11 +255,14 @@ export function OrderConfirmation() {
 export function DashboardHome() {
   const navigate = useNavigate();
   return (
-    <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', minHeight: '100vh', gap: '32px' }}>
+    <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', minHeight: '100vh', gap: '32px', paddingBottom: '100px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="text-headline-md" style={{ color: 'var(--primary-container)' }}>RoadLink</h1>
         <div style={{ display: 'flex', gap: '16px' }}>
-          <Bell size={24} onClick={() => navigate('/notifications')} style={{ cursor: 'pointer' }} />
+          <div style={{ position: 'relative' }}>
+            <Bell size={24} onClick={() => navigate('/notifications')} style={{ cursor: 'pointer' }} />
+            <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', backgroundColor: 'var(--alert-red)', borderRadius: '50%' }} />
+          </div>
           <SettingsIcon size={24} onClick={() => navigate('/settings')} style={{ cursor: 'pointer' }} />
         </div>
       </div>
@@ -267,9 +270,12 @@ export function DashboardHome() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <Card onClick={() => navigate('/vehicle-detail')}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-            <h2 className="text-headline-sm">Honda Activa</h2>
+            <div>
+              <h2 className="text-headline-sm">Honda Activa</h2>
+              <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>Added Jun 2025</span>
+            </div>
             <div style={{ position: 'relative' }}>
-              <QrCode size={24} color="var(--primary)" />
+              <QrCode size={24} color="var(--primary)" onClick={(e) => { e.stopPropagation(); navigate('/qr-detail'); }} />
               <div style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', backgroundColor: 'var(--alert-red)', borderRadius: '50%' }} />
             </div>
           </div>
@@ -283,6 +289,8 @@ export function DashboardHome() {
           </div>
         </Card>
       </div>
+
+      <BottomTabBar />
     </div>
   );
 }
