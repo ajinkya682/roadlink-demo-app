@@ -3,25 +3,33 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 
 // Guest
+import GuestDashboard from './pages/GuestDashboard'
 import { PublicScanLanding, ReportDetail, ReportConfirmation, SearchVehicle, SearchResult } from './pages/GuestScreens'
+// Auth
+import LoginRegister from './pages/LoginRegister'
 // Owner
-import { SplashOnboarding, Login, OTPVerification, AddVehicle, QRDetail, OrderSticker, OrderConfirmation, DashboardHome, VehicleDetail, NotificationsInbox, NotificationDetail, DocumentVault, DocumentUpload, Settings, EmergencyContacts } from './pages/OwnerScreens'
+import { SplashOnboarding, OTPVerification, AddVehicle, QRDetail, OrderSticker, OrderConfirmation, DashboardHome, VehicleDetail, NotificationsInbox, NotificationDetail, DocumentVault, DocumentUpload, Settings, EmergencyContacts } from './pages/OwnerScreens'
 
 function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* Guest Routes */}
-        <Route path="/" element={<PublicScanLanding />} />
+        {/* Entry point — Splash/Onboarding */}
+        <Route path="/" element={<SplashOnboarding />} />
+
+        {/* Guest Mode (no login) */}
+        <Route path="/guest-dashboard" element={<GuestDashboard />} />
+        <Route path="/scan-landing" element={<PublicScanLanding />} />
         <Route path="/report-detail" element={<ReportDetail />} />
         <Route path="/report-confirmation" element={<ReportConfirmation />} />
         <Route path="/search" element={<SearchVehicle />} />
         <Route path="/search-result" element={<SearchResult />} />
 
-        {/* Owner Routes */}
-        <Route path="/splash" element={<SplashOnboarding />} />
-        <Route path="/login" element={<Login />} />
+        {/* Auth Flow */}
+        <Route path="/login" element={<LoginRegister />} />
         <Route path="/otp" element={<OTPVerification />} />
+
+        {/* Owner Flow */}
         <Route path="/add-vehicle" element={<AddVehicle />} />
         <Route path="/qr-detail" element={<QRDetail />} />
         <Route path="/order-sticker" element={<OrderSticker />} />

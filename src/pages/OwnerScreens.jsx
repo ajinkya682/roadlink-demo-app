@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Settings as SettingsIcon, Plus, QrCode, CreditCard, ChevronRight, CheckCircle, FileText, Upload, AlertCircle } from 'lucide-react';
+import { Bell, Settings as SettingsIcon, Plus, QrCode, CreditCard, ChevronRight, CheckCircle, FileText, Upload, AlertCircle, ShieldAlert } from 'lucide-react';
 import PlateTag from '../components/PlateTag';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Card from '../components/Card';
 import StatusPill from '../components/StatusPill';
+import BottomTabBar from '../components/BottomTabBar';
 
 // 6. Splash Onboarding
 export function SplashOnboarding() {
@@ -81,7 +82,10 @@ export function SplashOnboarding() {
         {slide < 2 ? (
           <Button fullWidth onClick={() => setSlide(s => s + 1)}>Next</Button>
         ) : (
-          <Button variant="secondary" fullWidth onClick={() => navigate('/login')}>Get Started</Button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+            <Button variant="secondary" fullWidth onClick={() => navigate('/login')}>Get Started</Button>
+            <Button variant="outline" fullWidth onClick={() => navigate('/guest-dashboard')}>Continue as Guest</Button>
+          </div>
         )}
       </div>
     </div>
