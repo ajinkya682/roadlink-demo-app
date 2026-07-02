@@ -1,52 +1,74 @@
 import React from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Layout from './components/Layout'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
+import PageWrapper from './components/PageWrapper'
 
 // Guest
 import GuestDashboard from './pages/GuestDashboard'
-import { PublicScanLanding, ReportDetail, ReportConfirmation, SearchVehicle, SearchResult } from './pages/GuestScreens'
+import ScanLanding from './pages/guest/ScanLanding'
+import ReportDetail from './pages/guest/ReportDetail'
+import ReportConfirmation from './pages/guest/ReportConfirmation'
+import SearchVehicle from './pages/guest/SearchVehicle'
+import SearchResult from './pages/guest/SearchResult'
+
 // Auth
-import LoginRegister from './pages/LoginRegister'
+import Splash from './pages/auth/Splash'
+import LoginRegister from './pages/auth/LoginRegister'
+import OTPVerification from './pages/auth/OTPVerification'
+
 // Owner
-import { SplashOnboarding, OTPVerification, AddVehicle, QRDetail, OrderSticker, OrderConfirmation, DashboardHome, VehicleDetail, NotificationsInbox, NotificationDetail, DocumentVault, DocumentUpload, Settings, EmergencyContacts } from './pages/OwnerScreens'
+import AddVehicle from './pages/owner/AddVehicle'
+import QRDetail from './pages/owner/QRDetail'
+import OrderSticker from './pages/owner/OrderSticker'
+import OrderConfirmation from './pages/owner/OrderConfirmation'
+import Dashboard from './pages/owner/Dashboard'
+import VehicleDetail from './pages/owner/VehicleDetail'
+import NotificationsInbox from './pages/owner/NotificationsInbox'
+import NotificationDetail from './pages/owner/NotificationDetail'
+import DocumentVault from './pages/owner/DocumentVault'
+import DocumentUpload from './pages/owner/DocumentUpload'
+import Settings from './pages/owner/Settings'
+import EmergencyContacts from './pages/owner/EmergencyContacts'
 
 function App() {
+  const location = useLocation();
+
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        {/* Entry point — Splash/Onboarding */}
-        <Route path="/" element={<SplashOnboarding />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Entry */}
+        <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
 
-        {/* Guest Mode (no login) */}
-        <Route path="/guest-dashboard" element={<GuestDashboard />} />
-        <Route path="/scan-landing" element={<PublicScanLanding />} />
-        <Route path="/report-detail" element={<ReportDetail />} />
-        <Route path="/report-confirmation" element={<ReportConfirmation />} />
-        <Route path="/search" element={<SearchVehicle />} />
-        <Route path="/search-result" element={<SearchResult />} />
+        {/* Guest */}
+        <Route path="/guest-dashboard" element={<PageWrapper><GuestDashboard /></PageWrapper>} />
+        <Route path="/scan-landing" element={<PageWrapper><ScanLanding /></PageWrapper>} />
+        <Route path="/report-detail" element={<PageWrapper><ReportDetail /></PageWrapper>} />
+        <Route path="/report-confirmation" element={<PageWrapper><ReportConfirmation /></PageWrapper>} />
+        <Route path="/search" element={<PageWrapper><SearchVehicle /></PageWrapper>} />
+        <Route path="/search-result" element={<PageWrapper><SearchResult /></PageWrapper>} />
 
-        {/* Auth Flow */}
-        <Route path="/login" element={<LoginRegister />} />
-        <Route path="/otp" element={<OTPVerification />} />
+        {/* Auth */}
+        <Route path="/login" element={<PageWrapper><LoginRegister /></PageWrapper>} />
+        <Route path="/otp" element={<PageWrapper><OTPVerification /></PageWrapper>} />
 
-        {/* Owner Flow */}
-        <Route path="/add-vehicle" element={<AddVehicle />} />
-        <Route path="/qr-detail" element={<QRDetail />} />
-        <Route path="/order-sticker" element={<OrderSticker />} />
-        <Route path="/order-confirmation" element={<OrderConfirmation />} />
-        <Route path="/dashboard" element={<DashboardHome />} />
-        <Route path="/vehicle-detail" element={<VehicleDetail />} />
-        <Route path="/notifications" element={<NotificationsInbox />} />
-        <Route path="/notification-detail" element={<NotificationDetail />} />
-        <Route path="/document-vault" element={<DocumentVault />} />
-        <Route path="/document-upload" element={<DocumentUpload />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/emergency-contacts" element={<EmergencyContacts />} />
+        {/* Owner */}
+        <Route path="/add-vehicle" element={<PageWrapper><AddVehicle /></PageWrapper>} />
+        <Route path="/qr-detail" element={<PageWrapper><QRDetail /></PageWrapper>} />
+        <Route path="/order-sticker" element={<PageWrapper><OrderSticker /></PageWrapper>} />
+        <Route path="/order-confirmation" element={<PageWrapper><OrderConfirmation /></PageWrapper>} />
+        <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+        <Route path="/vehicle-detail" element={<PageWrapper><VehicleDetail /></PageWrapper>} />
+        <Route path="/notifications" element={<PageWrapper><NotificationsInbox /></PageWrapper>} />
+        <Route path="/notification-detail" element={<PageWrapper><NotificationDetail /></PageWrapper>} />
+        <Route path="/document-vault" element={<PageWrapper><DocumentVault /></PageWrapper>} />
+        <Route path="/document-upload" element={<PageWrapper><DocumentUpload /></PageWrapper>} />
+        <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+        <Route path="/emergency-contacts" element={<PageWrapper><EmergencyContacts /></PageWrapper>} />
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+      </Routes>
+    </AnimatePresence>
   )
 }
 
