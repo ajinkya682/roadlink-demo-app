@@ -1,0 +1,92 @@
+.plate {
+  background: var(--plate-white);
+  border: 2px solid var(--asphalt);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 14px;
+  border-bottom: 1px solid rgba(26, 26, 26, 0.10);
+}
+
+.ind {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--outline);
+}
+
+.rivet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--outline-variant);
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  flex-wrap: nowrap;
+}
+
+.number {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--asphalt);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  font-size: 20px;
+}
+
+.verifiedIcon {
+  display: flex;
+  align-items: center;
+  color: var(--verified-green);
+  flex-shrink: 0;
+}
+
+.verifiedLabel {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--verified-green);
+  padding: 4px 14px 8px;
+}
+
+/* Size variants */
+.sm .number { font-size: 14px; }
+.sm .body { padding: 8px 14px; }
+
+.md .number { font-size: 20px; }
+
+.lg .number { font-size: 26px; }
+.lg .body { padding: 16px 24px; }
+
+.hero .number { font-size: 32px; }
+.hero .body { padding: 20px 32px; }
+.hero { border-width: 3px; }
+
+/* Variant: verified — green glow */
+.verified {
+  border-color: var(--verified-green);
+  box-shadow: 0 0 0 3px rgba(30, 142, 90, 0.12);
+}
+
+/* Variant: alert — red border */
+.alert {
+  border-color: var(--alert-red);
+  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.10);
+}

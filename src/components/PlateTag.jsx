@@ -1,56 +1,40 @@
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import styles from './PlateTag.module.css';
 
-export default function PlateTag({ 
-  plateNumber, 
-  displayName, 
-  isVerified = false, 
-  className = '', 
-  animate = false 
+export default function PlateTag({
+  plateNumber,
+  displayName,
+  isVerified = false,
+  size = 'md',      // sm | md | lg | hero
+  variant = 'default', // default | verified | alert
+  animate = false,
+  liveTyping = false,
+  className = '',
 }) {
-  const containerStyle = {
-    backgroundColor: 'var(--plate-white)',
-    border: '2px solid var(--asphalt)',
-    borderRadius: 'var(--radius-md)',
-    padding: '12px 16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
-    gap: '4px',
-    minHeight: '64px',
-    position: 'relative'
-  };
+  const text = plateNumber || displayName || 'MH 00 AA 0000';
 
-  const headerStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingBottom: '4px',
-    borderBottom: '1px solid rgba(26, 26, 26, 0.1)',
-    marginBottom: '4px'
-  };
-
-  const content = (
-    <div style={containerStyle} className={className}>
-      {/* Optional IND Header for full plates */}
-      {plateNumber && (
-        <div style={headerStyle}>
-          <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--outline)' }}>IND</span>
-          {/* A small dot to represent a rivet or car icon could go here */}
-          <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--outline)' }} />
-        </div>
-      )}
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span className="text-data-mono" style={{ color: 'var(--asphalt)', fontSize: plateNumber ? '20px' : '16px' }}>
-          {plateNumber || displayName}
-        </span>
+  const inner = (
+    <div className={`${styles.plate} ${styles[size]} ${styles[variant]} ${className}`}>
+      <div className={styles.header}>
+        <span className={styles.ind}>IND</span>
+        <div className={styles.rivet} />
+      </div>
+      <div className={styles.body}>
+        <span className={styles.number}>{text}</span>
         {isVerified && (
-          <CheckCircle size={18} color="var(--verified-green)" style={{ flexShrink: 0 }} />
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', damping: 12, stiffness: 200, delay: 0.2 }}
+            className={styles.verifiedIcon}
+          >
+            <CheckCircle size={size === 'lg' || size === 'hero' ? 22 : 16} />
+          </motion.span>
         )}
       </div>
+      {isVerified && <div className={styles.verifiedLabel}>Vehicle Verified</div>}
     </div>
   );
 
@@ -59,13 +43,13 @@ export default function PlateTag({
       <motion.div
         initial={{ rotateX: 90, opacity: 0 }}
         animate={{ rotateX: 0, opacity: 1 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-        style={{ perspective: 1000 }}
+        transition={{ type: 'spring', damping: 18, stiffness: 120 }}
+        style={{ perspective: 800 }}
       >
-        {content}
+        {inner}
       </motion.div>
     );
   }
 
-  return content;
+  return inner;
 }

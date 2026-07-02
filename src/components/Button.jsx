@@ -1,68 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import styles from './Button.module.css';
 
-export default function Button({ 
-  children, 
-  variant = 'primary', // primary, secondary, alert, outline
+export default function Button({
+  children,
+  variant = 'primary',
   fullWidth = false,
   onClick,
   disabled = false,
+  isLoading = false,
   className = '',
-  type = 'button'
+  type = 'button',
 }) {
-  let bgColor, textColor, border;
+  const [ripples, setRipples] = useState([]);
 
-  switch (variant) {
-    case 'secondary':
-      bgColor = 'var(--signal-amber)';
-      textColor = 'var(--asphalt)';
-      border = 'none';
-      break;
-    case 'alert':
-      bgColor = 'var(--alert-red)';
-      textColor = 'var(--on-error)';
-      border = 'none';
-      break;
-    case 'outline':
-      bgColor = 'transparent';
-      textColor = 'var(--primary)';
-      border = '1px solid var(--primary)';
-      break;
-    case 'primary':
-    default:
-      bgColor = 'var(--primary-container)';
-      textColor = 'var(--on-primary)';
-      border = 'none';
-      break;
-  }
-
-  const baseStyle = {
-    backgroundColor: bgColor,
-    color: textColor,
-    border: border,
-    borderRadius: 'var(--radius-lg)',
-    padding: '14px 24px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    width: fullWidth ? '100%' : 'auto',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.6 : 1,
-    transition: 'background-color 0.2s ease',
-    boxShadow: variant === 'primary' && !disabled ? '0px 4px 12px rgba(26, 26, 26, 0.1)' : 'none'
+  const handleClick = (e) => {
+    if (disabled || isLoading) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = Date.now();
+    setRipples(r => [...r, { x, y, id }]);
+    setTimeout(() => setRipples(r => r.filter(rp => rp.id !== id)), 600);
+    onClick && onClick(e);
   };
 
   return (
     <motion.button
       type={type}
-      whileTap={disabled ? {} : { scale: 0.98 }}
-      style={baseStyle}
-      onClick={onClick}
-      disabled={disabled}
-      className={`text-body-lg ${className}`}
+      className={`${styles.btn} ${styles[variant]} ${fullWidth ? styles.full : ''} ${disabled || isLoading ? styles.disabled : ''} ${className}`}
+      whileTap={!disabled && !isLoading ? { scale: 0.97 } : {}}
+      onClick={handleClick}
+      disabled={disabled || isLoading}
     >
-      {children}
+      <span className={styles.content}>
+        {isLoading ? (
+          <span className={styles.spinner} />
+        ) : children}
+      </span>
+      {ripples.map(r => (
+        <span
+          key={r.id}
+          className={styles.ripple}
+          style={{ left: r.x, top: r.y }}
+        />
+      ))}
     </motion.button>
   );
 }
