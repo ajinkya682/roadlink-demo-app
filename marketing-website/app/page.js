@@ -255,12 +255,12 @@ export default function HomePage() {
           <div className="container">
             <div className={`text-center ${styles.sectionHead}`}>
               <div className={`t-label-caps ${styles.sectionBadge}`}>Privacy Promise</div>
-              <h2 className="t-headline-lg">Privacy is not a feature. It's the architecture.</h2>
+              <h2 className="t-headline-lg">Privacy is not a feature. It&apos;s the architecture.</h2>
             </div>
             <div className={styles.privacyGrid}>
               {[
                 { icon: '🔒', title: 'Never stored publicly', desc: 'Your phone number lives on our secure servers, encrypted — never in a QR, never on a web page, never in a notification to a stranger.' },
-                { icon: '🔐', title: 'Your documents, encrypted', desc: 'Every document in your vault is encrypted at rest and in transit. We can't read them either.' },
+                { icon: '🔐', title: 'Your documents, encrypted', desc: 'Every document in your vault is encrypted at rest and in transit. We cannot read them either.' },
                 { icon: '🎛️', title: 'You control every channel', desc: 'Choose exactly how you get notified: push, SMS, WhatsApp, email. Emergency alerts always fire regardless.' },
               ].map((p, i) => (
                 <div key={i} className={styles.privacyCard}>
