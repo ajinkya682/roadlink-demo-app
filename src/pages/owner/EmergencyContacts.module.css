@@ -1,0 +1,42 @@
+.page { min-height: 100vh; background: var(--fog); display: flex; flex-direction: column; }
+.content { padding: 24px 16px; flex: 1; display: flex; flex-direction: column; gap: 24px; }
+
+.desc { font-size: 14px; color: var(--on-surface-variant); line-height: 1.5; }
+
+.list { display: flex; flex-direction: column; gap: 12px; }
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--plate-white);
+  border: 1px solid rgba(26,26,26,0.08);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+.name { font-size: 16px; font-weight: 600; color: var(--on-surface); margin-bottom: 2px; }
+.phone { font-size: 13px; color: var(--on-surface-variant); }
+
+.deleteBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(217,48,37,0.05);
+  color: var(--alert-red);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.deleteBtn:hover { background: rgba(217,48,37,0.1); }
+
+.formBox {
+  background: var(--plate-white);
+  border: 1px solid rgba(26,26,26,0.08);
+  border-radius: var(--radius-xl);
+  padding: 16px;
+  overflow: hidden;
+}
+.formActions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+
+.addBtn { display: flex; justify-content: center; gap: 8px; }
