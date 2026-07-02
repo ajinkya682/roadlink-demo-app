@@ -11,7 +11,7 @@ const features = [
   { icon: Shield, title: 'Privacy Shield', desc: 'Zero phone numbers stored publicly. Your identity stays invisible.', color: '#1E8E5A' },
   { icon: Bell, title: 'Instant Notifications', desc: 'Push, WhatsApp, SMS, Email — you choose how alerts reach you.', color: '#1B4B8F' },
   { icon: FileText, title: 'Document Vault', desc: 'RC, Insurance, PUC with expiry tracking in one encrypted vault.', color: '#835500' },
-  { icon: Phone, title: 'Emergency Contacts', desc: 'Define who we call in an emergency — even if you can't.', color: '#D93025' },
+  { icon: Phone, title: 'Emergency Contacts', desc: 'Define who we call in an emergency — even if you cannot.', color: '#D93025' },
   { icon: MapPin, title: '12 Report Categories', desc: 'From wrong parking to theft — bystanders can notify you in 3 taps.', color: '#F5A623' },
   { icon: Star, title: 'QR Sticker Delivery', desc: 'Premium reflective sticker delivered to your door — stick once, done.', color: '#325ea3' },
 ]

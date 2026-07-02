@@ -62,7 +62,7 @@ const deepDives = [
     icon: FileText,
     tag: 'Document Vault',
     headline: 'RC, Insurance, PUC in one secure place.',
-    body: 'Upload your vehicle documents once. RoadLink tracks expiry dates and sends you alerts before they lapse — so you're never caught off guard during a traffic stop. All documents are encrypted at rest.',
+    body: 'Upload your vehicle documents once. RoadLink tracks expiry dates and sends you alerts before they lapse — so you are never caught off guard during a traffic stop. All documents are encrypted at rest.',
     phone: (
       <div style={{ padding: 14, background: '#F7F8FA', height: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontWeight: 700, fontSize: 11, fontFamily: 'IBM Plex Sans Condensed, sans-serif', color: '#1A1A1A' }}>Document Vault</div>
