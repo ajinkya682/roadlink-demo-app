@@ -1,98 +1,170 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Bell, Shield, Phone, FileText, User, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, Shield, Phone, FileText, User, ChevronRight, LogOut, Trash2 } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import BottomTabBar from '../../components/BottomTabBar';
-import styles from './Settings.module.css';
-
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
-const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
-
-function SettingToggle({ label, sub, defaultOn = false }) {
-  const [on, setOn] = useState(defaultOn);
-  return (
-    <div className={styles.row}>
-      <div className={styles.rowText}>
-        <div className={styles.rowTitle}>{label}</div>
-        {sub && <div className={styles.rowSub}>{sub}</div>}
-      </div>
-      <div className={`${styles.toggle} ${on ? styles.toggleOn : ''}`} onClick={() => setOn(!on)}>
-        <motion.div
-          className={styles.toggleThumb}
-          animate={{ x: on ? 20 : 0 }}
-          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function SettingLink({ icon: Icon, label, onClick, danger }) {
-  return (
-    <motion.div
-      className={`${styles.row} ${styles.linkRow} ${danger ? styles.dangerRow : ''}`}
-      onClick={onClick}
-      whileTap={{ backgroundColor: danger ? 'rgba(217,48,37,0.08)' : 'rgba(26,26,26,0.04)' }}
-    >
-      <div className={styles.rowLeft}>
-        {Icon && <Icon size={20} color={danger ? 'var(--alert-red)' : 'var(--on-surface-variant)'} />}
-        <span className={danger ? styles.dangerText : styles.rowTitle}>{label}</span>
-      </div>
-      {!danger && <ChevronRight size={18} color="var(--outline-variant)" />}
-    </motion.div>
-  );
-}
+import Toggle from '../../components/Toggle';
+import { useDemoData } from '../../context/DemoContext';
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { user, updateNotifPref } = useDemoData();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
-    <div className={styles.page}>
+    <div className="min-h-screen bg-fog pb-24">
       <AppHeader title="Settings" />
 
-      <div className={styles.content}>
-        <motion.div variants={stagger} initial="hidden" animate="show" className={styles.sectionStack}>
-          
-          <motion.div variants={fadeUp} className={styles.section}>
-            <div className={styles.sectionHeader}>Notifications</div>
-            <div className={styles.card}>
-              <SettingToggle label="Push Notifications" defaultOn />
-              <div className={styles.divider} />
-              <SettingToggle label="WhatsApp Alerts" sub="Instant messages from guests" defaultOn />
-              <div className={styles.divider} />
-              <SettingToggle label="SMS Fallback" sub="If WhatsApp is unreachable" defaultOn />
-            </div>
-          </motion.div>
+      <div className="px-5 pt-5 space-y-6">
+        {/* Profile card */}
+        <div className="bg-white rounded-2xl border border-outline-light px-5 py-4 flex items-center gap-4">
+          <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center font-display text-xl font-semibold text-white flex-shrink-0">
+            {user.avatar}
+          </div>
+          <div className="flex-1">
+            <p className="font-display text-headline-sm text-on-surface">{user.name}</p>
+            <p className="font-body text-xs text-on-surface-muted">{user.maskedPhone}</p>
+            <p className="font-body text-xs text-on-surface-muted">Member since {user.joinedDate}</p>
+          </div>
+        </div>
 
-          <motion.div variants={fadeUp} className={styles.section}>
-            <div className={styles.sectionHeader}>Account & Privacy</div>
-            <div className={styles.card}>
-              <SettingLink icon={User} label="My Profile" />
-              <div className={styles.divider} />
-              <SettingLink icon={Phone} label="Emergency Contacts" onClick={() => navigate('/emergency-contacts')} />
-              <div className={styles.divider} />
-              <SettingLink icon={Shield} label="Privacy Controls" />
+        {/* Notifications section */}
+        <div>
+          <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest mb-3 px-1">Notifications</p>
+          <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
+            {[
+              { key: 'push', label: 'Push Notifications', sub: null },
+              { key: 'whatsapp', label: 'WhatsApp Alerts', sub: 'Instant messages from guests' },
+              { key: 'sms', label: 'SMS Fallback', sub: 'If WhatsApp is unreachable' },
+              { key: 'email', label: 'Email Digest', sub: 'Daily summary of activity' },
+            ].map(({ key, label, sub }) => (
+              <div key={key} className="flex items-center justify-between px-4 py-3.5">
+                <div>
+                  <p className="font-body text-sm font-semibold text-on-surface">{label}</p>
+                  {sub && <p className="font-body text-xs text-on-surface-muted">{sub}</p>}
+                </div>
+                <Toggle
+                  on={user.notificationPrefs[key]}
+                  onChange={val => updateNotifPref(key, val)}
+                />
+              </div>
+            ))}
+            {/* Emergency always-on note */}
+            <div className="px-4 py-3 bg-alert-red/4">
+              <p className="font-body text-xs text-alert-red font-medium">
+                🚨 Emergency &amp; Theft alerts are always sent, regardless of these settings.
+              </p>
             </div>
-          </motion.div>
+          </div>
+        </div>
 
-          <motion.div variants={fadeUp} className={styles.section}>
-            <div className={styles.sectionHeader}>Support</div>
-            <div className={styles.card}>
-              <SettingLink icon={FileText} label="Terms & Privacy Policy" />
-              <div className={styles.divider} />
-              <SettingLink icon={null} label="Log Out" />
-            </div>
-          </motion.div>
+        {/* Account & Privacy */}
+        <div>
+          <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest mb-3 px-1">Account &amp; Privacy</p>
+          <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
+            {[
+              { icon: User, label: 'My Profile', action: () => {} },
+              { icon: Phone, label: 'Emergency Contacts', action: () => navigate('/emergency-contacts') },
+              { icon: Shield, label: 'Privacy Controls', action: () => {} },
+            ].map(({ icon: Icon, label, action }) => (
+              <motion.button
+                key={label}
+                className="w-full flex items-center gap-3 px-4 py-4 text-left"
+                onClick={action}
+                whileTap={{ backgroundColor: 'rgba(26,26,26,0.04)' }}
+              >
+                <Icon size={20} className="text-on-surface-muted flex-shrink-0" />
+                <span className="flex-1 font-body text-sm font-semibold text-on-surface">{label}</span>
+                <ChevronRight size={18} className="text-outline-light" />
+              </motion.button>
+            ))}
+          </div>
+        </div>
 
-          <motion.div variants={fadeUp} className={styles.section}>
-            <div className={styles.card}>
-              <SettingLink icon={null} label="Delete Account" danger />
-            </div>
-          </motion.div>
+        {/* Support */}
+        <div>
+          <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest mb-3 px-1">Support</p>
+          <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
+            <motion.button
+              className="w-full flex items-center gap-3 px-4 py-4 text-left"
+              whileTap={{ backgroundColor: 'rgba(26,26,26,0.04)' }}
+            >
+              <FileText size={20} className="text-on-surface-muted flex-shrink-0" />
+              <span className="flex-1 font-body text-sm font-semibold text-on-surface">Terms &amp; Privacy Policy</span>
+              <ChevronRight size={18} className="text-outline-light" />
+            </motion.button>
+            <motion.button
+              className="w-full flex items-center gap-3 px-4 py-4 text-left"
+              onClick={() => navigate('/')}
+              whileTap={{ backgroundColor: 'rgba(26,26,26,0.04)' }}
+            >
+              <LogOut size={20} className="text-on-surface-muted flex-shrink-0" />
+              <span className="flex-1 font-body text-sm font-semibold text-on-surface">Log Out</span>
+            </motion.button>
+          </div>
+        </div>
 
-        </motion.div>
+        {/* Danger zone */}
+        <div>
+          <div className="bg-white rounded-2xl border border-outline-light overflow-hidden">
+            <motion.button
+              className="w-full flex items-center gap-3 px-4 py-4 text-left"
+              onClick={() => setShowDeleteConfirm(true)}
+              whileTap={{ backgroundColor: 'rgba(217,48,37,0.05)' }}
+            >
+              <Trash2 size={20} className="text-alert-red flex-shrink-0" />
+              <span className="font-body text-sm font-semibold text-alert-red">Delete Account</span>
+            </motion.button>
+          </div>
+        </div>
       </div>
+
+      {/* Delete confirm modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-asphalt/40 backdrop-blur-sm px-4 pb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-sheet"
+              initial={{ y: 40 }}
+              animate={{ y: 0 }}
+              exit={{ y: 40 }}
+              transition={{ type: 'spring', damping: 22 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 bg-alert-red/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Trash2 size={22} className="text-alert-red" />
+                </div>
+                <h3 className="font-display text-headline-sm text-on-surface mb-2">Delete Account?</h3>
+                <p className="font-body text-body-sm text-on-surface-muted">
+                  All your vehicles, documents, and contacts will be permanently deleted. This cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  className="flex-1 border-2 border-outline-light rounded-xl py-3 font-body text-sm font-semibold text-on-surface"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="flex-1 bg-alert-red text-white rounded-xl py-3 font-body text-sm font-semibold"
+                  onClick={() => navigate('/')}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <BottomTabBar />
     </div>
