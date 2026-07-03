@@ -21,12 +21,7 @@ function greeting() {
   return 'Good evening';
 }
 
-const quickActions = [
-  { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile') },
-  { label: 'Add Vehicle', Icon: Plus,       action: (nav) => nav('/add-vehicle') },
-  { label: 'My Vehicles', Icon: LayoutGrid, action: (nav) => nav('/vehicle-detail') },
-  { label: 'Invite',      Icon: Share2,     action: () => alert('Share RoadLink – Coming Soon!') },
-];
+// quickActions moved inside component to access state
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -36,6 +31,13 @@ export default function Dashboard() {
     refreshVehicles();
     refreshNotifications();
   }, []);
+
+  const quickActions = [
+    { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile') },
+    { label: 'Add Vehicle', Icon: Plus,       action: (nav) => vehicles.length >= 1 ? alert('Support for multiple vehicles is coming soon!') : nav('/add-vehicle') },
+    { label: 'My Vehicles', Icon: LayoutGrid, action: (nav) => nav('/vehicle-detail') },
+    { label: 'Invite',      Icon: Share2,     action: () => alert('Share RoadLink – Coming Soon!') },
+  ];
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] pb-28">
@@ -182,24 +184,26 @@ export default function Dashboard() {
           </motion.div>
         ))}
 
-        {/* Add another vehicle card */}
-        <motion.div
-          variants={fadeUp}
-          className="border-2 border-dashed border-outline-light rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-road-navy/40 hover:bg-road-navy/2 transition-colors cursor-pointer bg-white"
-          onClick={() => navigate('/add-vehicle')}
-          whileTap={{ scale: 0.97 }}
-        >
-          <div className="w-10 h-10 bg-road-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Plus size={22} className="text-road-navy" />
-          </div>
-          <div className="flex-1">
-            <span className="font-body font-semibold text-[14px] text-[#434751]">
-              Add another vehicle
-            </span>
-            <p className="font-body text-[12px] text-[#737782]">Get a digital identity for your vehicle</p>
-          </div>
-          <ChevronRight size={18} className="text-[#c3c6d2]" />
-        </motion.div>
+        {/* Add vehicle card (Empty State) */}
+        {vehicles.length === 0 && (
+          <motion.div
+            variants={fadeUp}
+            className="border-2 border-dashed border-outline-light rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-road-navy/40 hover:bg-road-navy/2 transition-colors cursor-pointer bg-white"
+            onClick={() => navigate('/add-vehicle')}
+            whileTap={{ scale: 0.97 }}
+          >
+            <div className="w-10 h-10 bg-road-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Plus size={22} className="text-road-navy" />
+            </div>
+            <div className="flex-1">
+              <span className="font-body font-semibold text-[14px] text-[#434751]">
+                Add vehicle
+              </span>
+              <p className="font-body text-[12px] text-[#737782]">Get a digital identity for your vehicle</p>
+            </div>
+            <ChevronRight size={18} className="text-[#c3c6d2]" />
+          </motion.div>
+        )}
 
         {/* Bottom spacer */}
         <div className="h-4" />
