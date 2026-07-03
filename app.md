@@ -30,6 +30,24 @@ RoadLink is a privacy-first digital identity for vehicles in India. The subject 
 
 ---
 
+## 0b. Global Bottom Navigation (use on every authenticated screen — redesign v2)
+
+This replaces the old top-bar-only navigation. It's a fixed, PhonePe-style bottom nav shared across every screen after login: Dashboard Home, Vehicle Detail, Document Vault, Profile/Settings. It is NOT shown on the guest-facing screens (1–5) or the onboarding carousel (6a–6c), since those are pre-login/account-less contexts.
+
+**Prompt (paste this alongside every authenticated-screen prompt so the nav renders identically everywhere):**
+Design a fixed bottom navigation bar, full width, white background, 1px top border in fog-gray (or a very soft upward shadow instead of a hard line), with safe-area bottom padding for iOS home-indicator clearance. Five slots, laid out as **2 tabs — center action — 2 tabs**:
+- **Left tab 1: Home** — house icon, label "Home."
+- **Left tab 2: Documents** — document/folder icon, label "Docs."
+- **Center: Scan** — a circular button, 60px diameter, signal-amber fill, white QR-scan icon centered, elevated so it breaks the top edge of the nav bar by about 18px (sits partly above the bar, PhonePe/Paytm-style), with a soft drop shadow for lift and a thin white ring where it overlaps the bar so it reads as a separate floating element, not flush with the row. No text label under it — the icon alone should read as "scan," since this is the app's core action and gets used constantly.
+- **Right tab 1: Vehicles** — a small plate-tag/car icon, label "Vehicles" (opens a list of all the owner's vehicles — this is distinct from Home, which shows the dashboard summary).
+- **Right tab 2: Profile** — a circular avatar or a simple profile-outline icon, label "Profile" (this tab now owns Settings, Emergency Contacts, and account/Delete Account — Screens 19 and 20 are reached from here, not from a header icon anymore).
+
+**States:** active tab = filled/bold icon + road-navy label; inactive tabs = outline icon + asphalt at ~55% opacity label. No numeric badges anywhere on this bar — unread-alert counts live only on the header bell (Dashboard Home) and on individual vehicle cards, so a person never has to reconcile two different badge counts for the same thing.
+
+**Behavior note:** tapping Scan always opens the in-app QR scanner regardless of which tab is currently active — it's a global action, not scoped to whichever tab you're standing on.
+
+---
+
 ## GUEST-FACING SCREENS (no login, reached via QR scan or search)
 
 ### 1. Public Scan Landing Page
@@ -95,9 +113,22 @@ Design a short checkout flow (can be a single scrolling screen for MVP). Step 1:
 **Prompt:**
 Design a brief confirmation screen: verified-green checkmark, "Order placed," order number in monospace, estimated delivery window, and a "Back to Dashboard" button. Keep it visually consistent with Screen 3 (Report Sent Confirmation) — both are "action succeeded" moments and should feel like the same design family.
 
-### 13. Owner Dashboard — Home
+### 13. Owner Dashboard — Home (redesign v2 — PhonePe-style)
 **Prompt:**
-Design the main authenticated home screen: a card-based list of the owner's vehicles (MVP: typically 1, but design should read fine with 2–3). Each vehicle card uses the plate-tag device prominently (registration number in monospace inside the dark-bezel plate shape) plus vehicle name, a small unread-notification count badge if reports are pending, and a quick-access QR icon button. Below or beside the list (depending on breakpoint), a persistent "Add Vehicle" affordance styled as a dashed-outline card matching the plate-tag proportions. Top bar: RoadLink wordmark, a bell icon for the global notifications inbox, and a settings/profile icon. This screen should read as calm and organized, never dashboard-cluttered — MVP owners may have exactly one vehicle.
+Redesign the main authenticated home screen, PhonePe-style, built on top of the Global Bottom Navigation (Section 0b — Home tab active).
+
+**Header (top of screen, fog background):** left-aligned "Good afternoon, {Name}" in bold road-navy, small gray subtext line below it if useful (e.g., vehicle count summary — optional). Top-right: a bell icon with a small alert-red dot badge showing unread-notification count (tapping it opens the Notifications Inbox, Screen 15) — this is now the *only* place unread counts live at the account level. **Remove the separate gear/settings icon from this header entirely** — Settings now lives on the Profile tab in the bottom nav, so there's no duplicate path to the same destination.
+
+**Quick actions row (directly below header):** a horizontal row of 4 circular icon buttons, PhonePe-service-icon style — each a soft fog-gray circle (48–56px) with a road-navy icon inside, and a small label underneath: **Profile** (account/avatar icon), **Add Vehicle** (plus/car icon), **My Vehicles** (a stacked-cards or plate-tag icon — opens the same destination as the Vehicles tab in the bottom nav), **Invite & Earn** (a share/gift icon — sends a referral link so a friend can sign up). Row scrolls horizontally if more icons are added post-MVP; for now all 4 fit on a 375px screen without scrolling.
+
+**"MY VEHICLES" section:** uppercase section label (small, gray, letter-spaced), then a vertical stack of vehicle cards — keep the structure from the current build, it's working well, just tighten it:
+- Each card: vehicle name (bold, large) + "Added {month year}" (small gray) on the left; a small circular QR icon button top-right (opens that vehicle's QR Code Detail, Screen 10) with its own small alert-red dot badge for unread reports *specific to that vehicle*.
+- Below that, the plate-tag device exactly as already built: white panel, 2px asphalt border, "IND" label + small gray dot top row, large monospace plate number, small verified-green checkmark, "VEHICLE VERIFIED" caption in verified-green, small-caps, bold.
+- Below the plate tag, a contextual status banner strip spanning the card width: signal-amber background (10–15% opacity fill) with a filled amber dot + "{N} new alerts — tap to view" when there are unread reports; verified-green background (same low-opacity treatment) with a green dot + "Privacy Mode Active" when there's nothing to action. Only one banner per card, whichever is currently true.
+
+**"Add another vehicle" card:** keep as-is — dashed-outline card matching the plate-tag's proportions, plus icon, label, chevron.
+
+**Overall:** content scrolls freely above the fixed Global Bottom Navigation; Home tab shows active state. This screen should still read as calm and organized even with the new quick-actions row — MVP owners may have exactly one vehicle, so nothing here should feel like it's demanding a second or third vehicle to look complete.
 
 ### 14. Vehicle Detail
 **Prompt:**
@@ -121,16 +152,41 @@ Design a simple upload screen/modal for a single document type (title reflects t
 
 ### 19. Settings
 **Prompt:**
-Design a simple grouped-list settings screen (not a dashboard, just clean rows): Notification Channels (toggles for Push/WhatsApp/SMS/Email, with a note that Emergency/Theft always fire regardless of these toggles), Quiet Hours (time range picker), Emergency Contacts (links to contact management), Language (single dropdown, MVP can be English-only with the control present for future-proofing), Delete Account (bottom of list, visually de-emphasized but not hidden, opens a confirmation flow explaining data export/erasure per the privacy policy).
+Design a simple grouped-list settings screen (not a dashboard, just clean rows), reached via the **Profile tab** in the Global Bottom Navigation (Section 0b) rather than a header icon. Notification Channels (toggles for Push/WhatsApp/SMS/Email, with a note that Emergency/Theft always fire regardless of these toggles), Quiet Hours (time range picker), Emergency Contacts (links to contact management), Language (single dropdown, MVP can be English-only with the control present for future-proofing), Delete Account (bottom of list, visually de-emphasized but not hidden, opens a confirmation flow explaining data export/erasure per the privacy policy).
 
 ### 20. Emergency Contacts
 **Prompt:**
 Design the screen reached from Screen 19 (Settings → Emergency Contacts) and also from the Contacts tab on Screen 14 (Vehicle Detail). List the owner's emergency contacts as simple rows: name, relation, phone number (masked to the last 2 digits, e.g., "+91 98•••••10" — this list is owner-facing but should still model the platform's privacy-first habit), and a "Primary" tag on exactly one contact in road-navy. Each row has edit/delete affordances (swipe-to-delete on mobile or a trailing icon button). A single primary button "Add Emergency Contact" (signal-amber) sits above the list or as a floating action button. Tapping it opens a short form: name, phone number (+91 prefix, same input pattern as Login), relation (simple dropdown: Family, Friend, Other), and a toggle "Make primary" — only one contact can be primary at a time, so switching this toggle on one row should visibly demote the previous primary contact. Empty state (no contacts yet): a calm prompt explaining why this matters — "Add at least one contact so we know who to notify in an emergency" — with the "Add Emergency Contact" button as the sole call to action. Keep the tone reassuring, not alarming, even though the subject is emergencies.
 
+### 21. QR Scanner (In-App Camera — shared by guest mode and logged-in owners)
+**Prompt:**
+Design the live camera QR-scanning screen. This single screen serves two entry points — a not-logged-in guest scanning someone else's vehicle, and a logged-in owner tapping the Scan button in the Global Bottom Navigation (Section 0b) — the camera UI itself is identical either way; only what happens after a successful scan differs (see Routing, below).
+
+**Layout:** Full-screen live camera feed as the background. A semi-transparent black scrim (roughly 55–65% opacity) covers the whole feed except a square cutout in the center — the scan target — which shows the camera feed at full clarity. The cutout is roughly 70% of screen width, centered slightly above vertical middle (leaves room below for instructions and the manual-entry fallback).
+
+**Scan frame:** four short L-shaped corner brackets, one per corner of the cutout, 3px stroke, in signal-amber. No full square outline — just the four corners, so it reads as a precise "target" rather than a heavy box.
+
+**Scan animation (this is the core of the ask):** a thin horizontal line, signal-amber, with a soft glow/blur beneath it, sweeps continuously from the top edge of the cutout to the bottom edge and back, looping, ease-in-out timing, roughly 2 seconds per pass. This is what communicates "actively scanning" — it should never fully stop while the camera is searching for a code. The line is slightly wider than the cutout with rounded ends, and its glow should subtly tint the camera feed directly beneath it as it passes, like a real laser scanner.
+
+**Success state:** the instant a valid QR is detected, the scan line vanishes and the four corner brackets flash — a quick pulse from signal-amber to verified-green and hold, roughly 300–400ms — while the whole cutout briefly scales up 4–5% and back to normal (a quick, satisfying "snap" rather than a slow zoom). Immediately after, a small centered loading spinner (verified-green) replaces the frame for a brief moment while the vehicle resolves, then the screen transitions (slide-up or cross-fade, ~250ms) into the result.
+
+**Error state (invalid or unrecognized code):** brackets flash alert-red once (same pulse timing as success, but red, and no scale change — errors shouldn't feel satisfying), a small toast slides up from the bottom: "This code isn't a valid RoadLink QR," and the scan line resumes automatically after about a second — no manual dismissal needed, since the person is still holding their phone up trying to scan.
+
+**Chrome (overlaid on the camera feed, not a solid header):** top-left, a close/back icon (X) in a small translucent dark-gray circle for contrast against any background; top-right, a flashlight/torch toggle icon in the same translucent circle style. No page title needed — the scan frame itself communicates the purpose.
+
+**Below the cutout:** one line of instruction text in white with a subtle dark text-shadow for legibility over any camera background: "Align the QR code within the frame." Below that, a secondary, quieter text link: "Enter number manually instead" — leads to Screen 4 (Search Vehicle by Number) for anyone whose sticker is damaged, poorly lit, or otherwise unscannable. This fallback must always be visible, never buried in a menu.
+
+**Permission-denied state:** if camera access hasn't been granted, replace the camera feed with a calm fog-background panel: a simple camera-outline icon, one line explaining why access is needed ("RoadLink needs your camera to scan vehicle QR codes"), a primary "Enable Camera Access" button (road-navy), and the same "Enter number manually instead" link beneath it as a no-camera-needed alternative.
+
+**Routing after a successful scan (behavior, not visual):**
+- If the person scanning is a **guest** (no session): route to Screen 1 (Public Scan Landing Page) for the scanned vehicle, exactly as if they'd scanned a physical sticker in a browser.
+- If the person scanning is **logged in** and the scanned vehicle is **someone else's**: also route to Screen 1 — an owner scanning a stranger's vehicle should see the same public page a guest would, not special-cased owner chrome.
+- If the person scanning is **logged in** and the scanned vehicle is **their own**: skip the public page entirely and route straight to Screen 14 (Vehicle Detail) for that vehicle — there's no reason to show someone the "report a problem with this vehicle" categories for a vehicle they themselves own.
+
 ---
 
 ## How to use this library
-Each numbered prompt is independent — feed them one at a time into your design tool of choice in roughly this order (guest flow first, since that's the trust-critical first impression; owner flow second). Keep the Design DNA block (Section 0) attached to every prompt so type, color, and the plate-tag signature device stay consistent across all 20 screens, since visual consistency across the guest-facing and owner-facing halves of the product is what makes the "Vehicle Verified" trust signal credible.
+Each numbered prompt is independent — feed them one at a time into your design tool of choice in roughly this order (guest flow first, since that's the trust-critical first impression; owner flow second). Keep the Design DNA block (Section 0) attached to every prompt so type, color, and the plate-tag signature device stay consistent across all 21 screens, since visual consistency across the guest-facing and owner-facing halves of the product is what makes the "Vehicle Verified" trust signal credible.
 
 ## First-time navigation flow
 
@@ -143,175 +199,3 @@ There is no separate "first-time" state here by design — every guest visit is 
 From Dashboard Home, the hub opens into: `Screen 14 (Vehicle Detail)` → its Documents tab (`Screen 17` Document Vault → `Screen 18` Document Upload) and Contacts tab (`Screen 20` Emergency Contacts); `Screen 15 (Notifications Inbox)` → `Screen 16 (Notification Detail)`; and `Screen 19 (Settings)` → `Screen 20 (Emergency Contacts)`.
 
 **Returning users** skip Screens 6a–6c entirely (they only fire once, on first install, before any account exists) and skip Screen 9 if they already have a vehicle registered — Login → OTP drops them straight into Dashboard Home.
-
-
-
-DESIGN MD
-
-***name: RoadLink Digital Identity
-colors:
-  surface: '#fcf9f8'
-  surface-dim: '#dcd9d9'
-  surface-bright: '#fcf9f8'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#f6f3f2'
-  surface-container: '#f0eded'
-  surface-container-high: '#eae7e7'
-  surface-container-highest: '#e5e2e1'
-  on-surface: '#1c1b1b'
-  on-surface-variant: '#434751'
-  inverse-surface: '#313030'
-  inverse-on-surface: '#f3f0ef'
-  outline: '#737782'
-  outline-variant: '#c3c6d2'
-  surface-tint: '#325ea3'
-  primary: '#003470'
-  on-primary: '#ffffff'
-  primary-container: '#1b4b8f'
-  on-primary-container: '#9cbdff'
-  inverse-primary: '#abc7ff'
-  secondary: '#835500'
-  on-secondary: '#ffffff'
-  secondary-container: '#feae2c'
-  on-secondary-container: '#6b4500'
-  tertiary: '#003e23'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#005834'
-  on-tertiary-container: '#6ad196'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#d7e2ff'
-  primary-fixed-dim: '#abc7ff'
-  on-primary-fixed: '#001b3f'
-  on-primary-fixed-variant: '#124589'
-  secondary-fixed: '#ffddb4'
-  secondary-fixed-dim: '#ffb955'
-  on-secondary-fixed: '#291800'
-  on-secondary-fixed-variant: '#633f00'
-  tertiary-fixed: '#90f7ba'
-  tertiary-fixed-dim: '#74db9f'
-  on-tertiary-fixed: '#002110'
-  on-tertiary-fixed-variant: '#005230'
-  background: '#fcf9f8'
-  on-background: '#1c1b1b'
-  surface-variant: '#e5e2e1'
-typography:
-  headline-lg:
-    fontFamily: IBM Plex Sans Condensed
-    fontSize: 32px
-    fontWeight: '600'
-    lineHeight: 40px
-    letterSpacing: -0.01em
-  headline-lg-mobile:
-    fontFamily: IBM Plex Sans Condensed
-    fontSize: 26px
-    fontWeight: '600'
-    lineHeight: 32px
-  headline-md:
-    fontFamily: IBM Plex Sans Condensed
-    fontSize: 24px
-    fontWeight: '600'
-    lineHeight: 32px
-  headline-sm:
-    fontFamily: IBM Plex Sans Condensed
-    fontSize: 20px
-    fontWeight: '600'
-    lineHeight: 28px
-  body-lg:
-    fontFamily: Inter
-    fontSize: 18px
-    fontWeight: '400'
-    lineHeight: 28px
-  body-md:
-    fontFamily: Inter
-    fontSize: 16px
-    fontWeight: '400'
-    lineHeight: 24px
-  body-sm:
-    fontFamily: Inter
-    fontSize: 14px
-    fontWeight: '400'
-    lineHeight: 20px
-  data-mono:
-    fontFamily: IBM Plex Mono
-    fontSize: 14px
-    fontWeight: '500'
-    lineHeight: 20px
-    letterSpacing: 0.05em
-  label-caps:
-    fontFamily: Inter
-    fontSize: 12px
-    fontWeight: '700'
-    lineHeight: 16px
-    letterSpacing: 0.08em
-rounded:
-  sm: 0.25rem
-  DEFAULT: 0.5rem
-  md: 0.75rem
-  lg: 1rem
-  xl: 1.5rem
-  full: 9999px
-spacing:
-  base: 8px
-  container-margin-mobile: 16px
-  container-margin-desktop: 40px
-  gutter: 16px
-  section-gap: 32px
-***
-Brand & Style
-The design system is built on the intersection of modern fintech reliability and the authoritative clarity of official road infrastructure. It targets vehicle owners and fleet managers who require a high-trust, privacy-first interface for managing digital credentials.
-
-The aesthetic follows a Corporate / Modern style with a focus on high-contrast legibility. It utilizes structured layouts, distinct borders, and a monochromatic foundation punctuated by high-visibility "signal" colors. The emotional goal is to evoke a sense of security, legal compliance, and systematic efficiency. Visual elements are direct and functional, avoiding decorative flourishes to maintain a professional, administrative tone suitable for high-stakes digital identity.
-
-Colors
-This design system utilizes a high-contrast palette optimized for outdoor sunlight readability. 
-
-Road Navy (#1B4B8F): Used for primary branding, header backgrounds, and authoritative actions.
-Signal Amber (#F5A623): Reserved for secondary actions, pending states, and cautionary alerts.
-Asphalt (#1A1A1A): The foundation for text and structural bezels, ensuring maximum contrast against light surfaces.
-Verified Green (#1E8E5A) & Alert Red (#D93025): Functional status indicators for successful verification or emergency alerts.
-Fog (#F7F8FA) & Plate White (#FFFFFF): The background and surface colors create a layered, clean environment for data-heavy views.
-
-Typography
-The typographic hierarchy prioritizes rapid information scanning and data precision.
-
-Headers: Use IBM Plex Sans Condensed (Semibold) for an authoritative, "official" look that mimics government signage.
-Body: Inter is used for general interface text to ensure legibility and a neutral, modern feel.
-Data/Plate: IBM Plex Mono is the designated typeface for vehicle registration numbers, VINs, and technical codes. This monospaced font, paired with 0.05em letter spacing, ensures every character is distinct and unmistakable.
-Case Usage: Labels should often use uppercase with increased tracking to differentiate them from body copy.
-
-Layout & Spacing
-The layout follows a strict 8px grid system to maintain alignment and structural integrity. 
-
-Grid: A 12-column fluid grid is used for desktop, transitioning to a single-column stack on mobile.
-Margins: 16px lateral margins for mobile devices; 40px for desktop to allow the content to breathe.
-Density: Medium density is preferred. Information should be grouped into clear, bordered containers to prevent visual clutter in data-rich environments.
-Reflow: On mobile, complex data tables must transform into individual cards to maintain high-contrast legibility.
-
-Elevation & Depth
-In line with the "official" aesthetic, this design system eschews soft, diffused shadows in favor of Tonal Layers and Low-Contrast Outlines.
-
-Surfaces: Use #FFFFFF for the primary card surfaces over the #F7F8FA background. 
-Borders: Depth is defined by 1px solid strokes using #1A1A1A at low opacity (10-15%) for standard containers.
-High-Trust Elevation: For critical components like the "Plate Tag," use a 2px solid stroke of #1A1A1A to create a physical, "stamped" appearance that feels permanent and official.
-Shadows: Only used sparingly for primary floating action buttons to provide a slight lift (0px 4px 12px rgba(26, 26, 26, 0.1)).
-
-Shapes
-The shape language balances structural rigidity with modern usability. 
-
-Cards & Containers: Use a consistent radius of 12px to 16px (represented by rounded-lg and rounded-xl in the token set).
-Interactive Elements: Buttons and input fields should follow the rounded-lg (12px) standard.
-Plate Tags: These specific badges use a medium 8px radius to mimic the shape of physical high-security registration plates (HSRP).
-
-Components
-Consistent application of these components ensures the interface feels like an official extension of road infrastructure.
-
-Plate Tag (Signature Component): A rounded-rectangle badge with a 2px solid #1A1A1A bezel. Background is #FFFFFF. Text must be data-mono using #1A1A1A. 
-Primary Buttons: Solid #1B4B8F background with #FFFFFF text. No gradients. 12px corner radius.
-Secondary Actions: Outline style using the primary color or solid #F5A623 for attention-heavy actions (e.g., "Renew License").
-Cards: White surfaces with a subtle 1px border. Headlines within cards should use headline-sm.
-Status Indicators: Pills using low-opacity versions of Success/Error colors with high-contrast bold text of the same hue.
-Input Fields: 1px #1A1A1A border (20% opacity) that thickens to 2px Primary Navy on focus. Labels sit clearly above the field in label-caps.
-Lists: Clean, horizontal dividers with 16px vertical padding. Iconography should be thick-stroked and functional.
