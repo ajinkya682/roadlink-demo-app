@@ -1,35 +1,15 @@
 const crypto = require('crypto');
 
 const generateQRToken = (vehicleId) => {
-  const secret = process.env.QR_SIGNING_SECRET || 'qr_hmac_secret';
-  const salt = crypto.randomBytes(16).toString('hex');
-  const payload = `${vehicleId}:${salt}`;
+  // RL-123456-DF format
+  const randomDigits = Math.floor(100000 + Math.random() * 900000);
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const char1 = chars.charAt(Math.floor(Math.random() * chars.length));
+  const char2 = chars.charAt(Math.floor(Math.random() * chars.length));
   
-  const hmac = crypto.createHmac('sha256', secret)
-                     .update(payload)
-                     .digest('hex');
-                     
-  return `${payload}:${hmac}`;
-};
-
-const verifyQRToken = (token) => {
-  const secret = process.env.QR_SIGNING_SECRET || 'qr_hmac_secret';
-  const [vehicleId, salt, providedHmac] = token.split(':');
-  
-  if (!vehicleId || !salt || !providedHmac) return null;
-
-  const payload = `${vehicleId}:${salt}`;
-  const expectedHmac = crypto.createHmac('sha256', secret)
-                             .update(payload)
-                             .digest('hex');
-                             
-  if (expectedHmac === providedHmac) {
-    return vehicleId;
-  }
-  return null;
+  return `RL-${randomDigits}-${char1}${char2}`;
 };
 
 module.exports = {
-  generateQRToken,
-  verifyQRToken
+  generateQRToken
 };

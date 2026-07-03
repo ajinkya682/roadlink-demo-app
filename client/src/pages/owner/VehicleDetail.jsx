@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Toggle from '../../components/Toggle';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
 import api from '../../lib/api';
 
@@ -19,6 +21,9 @@ export default function VehicleDetail() {
   const contextVehicle = vehicles.find(v => v.id === id) || vehicles[0];
   const [vehicle, setVehicle] = useState(contextVehicle);
   const [activeTab, setActiveTab] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   React.useEffect(() => {
     async function loadVehicle() {
@@ -64,9 +69,70 @@ export default function VehicleDetail() {
     missing: 'text-outline bg-surface-high',
   }[s] || '');
 
+  const handleEditClick = () => {
+    if (isEditing) {
+      // Cancel edit
+      setIsEditing(false);
+    } else {
+      // Start edit
+      setEditForm({
+        make: vehicle.make || '',
+        model: vehicle.model || '',
+        year: vehicle.year || '',
+        color: vehicle.color || '',
+        nickname: vehicle.nickname || '',
+        privacyMode: vehicle.privacyMode,
+      });
+      setIsEditing(true);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const payload = {
+        make: editForm.make,
+        model: editForm.model,
+        year: editForm.year,
+        color: editForm.color,
+        nickname: editForm.nickname,
+        showOwnerName: !editForm.privacyMode
+      };
+      const res = await api.patch(`/vehicles/${vehicle.id}`, payload);
+      if (res.data.success) {
+        const v = res.data.data.vehicle;
+        setVehicle(prev => ({
+          ...prev,
+          make: v.make,
+          model: v.model,
+          year: editForm.year, // just taking from form since it's not strongly mapped in DB yet except via update
+          color: v.color || editForm.color,
+          nickname: v.nickname,
+          privacyMode: v.privacySettings?.showOwnerName === false || editForm.privacyMode,
+          displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE'
+        }));
+        setIsEditing(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save vehicle details');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-fog pb-24">
-      <AppHeader title="Vehicle Info" rightSlot={<Edit3 size={20} />} />
+      <AppHeader 
+        title="Vehicle Info" 
+        rightSlot={
+          isEditing ? null : (
+            <button onClick={handleEditClick} className="p-2 text-on-surface-muted hover:text-navy transition-colors">
+              <Edit3 size={20} />
+            </button>
+          )
+        } 
+      />
 
       {/* Plate hero */}
       <div className="bg-white border-b border-outline-light px-5 py-5 flex flex-col items-center gap-3">
@@ -115,24 +181,39 @@ export default function VehicleDetail() {
               <>
                 {/* Vehicle info */}
                 <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
-                  {[
-                    ['Make / Model', `${vehicle.make} ${vehicle.model}`],
-                    ['Year', vehicle.year],
-                    ['Color', vehicle.color],
-                    ['Nickname', vehicle.nickname || '—'],
-                  ].map(([label, val]) => (
-                    <div key={label} className="flex items-center justify-between px-4 py-3">
-                      <span className="font-body text-xs text-on-surface-muted uppercase tracking-widest font-bold">{label}</span>
-                      <span className="font-body text-sm text-on-surface font-medium">{val}</span>
+                  {!isEditing ? (
+                    [
+                      ['Make', vehicle.make || '—'],
+                      ['Model', vehicle.model || '—'],
+                      ['Year', vehicle.year || '—'],
+                      ['Color', vehicle.color || '—'],
+                      ['Nickname', vehicle.nickname || '—'],
+                    ].map(([label, val]) => (
+                      <div key={label} className="flex items-center justify-between px-4 py-3">
+                        <span className="font-body text-xs text-on-surface-muted uppercase tracking-widest font-bold">{label}</span>
+                        <span className="font-body text-sm text-on-surface font-medium">{val}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input label="MAKE" value={editForm.make} onChange={e => setEditForm({...editForm, make: e.target.value})} />
+                        <Input label="MODEL" value={editForm.model} onChange={e => setEditForm({...editForm, model: e.target.value})} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input label="YEAR" value={editForm.year} onChange={e => setEditForm({...editForm, year: e.target.value})} />
+                        <Input label="COLOR" value={editForm.color} onChange={e => setEditForm({...editForm, color: e.target.value})} />
+                      </div>
+                      <Input label="NICKNAME" value={editForm.nickname} onChange={e => setEditForm({...editForm, nickname: e.target.value})} />
                     </div>
-                  ))}
+                  )}
                 </div>
 
                 {/* Privacy toggle */}
                 <div className="bg-white rounded-2xl border border-outline-light px-4 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-verified-green/10 rounded-xl flex items-center justify-center">
-                      <Shield size={22} className={vehicle.privacyMode ? 'text-verified-green' : 'text-outline'} />
+                      <Shield size={22} className={(isEditing ? editForm.privacyMode : vehicle.privacyMode) ? 'text-verified-green' : 'text-outline'} />
                     </div>
                     <div>
                       <h4 className="font-body text-sm font-semibold text-on-surface">Privacy Mode</h4>
@@ -140,20 +221,35 @@ export default function VehicleDetail() {
                     </div>
                   </div>
                   <Toggle 
-                    on={vehicle.privacyMode} 
+                    on={isEditing ? editForm.privacyMode : vehicle.privacyMode} 
                     onChange={async (newVal) => {
-                      // Optimistic update
-                      setVehicle(prev => ({ ...prev, privacyMode: newVal }));
-                      try {
-                        await api.patch(`/vehicles/${vehicle.id}/privacy`, { showOwnerName: !newVal });
-                      } catch (err) {
-                        console.error(err);
-                        // Revert on failure
-                        setVehicle(prev => ({ ...prev, privacyMode: !newVal }));
+                      if (isEditing) {
+                        setEditForm(prev => ({ ...prev, privacyMode: newVal }));
+                      } else {
+                        // Optimistic update
+                        setVehicle(prev => ({ ...prev, privacyMode: newVal }));
+                        try {
+                          await api.patch(`/vehicles/${vehicle.id}/privacy`, { showOwnerName: !newVal });
+                        } catch (err) {
+                          console.error(err);
+                          // Revert on failure
+                          setVehicle(prev => ({ ...prev, privacyMode: !newVal }));
+                        }
                       }
                     }} 
                   />
                 </div>
+
+                {isEditing && (
+                  <div className="flex gap-3 pt-2">
+                    <button className="flex-1 py-3 text-on-surface-muted font-body font-semibold border-2 border-outline-light rounded-xl hover:bg-surface-low transition-colors" onClick={handleEditClick}>
+                      Cancel
+                    </button>
+                    <div className="flex-1">
+                      <Button fullWidth onClick={handleSave} isLoading={isSaving}>Save Changes</Button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Recent alerts */}
                 {recentNotifs.length > 0 && (
@@ -262,7 +358,7 @@ export default function VehicleDetail() {
                     <rect x="122" y="122" width="28" height="28" fill="#1A1A1A" rx="3" />
                   </svg>
                 </motion.div>
-                <p className="font-mono text-xs tracking-wider text-on-surface-muted">{vehicle.qrId}</p>
+                <p className="font-mono text-xs tracking-wider text-on-surface-muted">{vehicle.qrToken}</p>
                 <div className="flex gap-3 w-full">
                   <button
                     className="flex-1 border-2 border-navy text-navy rounded-xl py-3 font-body text-sm font-semibold flex items-center justify-center gap-2"

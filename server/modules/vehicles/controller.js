@@ -1,7 +1,7 @@
 const Vehicle = require('../../models/Vehicle');
 const QrToken = require('../../models/QrToken');
 const { sendSuccess, sendError } = require('../../utils/response');
-const { generateQRToken, verifyQRToken } = require('../../utils/hmac');
+const { generateQRToken } = require('../../utils/hmac');
 const { logger } = require('../../middleware/logger');
 
 exports.createVehicle = async (req, res) => {
@@ -121,10 +121,7 @@ exports.resolveQR = async (req, res) => {
     const qrToken = await QrToken.findOne({ token, active: true });
     if (!qrToken) return sendError(res, 'Invalid or inactive QR token', 404);
 
-    const vehicleId = verifyQRToken(token);
-    if (!vehicleId || vehicleId !== qrToken.vehicleId.toString()) {
-      return sendError(res, 'Tampered QR token', 400);
-    }
+    const vehicleId = qrToken.vehicleId;
 
     const vehicle = await Vehicle.findById(vehicleId).populate('ownerId', 'name');
     if (!vehicle || vehicle.status === 'deleted') {

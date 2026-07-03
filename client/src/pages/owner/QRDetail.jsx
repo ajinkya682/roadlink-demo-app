@@ -16,8 +16,9 @@ export default function QRDetail() {
   // Safe fallback if no vehicle exists yet (e.g. testing directly)
   const vehicle = location.state?.vehicle || vehicles[0] || { plate: 'MH 12 AB 1234', displayName: 'HONDA ACTIVA', qrId: 'ROADLINK-123456' };
 
-  // Use real signed HMAC token from POST /vehicles if available, else fallback
-  const qrPayload = location.state?.qrToken || `roadlink://v/${vehicle.qrId || vehicle._id}`;
+  // Use real signed QR token from POST /vehicles if available, else fallback
+  const qrToken = location.state?.qrToken || vehicle?.qrToken || 'RL-123456-DF';
+  const qrPayload = `${window.location.origin}/scan-landing?qr=${qrToken}`;
 
   const [downloaded, setDownloaded] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
