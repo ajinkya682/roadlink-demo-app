@@ -28,7 +28,7 @@ export default function GuestDashboard() {
 
       {/* Cards */}
       <motion.div
-        className="flex-1 px-5 -mt-8 pb-8 space-y-4"
+        className="relative z-20 flex-1 px-5 -mt-8 pb-8 space-y-4"
         variants={stagger}
         initial="hidden"
         animate="show"

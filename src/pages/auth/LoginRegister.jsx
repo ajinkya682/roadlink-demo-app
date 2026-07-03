@@ -43,7 +43,7 @@ export default function LoginRegister() {
       </div>
 
       {/* Card — overlaps hero */}
-      <div className="flex-1 px-5 -mt-8 pb-8">
+      <div className="relative z-20 flex-1 px-5 -mt-8 pb-8">
         <div className="bg-white rounded-2xl shadow-sheet border border-outline-light/50 overflow-hidden">
           {/* Tab bar */}
           <div className="flex border-b border-outline-light">
