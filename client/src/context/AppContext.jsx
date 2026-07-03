@@ -314,8 +314,8 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      // Auth
       isAuthenticated,
+      isInitialized,
       signIn,
       signOut,
       // Data

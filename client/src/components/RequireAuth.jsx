@@ -3,8 +3,10 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAppData } from '../context/AppContext';
 
 export default function RequireAuth({ children }) {
-  const { isAuthenticated } = useAppData();
+  const { isAuthenticated, isInitialized } = useAppData();
   const location = useLocation();
+
+  if (!isInitialized) return null; // Prevent flash during hydration
 
   if (!isAuthenticated) {
     // Redirect them to the /login page, but save the current location they were
