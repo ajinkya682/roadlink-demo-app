@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, FileText, CheckCircle } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Lock } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
-import styles from './DocumentUpload.module.css';
+import Input from '../../components/Input';
 
-const types = ['RC Book', 'Insurance', 'PUC'];
+const types = ['RC Book', 'Insurance', 'PUC', 'Driving License'];
 
 export default function DocumentUpload() {
   const navigate = useNavigate();
   const [docType, setDocType] = useState(types[0]);
   const [file, setFile] = useState(null);
+  const [expiryDate, setExpiryDate] = useState('');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
@@ -20,84 +21,117 @@ export default function DocumentUpload() {
     setUploading(true);
     let p = 0;
     const interval = setInterval(() => {
-      p += 15;
+      p += 12;
       if (p >= 100) {
         clearInterval(interval);
         setProgress(100);
         setTimeout(() => {
           setUploading(false);
           setDone(true);
-          setTimeout(() => navigate('/document-vault'), 1500);
+          setTimeout(() => navigate('/document-vault'), 1800);
         }, 400);
       } else {
         setProgress(p);
       }
-    }, 150);
+    }, 160);
   };
 
   return (
-    <div className={styles.page}>
+    <div className="min-h-screen bg-fog flex flex-col">
       <AppHeader title="Upload Document" />
 
-      <div className={styles.content}>
-        <div className={styles.label}>Select Document Type</div>
-        <div className={styles.typeSelector}>
-          {types.map(t => (
-            <button
-              key={t}
-              className={`${styles.typeBtn} ${docType === t ? styles.typeActive : ''}`}
-              onClick={() => setDocType(t)}
-            >
-              {docType === t && (
-                <motion.div
-                  layoutId="doc-type-bg"
-                  className={styles.typeBg}
-                  transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-                />
-              )}
-              <span className={styles.typeText}>{t}</span>
-            </button>
-          ))}
+      <div className="flex-1 px-5 py-5 space-y-5">
+        {/* Document type selector */}
+        <div>
+          <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest mb-2">Document Type</p>
+          <div className="flex gap-2 flex-wrap">
+            {types.map(t => (
+              <button
+                key={t}
+                className={`relative px-3 py-2 rounded-xl font-body text-sm font-semibold border-2 transition-colors ${
+                  docType === t
+                    ? 'border-navy text-navy bg-navy/5'
+                    : 'border-outline-light text-on-surface-muted bg-white hover:border-navy/30'
+                }`}
+                onClick={() => setDocType(t)}
+              >
+                {docType === t && (
+                  <motion.div
+                    layoutId="doc-type-bg"
+                    className="absolute inset-0 rounded-xl bg-navy/5 border-2 border-navy"
+                    transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+                  />
+                )}
+                <span className="relative z-10">{t}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Upload zone */}
         <AnimatePresence mode="wait">
           {!file ? (
-            <motion.div
+            <motion.button
               key="empty"
-              className={styles.dropZone}
+              type="button"
+              className="w-full border-2 border-dashed border-outline-light rounded-2xl py-10 flex flex-col items-center gap-3 bg-white hover:border-navy/40 hover:bg-navy/2 transition-colors"
               onClick={() => setFile('mock-file.pdf')}
-              whileHover={{ borderColor: 'var(--primary-container)', background: 'rgba(27,75,143,0.03)' }}
               whileTap={{ scale: 0.98 }}
             >
-              <UploadCloud size={32} color="var(--primary-container)" />
-              <div className={styles.dropTitle}>Tap to select file or photo</div>
-              <div className={styles.dropSub}>PDF, JPG, PNG up to 5MB</div>
-            </motion.div>
+              <div className="w-14 h-14 bg-navy/8 rounded-2xl flex items-center justify-center">
+                <UploadCloud size={28} className="text-navy" />
+              </div>
+              <div className="text-center">
+                <p className="font-body text-sm font-semibold text-on-surface">Tap to select file or photo</p>
+                <p className="font-body text-xs text-on-surface-muted mt-1">PDF, JPG, PNG — up to 10MB</p>
+              </div>
+            </motion.button>
           ) : (
             <motion.div
               key="file"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={styles.fileCard}
+              className="bg-white border border-outline-light rounded-2xl px-4 py-3 flex items-center gap-3"
             >
-              <div className={styles.fileIcon}><FileText size={20} color="var(--primary-container)" /></div>
-              <div className={styles.fileInfo}>
-                <div className={styles.fileName}>{docType}_Document.pdf</div>
-                <div className={styles.fileSize}>1.2 MB</div>
+              <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
+                <FileText size={20} className="text-navy" />
+              </div>
+              <div className="flex-1">
+                <p className="font-body text-sm font-semibold text-on-surface">{docType.replace(' ', '_')}_Document.pdf</p>
+                <p className="font-body text-xs text-on-surface-muted">1.2 MB</p>
               </div>
               {!uploading && !done && (
-                <button className={styles.removeBtn} onClick={() => setFile(null)}>✕</button>
+                <button
+                  className="w-7 h-7 bg-surface-high rounded-full flex items-center justify-center font-body text-xs text-on-surface-muted hover:bg-alert-red/10 hover:text-alert-red transition-colors"
+                  onClick={() => setFile(null)}
+                >
+                  ✕
+                </button>
               )}
             </motion.div>
           )}
         </AnimatePresence>
 
+        {/* Expiry date */}
+        <Input
+          label="Expiry Date (Optional)"
+          type="date"
+          value={expiryDate}
+          onChange={e => setExpiryDate(e.target.value)}
+        />
+
+        {/* Progress bar */}
         {uploading && (
-          <div className={styles.progressBox}>
-            <div className={styles.progressText}>Encrypting and uploading... {progress}%</div>
-            <div className={styles.progressBar}>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <p className="font-body text-xs font-semibold text-navy flex items-center gap-1.5">
+                <Lock size={12} /> Encrypting and uploading...
+              </p>
+              <p className="font-mono text-xs font-bold text-navy tabular-nums">{progress}%</p>
+            </div>
+            <div className="h-2 bg-surface-high rounded-full overflow-hidden">
               <motion.div
-                className={styles.progressFill}
+                className="h-full bg-navy rounded-full"
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.2 }}
               />
@@ -105,21 +139,25 @@ export default function DocumentUpload() {
           </div>
         )}
 
+        {/* Success */}
         {done && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={styles.successBox}
+            className="flex items-center gap-3 bg-verified-green/8 border border-verified-green/20 rounded-xl px-4 py-3"
           >
-            <CheckCircle size={20} color="var(--verified-green)" />
-            Document secured in vault
+            <CheckCircle size={20} className="text-verified-green flex-shrink-0" />
+            <div>
+              <p className="font-body text-sm font-semibold text-verified-green">Document secured in vault</p>
+              <p className="font-body text-xs text-on-surface-muted">Stored securely, encrypted — only you can access it</p>
+            </div>
           </motion.div>
         )}
       </div>
 
-      <div className={styles.bottom}>
+      <div className="px-5 pb-10 pt-4 border-t border-outline-light bg-fog">
         <Button fullWidth disabled={!file || uploading || done} onClick={handleUpload}>
-          Securely Upload
+          <Lock size={16} /> Securely Upload
         </Button>
       </div>
     </div>
