@@ -71,7 +71,7 @@ export default function Dashboard() {
         </div>
 
         {/* ── QUICK ACTIONS ROW ───────────────────────────────── */}
-        <div className="flex gap-4 mt-5 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex justify-center gap-4 mt-5 overflow-x-auto pb-1 scrollbar-hide">
           {quickActions.map(({ label, Icon, action, color }) => (
             <motion.button
               key={label}
