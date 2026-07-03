@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
@@ -9,8 +9,13 @@ import api from '../../lib/api';
 export default function OTPVerification() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { name, phone, maskedPhone } = location.state || { name: 'Guest', phone: '9999999999', maskedPhone: '+91 99••••9999' };
-  
+
+  // Redirect immediately if accessed directly without state
+  if (!location.state?.phone) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const { name, phone, maskedPhone } = location.state;
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);

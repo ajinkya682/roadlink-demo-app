@@ -28,7 +28,13 @@ exports.requestOtp = async (req, res) => {
     if (isLogin) {
       const user = await User.findOne({ phone });
       if (!user) {
-        return sendError(res, 'Phone number not registered. Please sign up.', 404);
+        // Return 200 OK with a special flag so the browser doesn't log a red 404 error,
+        // but the frontend knows to switch to the signup tab.
+        return res.status(200).json({
+          success: false,
+          requireSignup: true,
+          error: { message: 'Phone number not registered. Please sign up.' }
+        });
       }
     }
 

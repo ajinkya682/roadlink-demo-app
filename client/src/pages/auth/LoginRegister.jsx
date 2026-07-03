@@ -30,17 +30,16 @@ export default function LoginRegister() {
       if (res.data.success) {
         const maskedPhone = "+91 ******" + phone.slice(-4);
         navigate("/otp", { state: { phone, maskedPhone, name: name || "Guest" } });
+      } else if (res.data.requireSignup) {
+        setTab("register");
+        setError("Number not registered. Please enter your name to sign up.");
+        setLoading(false);
       } else {
         setError(res.data.error?.message || "Failed to request OTP");
         setLoading(false);
       }
     } catch (err) {
-      if (err.response?.status === 404 && tab === "login") {
-        setTab("register");
-        setError("Number not registered. Please enter your name to sign up.");
-      } else {
-        setError(err.response?.data?.error?.message || "Network error occurred");
-      }
+      setError(err.response?.data?.error?.message || "Network error occurred");
       setLoading(false);
     }
   };

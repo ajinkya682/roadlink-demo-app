@@ -6,6 +6,7 @@ import { PushNotifications } from '@capacitor/push-notifications'
 import PageWrapper from './components/PageWrapper'
 import BottomTabBar from './components/BottomTabBar'
 import RequireAuth from './components/RequireAuth'
+import RequireGuest from './components/RequireGuest'
 
 // Guest
 import GuestDashboard from './pages/GuestDashboard'
@@ -101,7 +102,7 @@ function App() {
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             {/* Entry */}
-            <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
+            <Route path="/" element={<RequireGuest><PageWrapper><Splash /></PageWrapper></RequireGuest>} />
 
             {/* Guest */}
             <Route path="/guest-dashboard" element={<PageWrapper><GuestDashboard /></PageWrapper>} />
@@ -112,8 +113,8 @@ function App() {
             <Route path="/search-result" element={<PageWrapper><SearchResult /></PageWrapper>} />
 
             {/* Auth */}
-            <Route path="/login" element={<PageWrapper><LoginRegister /></PageWrapper>} />
-            <Route path="/otp" element={<PageWrapper><OTPVerification /></PageWrapper>} />
+            <Route path="/login" element={<RequireGuest><PageWrapper><LoginRegister /></PageWrapper></RequireGuest>} />
+            <Route path="/otp" element={<RequireGuest><PageWrapper><OTPVerification /></PageWrapper></RequireGuest>} />
 
             {/* Owner (Protected) */}
             <Route path="/add-vehicle" element={<RequireAuth><PageWrapper><AddVehicle /></PageWrapper></RequireAuth>} />
