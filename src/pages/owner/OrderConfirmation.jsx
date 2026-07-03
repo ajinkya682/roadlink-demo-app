@@ -1,77 +1,118 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Truck } from 'lucide-react';
-import Button from '../../components/Button';
+import { Truck, CheckCircle } from 'lucide-react';
 
 export default function OrderConfirmation() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#fcf9f8] flex flex-col items-center justify-center px-5 pb-12">
-      <motion.div
-        className="w-full max-w-sm flex flex-col items-center text-center space-y-8"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        {/* Animated checkmark */}
-        <motion.div
-          className="w-24 h-24 bg-[#005230]/5 border-2 border-[#005834] rounded-full flex items-center justify-center shadow-sm"
-          initial={{ scale: 0.5 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', damping: 12, stiffness: 150, delay: 0.1 }}
-        >
-          <svg width="40" height="40" viewBox="0 0 80 80" fill="none">
-            <motion.path
-              d="M24 41L35 52L56 30"
-              stroke="#005834" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 0.4, delay: 0.5, ease: 'easeOut' }}
-            />
-          </svg>
-        </motion.div>
+    <div className="min-h-screen bg-[#F7F8FA] text-[#1c1b1b] flex flex-col font-body relative z-0">
+      {/* Background Decorative Micro-Interaction */}
+      <div className="fixed inset-0 pointer-events-none -z-10 opacity-30">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#00347010_1px,transparent_1px)] [background-size:24px_24px]"></div>
+      </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
+      <main className="flex-grow flex items-center justify-center px-4 py-12">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="space-y-2"
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="max-w-md w-full bg-white rounded-xl border border-black/5 shadow-[0px_4px_24px_rgba(0,0,0,0.02)] p-8 text-center"
         >
-          <h1 className="font-display text-[28px] font-bold text-[#1c1b1b] tracking-tight">Order Confirmed</h1>
-          <p className="font-mono text-[14px] text-[#434751] font-medium tracking-widest bg-black/5 inline-block px-3 py-1 rounded-full">#ORD-987654</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.7, type: 'spring' }}
-          className="w-full bg-white border-2 border-[#1c1b1b] rounded-xl px-5 py-5 flex items-center gap-5 shadow-[4px_4px_0px_0px_rgba(28,27,27,0.1)]"
-        >
-          <div className="w-12 h-12 bg-[#f0eded] border border-black/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Truck size={24} className="text-[#003470]" />
+          {/* Checkmark Animation Container */}
+          <div className="mb-6 flex justify-center">
+            {/* Entry Animation */}
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", damping: 18, stiffness: 200, delay: 0.1 }}
+            >
+              {/* Looping Scale Animation */}
+              <motion.div 
+                animate={{ scale: [1, 1.08, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="w-24 h-24 rounded-full bg-[#1E8E5A]/10 flex items-center justify-center relative"
+              >
+                <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <motion.circle 
+                    cx="28" cy="28" r="28" 
+                    fill="#1E8E5A"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+                  />
+                  <motion.path 
+                    d="M16 28L24 36L40 19" 
+                    stroke="white" 
+                    strokeWidth="4.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.5, ease: "easeOut", delay: 0.5 }}
+                  />
+                </svg>
+              </motion.div>
+            </motion.div>
           </div>
-          <div className="text-left">
-            <p className="font-display text-[18px] font-bold text-[#1c1b1b]">Estimated Delivery</p>
-            <p className="font-body text-[14px] text-[#434751]">3 – 5 Business Days</p>
-          </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-          className="w-full pt-4"
-        >
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="w-full bg-[#1c1b1b] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#2a2a2a] active:scale-95 transition-all"
+          {/* Headline */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
           >
-            <span className="font-body text-[14px] tracking-wider uppercase">BACK TO DASHBOARD</span>
-          </button>
+            <h1 className="font-display text-[32px] font-semibold tracking-tight text-[#1c1b1b] mb-2">Order placed</h1>
+            <p className="font-body text-[16px] text-[#434751] mb-8">Your request has been processed successfully.</p>
+          </motion.div>
+
+          {/* Signature Plate-Tag Device */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.5 }}
+            className="mb-10 inline-block w-full"
+          >
+            <div className="font-body text-[12px] font-bold tracking-[0.08em] text-[#434751] uppercase mb-3 text-center">ORDER REFERENCE</div>
+            <div className="border-[2px] border-[#1A1A1A] bg-white px-8 py-3 rounded-lg inline-flex items-center justify-center hover:bg-black/5 transition-colors cursor-default">
+              <span className="font-mono text-[22px] font-semibold text-[#1A1A1A] tracking-[0.1em]">RL-9823-XQ</span>
+            </div>
+          </motion.div>
+
+          {/* Meta Information Bento-ish Layout */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.7 }}
+            className="grid grid-cols-1 gap-4 mb-10"
+          >
+            <div className="bg-[#F7F8FA] p-5 rounded-lg border border-black/5 flex flex-col items-center">
+              <Truck size={28} className="text-[#003470] mb-2" strokeWidth={1.5} />
+              <span className="font-body text-[12px] font-bold tracking-[0.08em] text-[#434751] uppercase mb-1">ESTIMATED DELIVERY</span>
+              <span className="font-display text-[20px] font-semibold text-[#1c1b1b]">Arriving by Oct 24</span>
+            </div>
+          </motion.div>
+
+          {/* Primary Action */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.9 }}
+            className="space-y-4"
+          >
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="w-full bg-[#1B4B8F] text-white font-body text-[14px] font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:bg-[#153a6f] active:scale-[0.98] transition-all shadow-md"
+            >
+              BACK TO DASHBOARD
+            </button>
+            <button className="w-full bg-transparent text-[#003470] font-body text-[14px] font-bold tracking-[0.08em] uppercase py-2 hover:underline active:scale-[0.98] transition-all">
+              VIEW ORDER DETAILS
+            </button>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </main>
     </div>
   );
 }
