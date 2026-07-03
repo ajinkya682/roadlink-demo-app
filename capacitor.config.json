@@ -1,0 +1,10 @@
+{
+  "appId": "com.roadlink.app",
+  "appName": "RoadLink App",
+  "webDir": "dist",
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true
+    }
+  }
+}

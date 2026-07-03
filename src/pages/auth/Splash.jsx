@@ -107,7 +107,7 @@ export default function Splash() {
   return (
     <div className="min-h-screen bg-fog flex flex-col relative overflow-hidden">
       {/* Header */}
-      <header className="flex justify-end items-center h-16 w-full px-5 absolute top-0 z-50 pt-safe">
+      <header className="flex justify-end items-center h-16 w-full px-5 absolute top-0 z-50">
         {!isLast && (
           <button
             className="font-display text-headline-sm font-semibold text-navy hover:opacity-80 transition-opacity active:scale-95"

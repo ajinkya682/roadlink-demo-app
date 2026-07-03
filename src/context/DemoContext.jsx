@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { currentUser as initialUser } from '../demo-data/user';
 import { vehicles as initialVehicles } from '../demo-data/vehicles';
 import { notifications as initialNotifications } from '../demo-data/notifications';
 import { documents as initialDocuments } from '../demo-data/documents';
 import { emergencyContacts as initialContacts } from '../demo-data/contacts';
+import { SecureStorage } from '../hooks/useNative';
 
 const DemoContext = createContext(null);
 
@@ -13,6 +14,36 @@ export function DemoProvider({ children }) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [documents, setDocuments] = useState(initialDocuments);
   const [contacts, setContacts] = useState(initialContacts);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    async function loadData() {
+      const storedUser = await SecureStorage.get('roadlink_user');
+      const storedVehicles = await SecureStorage.get('roadlink_vehicles');
+      const storedNotifications = await SecureStorage.get('roadlink_notifications');
+      const storedDocuments = await SecureStorage.get('roadlink_documents');
+      const storedContacts = await SecureStorage.get('roadlink_contacts');
+
+      if (storedUser) setUser(storedUser);
+      if (storedVehicles) setVehicles(storedVehicles);
+      if (storedNotifications) setNotifications(storedNotifications);
+      if (storedDocuments) setDocuments(storedDocuments);
+      if (storedContacts) setContacts(storedContacts);
+      
+      setIsInitialized(true);
+    }
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized) {
+      SecureStorage.set('roadlink_user', user);
+      SecureStorage.set('roadlink_vehicles', vehicles);
+      SecureStorage.set('roadlink_notifications', notifications);
+      SecureStorage.set('roadlink_documents', documents);
+      SecureStorage.set('roadlink_contacts', contacts);
+    }
+  }, [user, vehicles, notifications, documents, contacts, isInitialized]);
 
   // ── Notification actions ────────────────────────────────────
   const markResolved = (id) => {

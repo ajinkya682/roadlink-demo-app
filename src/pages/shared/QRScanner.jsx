@@ -1,79 +1,106 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { X, Flashlight, Image as ImageIcon } from 'lucide-react';
+import { BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
+import { Capacitor } from '@capacitor/core';
+import { NativeFeedback } from '../../hooks/useNative';
 
 export default function QRScanner() {
   const navigate = useNavigate();
   const [scanned, setScanned] = useState(false);
-  const videoRef = useRef(null);
+  const [isTorchOn, setIsTorchOn] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
 
-  // Initialize the real device camera
   useEffect(() => {
-    let stream = null;
-    
-    async function startCamera() {
+    let scanListener = null;
+
+    const startNativeScanner = async () => {
+      if (!Capacitor.isNativePlatform()) {
+        console.warn('Camera is only supported on native devices via Capacitor.');
+        // Simulate successful scan on web
+        setTimeout(() => handleScanSuccess('SIMULATED_QR'), 3500);
+        return;
+      }
+
       try {
-        // Request the back camera
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+        const { camera } = await BarcodeScanner.requestPermissions();
+        if (camera === 'granted' || camera === 'limited') {
+          setHasPermission(true);
+          
+          // Make background transparent for capacitor to show camera beneath
+          document.body.style.backgroundColor = 'transparent';
+          document.documentElement.style.backgroundColor = 'transparent';
+          
+          await BarcodeScanner.startScan({ lensFacing: LensFacing.Back });
+
+          scanListener = await BarcodeScanner.addListener('barcodeScanned', async (result) => {
+            if (result.barcode) {
+              await handleScanSuccess(result.barcode.rawValue);
+            }
+          });
         }
       } catch (err) {
         console.error("Camera access denied or unavailable:", err);
       }
-    }
-    
-    startCamera();
+    };
 
-    // Cleanup: turn off the camera when the user leaves the page
+    startNativeScanner();
+
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (Capacitor.isNativePlatform()) {
+        BarcodeScanner.stopScan();
+        if (scanListener) scanListener.remove();
+        document.body.style.backgroundColor = '';
+        document.documentElement.style.backgroundColor = '';
       }
     };
   }, []);
 
-  // Simulate a scan after 3.5 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setScanned(true);
-      setTimeout(() => {
-        // After showing success state briefly, navigate to scan landing
-        navigate('/scan-landing');
-      }, 500);
-    }, 3500);
+  const handleScanSuccess = async (value) => {
+    if (scanned) return;
+    setScanned(true);
+    await NativeFeedback.vibrateSuccess();
+    
+    if (Capacitor.isNativePlatform()) {
+      await BarcodeScanner.stopScan();
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    }
+    
+    setTimeout(() => {
+      navigate('/scan-landing');
+    }, 500);
+  };
 
-    return () => clearTimeout(timer);
-  }, [navigate]);
+  const toggleTorch = async () => {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      if (isTorchOn) {
+        await BarcodeScanner.disableTorch();
+      } else {
+        await BarcodeScanner.enableTorch();
+      }
+      setIsTorchOn(!isTorchOn);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
-    <div className="relative w-full h-screen bg-[#1c1b1b] overflow-hidden flex flex-col">
+    <div className={`relative w-full h-screen overflow-hidden flex flex-col ${Capacitor.isNativePlatform() ? 'bg-transparent' : 'bg-[#1c1b1b]'}`}>
       {/* ── HEADER ── */}
-      <div className="absolute top-0 left-0 w-full z-20 flex items-center justify-between p-5 safe-area-pt">
+      <div className="absolute top-0 left-0 w-full z-20 flex items-center justify-between p-5">
         <button
           onClick={() => navigate(-1)}
           className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white"
         >
           <X size={24} />
         </button>
-        <p className="font-display text-white font-semibold text-[16px] tracking-wide">
+        <p className="font-display text-white font-semibold text-[16px] tracking-wide shadow-black drop-shadow-md">
           Scan QR Code
         </p>
         <div className="w-10" /> {/* Spacer for centering */}
-      </div>
-
-      {/* ── REAL CAMERA FEED ── */}
-      <div className="absolute inset-0 z-0 bg-black">
-        <video 
-          ref={videoRef}
-          autoPlay 
-          playsInline 
-          muted 
-          className="w-full h-full object-cover"
-        />
       </div>
 
       {/* ── VIEWFINDER OVERLAY ── */}
@@ -88,10 +115,10 @@ export default function QRScanner() {
           {/* The Clear Cutout */}
           <div className="relative w-[70vw] aspect-square">
             {/* 4 Corner Brackets */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl" />
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl" />
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl" />
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl" />
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl shadow-lg" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl shadow-lg" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl shadow-lg" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl shadow-lg" />
 
             {/* Scanning Laser Line */}
             {!scanned && (
@@ -134,9 +161,9 @@ export default function QRScanner() {
               </div>
               <span className="text-white text-xs font-body font-medium">Gallery</span>
             </button>
-            <button className="flex flex-col items-center gap-2 group">
-              <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-white group-active:scale-95 transition-transform">
-                <Flashlight size={24} />
+            <button onClick={toggleTorch} className="flex flex-col items-center gap-2 group">
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white group-active:scale-95 transition-transform ${isTorchOn ? 'bg-white text-black' : 'bg-white/10'}`}>
+                <Flashlight size={24} className={isTorchOn ? "text-black" : "text-white"} />
               </div>
               <span className="text-white text-xs font-body font-medium">Flashlight</span>
             </button>
