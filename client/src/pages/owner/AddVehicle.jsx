@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, HelpCircle } from "lucide-react";
 import AppHeader from "../../components/AppHeader";
@@ -30,6 +30,9 @@ function formatPlate(val) {
 
 export default function AddVehicle() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isNewSetup = location.state?.isNewSetup || false;
+
   // Using AppContext for phase 2 since DemoContext was removed
   const { addVehicle } = useAppData();
 
@@ -85,7 +88,7 @@ export default function AddVehicle() {
         title={
           <span className="text-navy font-bold tracking-wide">ADD VEHICLE</span>
         }
-        onBack={() => navigate("/dashboard")}
+        onBack={isNewSetup ? null : () => navigate("/dashboard")}
         rightSlot={
           <button className="text-on-surface-muted hover:opacity-80 transition-opacity active:scale-95">
             <HelpCircle size={22} />
@@ -150,6 +153,7 @@ export default function AddVehicle() {
           <AnimatePresence>
             {showModel && (
               <motion.div
+                key="model-inputs"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -173,6 +177,7 @@ export default function AddVehicle() {
 
             {showNickname && (
               <motion.div
+                key="nickname-inputs"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -230,12 +235,15 @@ export default function AddVehicle() {
               SAVE VEHICLE
             </Button>
           </motion.div>
-          <button
-            className="w-full py-2 text-on-surface font-body text-[14px] font-medium underline hover:text-navy transition-colors"
-            onClick={() => navigate("/dashboard")}
-          >
-            Skip for now
-          </button>
+          
+          {isNewSetup && (
+            <button
+              className="w-full py-2 text-on-surface font-body text-[14px] font-medium underline hover:text-navy transition-colors"
+              onClick={() => navigate("/dashboard")}
+            >
+              Skip for now
+            </button>
+          )}
         </div>
       </main>
     </div>

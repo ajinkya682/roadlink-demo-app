@@ -34,6 +34,10 @@ export default function LoginRegister() {
         setTab("register");
         setError("Number not registered. Please enter your name to sign up.");
         setLoading(false);
+      } else if (res.data.requireLogin) {
+        setTab("login");
+        setError("Number already registered. Please log in.");
+        setLoading(false);
       } else {
         setError(res.data.error?.message || "Failed to request OTP");
         setLoading(false);

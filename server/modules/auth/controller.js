@@ -36,6 +36,16 @@ exports.requestOtp = async (req, res) => {
           error: { message: 'Phone number not registered. Please sign up.' }
         });
       }
+    } else {
+      // If registering, make sure the number isn't already used
+      const user = await User.findOne({ phone });
+      if (user) {
+        return res.status(200).json({
+          success: false,
+          requireLogin: true,
+          error: { message: 'Phone number already registered. Please log in.' }
+        });
+      }
     }
 
     const otp = generateCode();
