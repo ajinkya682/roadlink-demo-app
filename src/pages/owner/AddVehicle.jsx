@@ -5,7 +5,7 @@ import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import PlateTag from '../../components/PlateTag';
-import styles from './AddVehicle.module.css';
+import { useDemoData } from '../../context/DemoContext';
 
 function formatPlate(val) {
   const raw = val.replace(/[^A-Z0-9]/g, '').slice(0, 10);
@@ -18,14 +18,14 @@ function formatPlate(val) {
 
 export default function AddVehicle() {
   const navigate = useNavigate();
+  const { addVehicle } = useDemoData();
+
   const [plate, setPlate] = useState('');
   const [model, setModel] = useState('');
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handlePlate = (e) => {
-    setPlate(formatPlate(e.target.value.toUpperCase()));
-  };
+  const handlePlate = (e) => setPlate(formatPlate(e.target.value.toUpperCase()));
 
   const rawPlate = plate.replace(/\s/g, '');
   const showModel = rawPlate.length >= 5;
@@ -34,37 +34,43 @@ export default function AddVehicle() {
 
   const handleSave = () => {
     setLoading(true);
-    setTimeout(() => navigate('/qr-detail'), 1200);
+    setTimeout(() => {
+      addVehicle({ plate, displayName: model, make: model.split(' ')[0], model, nickname });
+      navigate('/qr-detail');
+    }, 1200);
   };
 
   return (
-    <div className={styles.page}>
+    <div className="min-h-screen bg-fog flex flex-col">
       <AppHeader title="Add Vehicle" />
 
-      <div className={styles.content}>
+      <div className="flex-1 px-5 py-6 space-y-6">
         {/* Live plate preview */}
-        <motion.div
-          animate={{ opacity: 1, y: 0 }}
-          initial={{ opacity: 0, y: -12 }}
-          transition={{ duration: 0.3 }}
-        >
-          <PlateTag
-            plateNumber={plate || 'MH 00 AA 0000'}
-            isVerified={false}
-            size="lg"
-            animate
-            key={plate.slice(0, 2)}
-          />
-        </motion.div>
+        <div className="flex justify-center">
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.3 }}
+          >
+            <PlateTag
+              plateNumber={plate || 'MH 00 AA 0000'}
+              isVerified={false}
+              size="lg"
+              animateEntry
+              key={plate.slice(0, 2)}
+            />
+          </motion.div>
+        </div>
 
-        {/* Progressive form */}
-        <div className={styles.form}>
+        {/* Form */}
+        <div className="space-y-4">
           <Input
             label="Registration Number"
             value={plate}
             onChange={handlePlate}
             placeholder="MH 14 AB 1234"
-            helper="Enter exactly as on your RC book"
+            helper="Enter exactly as shown on your RC book"
+            inputClassName="font-mono uppercase tracking-widest"
           />
 
           <AnimatePresence>
@@ -79,7 +85,7 @@ export default function AddVehicle() {
                   label="Make / Model"
                   value={model}
                   onChange={e => setModel(e.target.value)}
-                  placeholder="e.g. Honda Activa"
+                  placeholder="e.g. Honda Activa 6G"
                   autoFocus
                 />
               </motion.div>
@@ -103,13 +109,17 @@ export default function AddVehicle() {
           </AnimatePresence>
         </div>
 
-        <div className={styles.actions}>
+        {/* Actions */}
+        <div className="space-y-3 pt-2">
           <motion.div animate={{ opacity: canSave ? 1 : 0.45 }}>
             <Button fullWidth onClick={handleSave} disabled={!canSave} isLoading={loading}>
               Save Vehicle
             </Button>
           </motion.div>
-          <button className={styles.skip} onClick={() => navigate('/dashboard')}>
+          <button
+            className="w-full py-3 font-body text-sm font-semibold text-on-surface-muted text-center"
+            onClick={() => navigate('/dashboard')}
+          >
             Skip for now
           </button>
         </div>
