@@ -1,82 +1,146 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MapPin, Navigation, Check } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { MapPin, Navigation, Check, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Button from '../../components/Button';
-import styles from './NotificationDetail.module.css';
+import { useDemoData } from '../../context/DemoContext';
 
 export default function NotificationDetail() {
   const navigate = useNavigate();
-  const [resolved, setResolved] = useState(false);
+  const { id } = useParams();
+  const { notifications, markResolved } = useDemoData();
+
+  const notif = notifications.find(n => n.id === id) || notifications[0];
+  const [resolved, setResolved] = useState(notif?.resolved || false);
 
   const handleResolve = () => {
     setResolved(true);
+    markResolved(notif.id);
     setTimeout(() => navigate(-1), 1000);
   };
 
+  // Mock map grid pattern as background
+  const mapPattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23c3c6d2' stroke-width='0.5'%3E%3Cpath d='M0 0h40v40H0z'/%3E%3C/g%3E%3C/svg%3E")`;
+
   return (
-    <div className={styles.page}>
+    <div className="min-h-screen bg-fog flex flex-col relative overflow-hidden">
       <AppHeader title="Alert Detail" transparent />
 
-      <div className={styles.mapBg}>
-        {/* Mock Map Background */}
-        <motion.div
-          className={styles.mapImage}
-          initial={{ filter: 'blur(10px)', scale: 1.1 }}
-          animate={{ filter: 'blur(0px)', scale: 1 }}
-          transition={{ duration: 0.6 }}
-        />
-        <div className={styles.mapPin}>
-          <div className={styles.pinPulse} />
-          <MapPin size={24} color="#D93025" fill="#fff" />
-        </div>
-      </div>
-
+      {/* Mock map background */}
       <motion.div
-        className={styles.sheet}
-        initial={{ y: '100%' }}
+        className="h-60 relative overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, #e8f0f7 0%, #dde8f3 50%, #ccd9eb 100%)`,
+          backgroundImage: mapPattern,
+        }}
+        initial={{ filter: 'blur(8px)', scale: 1.05 }}
+        animate={{ filter: 'blur(0px)', scale: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        {/* Road lines for map feel */}
+        <div className="absolute inset-0 flex flex-col justify-center pointer-events-none opacity-30">
+          <div className="h-8 bg-gray-400/40 w-full" />
+          <div className="h-16" />
+          <div className="h-6 bg-gray-400/40 w-full" />
+        </div>
+
+        {/* Location pin */}
+        {notif?.locationShared && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative">
+              <motion.div
+                className="absolute -inset-6 rounded-full bg-alert-red/20"
+                animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              />
+              <div className="w-10 h-10 bg-alert-red rounded-full flex items-center justify-center shadow-float">
+                <MapPin size={20} color="#fff" fill="#fff" />
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Bottom sheet */}
+      <motion.div
+        className="flex-1 bg-fog rounded-t-3xl -mt-4 relative z-10 shadow-sheet"
+        initial={{ y: '60%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
       >
-        <div className={styles.sheetHandle} />
-        
-        <div className={styles.headerRow}>
-          <div>
-            <div className={styles.type}>Wrong Parking</div>
-            <div className={styles.time}>10 mins ago</div>
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-5">
+          <div className="w-10 h-1.5 bg-outline-light rounded-full" />
+        </div>
+
+        <div className="px-5 space-y-4 pb-10">
+          {/* Header row */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">{notif?.emoji}</span>
+                <h2 className="font-display text-headline-sm text-on-surface">{notif?.type}</h2>
+              </div>
+              <p className="font-body text-xs text-on-surface-muted">{notif?.time}</p>
+            </div>
+            <PlateTag plateNumber={notif?.plate} size="sm" />
           </div>
-          <PlateTag plateNumber="MH 14 AB 1234" size="sm" />
-        </div>
 
-        <div className={styles.notesBox}>
-          "Blocking the main gate entrance, please move immediately."
-        </div>
+          {/* Notes */}
+          {notif?.notes && (
+            <div className="bg-white border border-outline-light rounded-xl px-4 py-3">
+              <p className="font-body text-sm text-on-surface italic">"{notif.notes}"</p>
+            </div>
+          )}
 
-        <div className={styles.locationMeta}>
-          <div className={styles.metaIcon}><MapPin size={16} /></div>
-          <div>
-            <div className={styles.metaTitle}>Kalyani Nagar, Pune</div>
-            <div className={styles.metaSub}>Location shared by reporter</div>
-          </div>
-          <button className={styles.navBtn}><Navigation size={18} /></button>
-        </div>
+          {/* Location row */}
+          {notif?.locationShared && notif?.location && (
+            <div className="bg-white border border-outline-light rounded-xl px-4 py-3 flex items-center gap-3">
+              <div className="w-9 h-9 bg-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
+                <MapPin size={18} className="text-navy" />
+              </div>
+              <div className="flex-1">
+                <p className="font-body text-sm font-semibold text-on-surface">{notif.location}</p>
+                <p className="font-body text-xs text-on-surface-muted">Location shared by reporter</p>
+              </div>
+              <a
+                href={`https://maps.google.com/?q=${notif.lat},${notif.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="w-9 h-9 bg-navy text-white rounded-xl flex items-center justify-center"
+              >
+                <Navigation size={16} />
+              </a>
+            </div>
+          )}
 
-        <div className={styles.actions}>
-          <motion.div animate={resolved ? { scale: 0.95, opacity: 0.8 } : {}}>
+          {/* Escalate for theft/emergency */}
+          {notif?.isAlert && (
+            <div className="bg-alert-red/5 border border-alert-red/20 rounded-xl px-4 py-3 flex items-start gap-3">
+              <AlertTriangle size={18} className="text-alert-red flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-body text-sm font-semibold text-alert-red">Escalation available</p>
+                <p className="font-body text-xs text-on-surface-muted mt-0.5">File a police report or contact emergency services.</p>
+                <a href="tel:100" className="font-body text-xs font-bold text-alert-red mt-1 block">Call 100 — Police</a>
+              </div>
+            </div>
+          )}
+
+          {/* Resolve action */}
+          <motion.div animate={resolved ? { scale: 0.98, opacity: 0.9 } : {}}>
             <Button
               fullWidth
               onClick={handleResolve}
-              style={{
-                background: resolved ? 'var(--verified-green)' : 'transparent',
-                borderColor: resolved ? 'var(--verified-green)' : 'var(--outline-variant)',
-                color: resolved ? '#fff' : 'var(--on-surface)',
-                borderWidth: '1.5px',
-                borderStyle: 'solid'
-              }}
+              variant={resolved ? 'ghost' : 'outline'}
+              className={resolved
+                ? 'border-2 border-verified-green text-verified-green bg-verified-green/5'
+                : 'border-2 border-outline-light text-on-surface'
+              }
             >
-              {resolved ? <><Check size={18} /> Resolved</> : 'Mark as Resolved'}
+              {resolved ? <><Check size={18} /> Marked as Resolved</> : 'Mark as Resolved'}
             </Button>
           </motion.div>
         </div>
