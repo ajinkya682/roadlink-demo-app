@@ -93,6 +93,16 @@ export function DemoProvider({ children }) {
     setContacts(prev => prev.map(c => ({ ...c, isPrimary: c.id === id })));
   };
 
+  const updateContact = (id, updatedContact) => {
+    setContacts(prev => {
+      const newContacts = prev.map(c => c.id === id ? { ...c, ...updatedContact, maskedPhone: maskPhone(updatedContact.phone || c.phone) } : c);
+      if (updatedContact.isPrimary) {
+        return newContacts.map(c => ({ ...c, isPrimary: c.id === id }));
+      }
+      return newContacts;
+    });
+  };
+
   // ── User preferences ────────────────────────────────────────
   const updateNotifPref = (key, value) => {
     setUser(prev => ({ ...prev, notificationPrefs: { ...prev.notificationPrefs, [key]: value } }));
@@ -114,6 +124,7 @@ export function DemoProvider({ children }) {
       addDocument,
       removeDocument,
       addContact,
+      updateContact,
       deleteContact,
       setPrimaryContact,
       updateNotifPref,
