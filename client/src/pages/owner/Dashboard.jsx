@@ -25,7 +25,7 @@ function greeting() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { vehicles, user, unreadCount, refreshVehicles, refreshNotifications } = useAppData();
+  const { vehicles, user, unreadCount, refreshVehicles, refreshNotifications, showComingSoon } = useAppData();
 
   useEffect(() => {
     refreshVehicles();
@@ -34,9 +34,9 @@ export default function Dashboard() {
 
   const quickActions = [
     { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile') },
-    { label: 'Add Vehicle', Icon: Plus,       action: (nav) => vehicles.length >= 1 ? alert('Support for multiple vehicles is coming soon!') : nav('/add-vehicle') },
+    { label: 'Add Vehicle', Icon: Plus,       action: (nav) => vehicles.length >= 1 ? showComingSoon('Multiple Vehicles') : nav('/add-vehicle') },
     { label: 'My Vehicles', Icon: LayoutGrid, action: (nav) => nav('/vehicle-detail') },
-    { label: 'Invite',      Icon: Share2,     action: () => alert('Share RoadLink – Coming Soon!') },
+    { label: 'Invite',      Icon: Share2,     action: () => showComingSoon('Invites & Sharing') },
   ];
 
   return (

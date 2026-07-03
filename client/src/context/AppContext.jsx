@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SecureStorage } from '../hooks/useNative';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, X } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AppContext
@@ -41,8 +43,11 @@ export function AppProvider({ children }) {
   // check. Once the backend exists, isAuthenticated should derive from whether
   // a valid access token exists (and is not expired), not from local state.
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Global Modals
+  const [comingSoonFeature, setComingSoonFeature] = useState(null);
+  const showComingSoon = (featureName) => setComingSoonFeature(featureName);
 
   // ── Hydrate from device storage on mount ──────────────────────────────────
   useEffect(() => {
@@ -318,6 +323,7 @@ export function AppProvider({ children }) {
       isInitialized,
       signIn,
       signOut,
+      showComingSoon,
       // Data
       user,
       vehicles,
@@ -348,6 +354,54 @@ export function AppProvider({ children }) {
       updateNotifPref,
     }}>
       {children}
+      
+      {/* Global Coming Soon Modal */}
+      <AnimatePresence>
+        {comingSoonFeature && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center px-5 pb-safe">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setComingSoonFeature(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden z-10"
+            >
+              <div className="bg-gradient-to-br from-road-navy to-[#1a386d] p-6 flex flex-col items-center text-center">
+                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mb-4">
+                  <Sparkles size={28} className="text-white" />
+                </div>
+                <h3 className="font-display text-2xl font-bold text-white mb-2">
+                  Coming Soon
+                </h3>
+                <p className="font-body text-[14px] text-white/90 leading-relaxed max-w-[240px]">
+                  We're working hard on bringing you <span className="font-bold">{comingSoonFeature}</span>. Check back in our next big update!
+                </p>
+              </div>
+              <div className="p-4 bg-white">
+                <button
+                  className="w-full py-3.5 bg-road-navy text-white rounded-xl font-body font-semibold text-[15px] hover:bg-road-navy/90 transition-colors"
+                  onClick={() => setComingSoonFeature(null)}
+                >
+                  Got it
+                </button>
+              </div>
+              <button
+                className="absolute top-4 right-4 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center text-white hover:bg-black/20 transition-colors"
+                onClick={() => setComingSoonFeature(null)}
+              >
+                <X size={18} />
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AppContext.Provider>
   );
 }
