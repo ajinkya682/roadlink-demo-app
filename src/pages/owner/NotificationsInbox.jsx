@@ -103,75 +103,62 @@ export default function NotificationsInbox() {
 
         {/* Notification Feed */}
         <div className="pb-10">
-          <AnimatePresence mode="popLayout">
-            {filtered.length === 0 ? (
-              <motion.div
-                key="empty-state"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="flex flex-col items-center justify-center py-20 gap-3 text-center"
-              >
-                <div className="w-14 h-14 bg-[#f0eded] rounded-2xl flex items-center justify-center text-[#434751]">
-                  <Bell size={24} />
-                </div>
-                <p className="font-display text-[20px] font-semibold text-[#1c1b1b]">No reports yet.</p>
-                <p className="font-body text-[14px] text-[#737782]">That's a good thing.</p>
-              </motion.div>
-            ) : (
-              filtered.map((n, i) => {
-                const style = getNotificationStyle(n.type, n.resolved);
-                return (
-                  <motion.article
-                    key={n.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                    onClick={() => handleNotificationClick(n)}
-                    className={`mb-4 rounded-xl border-l-4 ${style.borderClass} ${style.cardOpacity} shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-start p-4 transition-transform hover:translate-x-1 duration-200 cursor-pointer group origin-top`}
-                  >
-                    <div className={`mr-4 flex-shrink-0 ${style.bgClass} p-2 rounded-lg`}>
-                      <style.Icon size={24} className={style.iconColor} />
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+              <div className="w-14 h-14 bg-[#f0eded] rounded-2xl flex items-center justify-center text-[#434751]">
+                <Bell size={24} />
+              </div>
+              <p className="font-display text-[20px] font-semibold text-[#1c1b1b]">No reports yet.</p>
+              <p className="font-body text-[14px] text-[#737782]">That's a good thing.</p>
+            </div>
+          ) : (
+            filtered.map((n) => {
+              const style = getNotificationStyle(n.type, n.resolved);
+              return (
+                <article
+                  key={n.id}
+                  onClick={() => handleNotificationClick(n)}
+                  className={`mb-4 rounded-xl border-l-4 ${style.borderClass} ${style.cardOpacity} shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-start p-4 transition-transform hover:translate-x-1 duration-200 cursor-pointer group origin-top`}
+                >
+                  <div className={`mr-4 flex-shrink-0 ${style.bgClass} p-2 rounded-lg`}>
+                    <style.Icon size={24} className={style.iconColor} />
+                  </div>
+                  
+                  <div className="flex-grow">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className={`font-display text-[20px] font-semibold ${n.resolved ? 'text-[#434751]' : 'text-[#1c1b1b]'}`}>
+                        {n.type}
+                      </h3>
+                      <span className="font-body text-[14px] text-[#c3c6d2]">{n.time}</span>
                     </div>
                     
-                    <div className="flex-grow">
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className={`font-display text-[20px] font-semibold ${n.resolved ? 'text-[#434751]' : 'text-[#1c1b1b]'}`}>
-                          {n.type}
-                        </h3>
-                        <span className="font-body text-[14px] text-[#c3c6d2]">{n.time}</span>
+                    {n.plate && (
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="border border-[#1c1b1b]/15 shadow-sm bg-white font-mono text-[14px] font-medium px-2 py-0.5 rounded text-[#1c1b1b]">
+                          {n.plate}
+                        </span>
                       </div>
-                      
-                      {n.plate && (
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="border border-[#1c1b1b]/15 shadow-sm bg-white font-mono text-[14px] font-medium px-2 py-0.5 rounded text-[#1c1b1b]">
-                            {n.plate}
-                          </span>
-                        </div>
-                      )}
-                      
-                      <p className={`font-body text-[16px] line-clamp-2 ${n.resolved ? 'text-[#434751]/70' : 'text-[#434751]'}`}>
-                        {n.notes}
-                      </p>
-                    </div>
+                    )}
+                    
+                    <p className={`font-body text-[16px] line-clamp-2 ${n.resolved ? 'text-[#434751]/70' : 'text-[#434751]'}`}>
+                      {n.notes}
+                    </p>
+                  </div>
 
-                    {/* Right side indicators */}
-                    <div className="ml-3 self-center flex items-center justify-center min-w-[24px]">
-                      {!n.read && !n.resolved ? (
-                        <div className="w-3 h-3 bg-[#ba1a1a] rounded-full shadow-sm shadow-[#ba1a1a]/40 group-active:opacity-30 transition-opacity"></div>
-                      ) : n.resolved ? (
-                        <CheckCircle size={20} className="text-[#005834]" />
-                      ) : (
-                        <ChevronRight size={24} className="text-[#c3c6d2] opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </motion.article>
-                );
-              })
-            )}
-          </AnimatePresence>
+                  {/* Right side indicators */}
+                  <div className="ml-3 self-center flex items-center justify-center min-w-[24px]">
+                    {!n.read && !n.resolved ? (
+                      <div className="w-3 h-3 bg-[#ba1a1a] rounded-full shadow-sm shadow-[#ba1a1a]/40 group-active:opacity-30 transition-opacity"></div>
+                    ) : n.resolved ? (
+                      <CheckCircle size={20} className="text-[#005834]" />
+                    ) : (
+                      <ChevronRight size={24} className="text-[#c3c6d2] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </article>
+              );
+            })
+          )}
         </div>
       </main>
 
