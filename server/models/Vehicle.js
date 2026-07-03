@@ -5,6 +5,8 @@ const vehicleSchema = new mongoose.Schema({
   registrationNumber: { type: String, required: true, unique: true, uppercase: true, trim: true },
   make: { type: String },
   model: { type: String },
+  year: { type: String },
+  color: { type: String },
   nickname: { type: String },
   publicDisplayName: { type: String },
   showOwnerName: { type: Boolean, default: false },

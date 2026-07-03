@@ -39,7 +39,7 @@ export default function VehicleDetail() {
             model: v.model,
             displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
             isVerified: v.isVerified,
-            privacyMode: v.privacySettings?.showOwnerName === false,
+            privacyMode: v.showOwnerName === false,
             addedDate: new Date(v.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
             unreadAlerts: 0,
             qrId: v._id,
@@ -108,7 +108,7 @@ export default function VehicleDetail() {
           year: editForm.year, // just taking from form since it's not strongly mapped in DB yet except via update
           color: v.color || editForm.color,
           nickname: v.nickname,
-          privacyMode: v.privacySettings?.showOwnerName === false || editForm.privacyMode,
+          privacyMode: v.showOwnerName === false || editForm.privacyMode,
           displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE'
         }));
         setIsEditing(false);
