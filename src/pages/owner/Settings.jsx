@@ -11,6 +11,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { user, updateNotifPref } = useDemoData();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   return (
     <div className="min-h-screen bg-fog pb-24">
@@ -64,9 +65,9 @@ export default function Settings() {
           <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest mb-3 px-1">Account &amp; Privacy</p>
           <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
             {[
-              { icon: User, label: 'My Profile', action: () => {} },
+              { icon: User, label: 'My Profile', action: () => navigate('/profile') },
               { icon: Phone, label: 'Emergency Contacts', action: () => navigate('/emergency-contacts') },
-              { icon: Shield, label: 'Privacy Controls', action: () => {} },
+              { icon: Shield, label: 'Privacy Controls', action: () => navigate('/privacy-controls') },
             ].map(({ icon: Icon, label, action }) => (
               <motion.button
                 key={label}
@@ -88,6 +89,7 @@ export default function Settings() {
           <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
             <motion.button
               className="w-full flex items-center gap-3 px-4 py-4 text-left"
+              onClick={() => navigate('/terms')}
               whileTap={{ backgroundColor: 'rgba(26,26,26,0.04)' }}
             >
               <FileText size={20} className="text-on-surface-muted flex-shrink-0" />
@@ -96,7 +98,7 @@ export default function Settings() {
             </motion.button>
             <motion.button
               className="w-full flex items-center gap-3 px-4 py-4 text-left"
-              onClick={() => navigate('/')}
+              onClick={() => setShowLogoutConfirm(true)}
               whileTap={{ backgroundColor: 'rgba(26,26,26,0.04)' }}
             >
               <LogOut size={20} className="text-on-surface-muted flex-shrink-0" />
@@ -159,6 +161,50 @@ export default function Settings() {
                   onClick={() => navigate('/')}
                 >
                   Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Logout confirm modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-asphalt/40 backdrop-blur-sm px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowLogoutConfirm(false)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl relative"
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-16 h-16 bg-[#003470]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut size={32} className="text-[#003470]" />
+              </div>
+              <h3 className="font-display text-[24px] font-semibold text-on-surface mb-2">Log Out?</h3>
+              <p className="font-body text-[16px] text-on-surface-muted mb-6">
+                Are you sure you want to log out of your account? You will need to sign in again to access your digital plates.
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  className="w-full bg-[#1B4B8F] text-white font-body text-[14px] font-bold tracking-[0.08em] uppercase py-3.5 rounded-xl hover:bg-[#153a6f] active:scale-[0.98] transition-all"
+                  onClick={() => navigate('/')}
+                >
+                  Yes, Log Out
+                </button>
+                <button
+                  className="w-full bg-white text-on-surface-variant border-2 border-outline-light font-body text-[14px] font-bold tracking-[0.08em] uppercase py-3.5 rounded-xl hover:bg-surface-container-low active:scale-[0.98] transition-all"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  Cancel
                 </button>
               </div>
             </motion.div>

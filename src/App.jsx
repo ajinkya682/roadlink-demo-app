@@ -29,6 +29,9 @@ import DocumentVault from './pages/owner/DocumentVault'
 import DocumentUpload from './pages/owner/DocumentUpload'
 import Settings from './pages/owner/Settings'
 import EmergencyContacts from './pages/owner/EmergencyContacts'
+import MyProfile from './pages/owner/MyProfile'
+import PrivacyControls from './pages/owner/PrivacyControls'
+import TermsPrivacy from './pages/owner/TermsPrivacy'
 
 function App() {
   const location = useLocation();
@@ -67,6 +70,9 @@ function App() {
           <Route path="/document-upload" element={<PageWrapper><DocumentUpload /></PageWrapper>} />
           <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
           <Route path="/emergency-contacts" element={<PageWrapper><EmergencyContacts /></PageWrapper>} />
+          <Route path="/profile" element={<PageWrapper><MyProfile /></PageWrapper>} />
+          <Route path="/privacy-controls" element={<PageWrapper><PrivacyControls /></PageWrapper>} />
+          <Route path="/terms" element={<PageWrapper><TermsPrivacy /></PageWrapper>} />
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
