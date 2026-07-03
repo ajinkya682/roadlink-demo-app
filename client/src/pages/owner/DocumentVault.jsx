@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Plus, UploadCloud, Trash2 } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
-import { useDemoData } from '../../context/DemoContext';
+import { useAppData } from '../../context/AppContext';
 import { documentStatusMeta } from '../../demo-data/documents';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
@@ -77,7 +77,7 @@ function DocCard({ doc, onClick }) {
 
 export default function DocumentVault() {
   const navigate = useNavigate();
-  const { documents } = useDemoData();
+  const { documents } = useAppData();
   const vehicleDocs = documents.filter(d => d.vehicleId === 'v1');
 
   const expiredCount = vehicleDocs.filter(d => d.status === 'expired').length;

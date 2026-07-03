@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core'
 import { PushNotifications } from '@capacitor/push-notifications'
 import PageWrapper from './components/PageWrapper'
 import BottomTabBar from './components/BottomTabBar'
+import RequireAuth from './components/RequireAuth'
 
 // Guest
 import GuestDashboard from './pages/GuestDashboard'
@@ -86,10 +87,14 @@ function App() {
   const showNavRoutes = [
     '/dashboard',
     '/document-vault',
-    '/settings'
+    '/settings',
+    '/add-vehicle',
+    '/notifications',
   ];
 
-  const shouldShowNav = showNavRoutes.includes(location.pathname) || location.pathname.startsWith('/vehicle-detail');
+  const shouldShowNav = showNavRoutes.includes(location.pathname) || 
+                        location.pathname.startsWith('/vehicle-detail') ||
+                        location.pathname.startsWith('/notification-detail');
 
   return (
     <div className="app-shell">
@@ -111,24 +116,24 @@ function App() {
             <Route path="/login" element={<PageWrapper><LoginRegister /></PageWrapper>} />
             <Route path="/otp" element={<PageWrapper><OTPVerification /></PageWrapper>} />
 
-            {/* Owner */}
-            <Route path="/add-vehicle" element={<PageWrapper><AddVehicle /></PageWrapper>} />
-            <Route path="/qr-detail" element={<PageWrapper><QRDetail /></PageWrapper>} />
-            <Route path="/order-sticker" element={<PageWrapper><OrderSticker /></PageWrapper>} />
-            <Route path="/order-confirmation" element={<PageWrapper><OrderConfirmation /></PageWrapper>} />
-            <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
-            <Route path="/vehicle-detail/:id" element={<PageWrapper><VehicleDetail /></PageWrapper>} />
-            <Route path="/vehicle-detail" element={<PageWrapper><VehicleDetail /></PageWrapper>} />
-            <Route path="/notifications" element={<PageWrapper><NotificationsInbox /></PageWrapper>} />
-            <Route path="/notification-detail/:id" element={<PageWrapper><NotificationDetail /></PageWrapper>} />
-            <Route path="/notification-detail" element={<PageWrapper><NotificationDetail /></PageWrapper>} />
-            <Route path="/document-vault" element={<PageWrapper><DocumentVault /></PageWrapper>} />
-            <Route path="/document-upload" element={<PageWrapper><DocumentUpload /></PageWrapper>} />
-            <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
-            <Route path="/emergency-contacts" element={<PageWrapper><EmergencyContacts /></PageWrapper>} />
-            <Route path="/profile" element={<PageWrapper><MyProfile /></PageWrapper>} />
-            <Route path="/privacy-controls" element={<PageWrapper><PrivacyControls /></PageWrapper>} />
-            <Route path="/terms" element={<PageWrapper><TermsPrivacy /></PageWrapper>} />
+            {/* Owner (Protected) */}
+            <Route path="/add-vehicle" element={<RequireAuth><PageWrapper><AddVehicle /></PageWrapper></RequireAuth>} />
+            <Route path="/qr-detail" element={<RequireAuth><PageWrapper><QRDetail /></PageWrapper></RequireAuth>} />
+            <Route path="/order-sticker" element={<RequireAuth><PageWrapper><OrderSticker /></PageWrapper></RequireAuth>} />
+            <Route path="/order-confirmation" element={<RequireAuth><PageWrapper><OrderConfirmation /></PageWrapper></RequireAuth>} />
+            <Route path="/dashboard" element={<RequireAuth><PageWrapper><Dashboard /></PageWrapper></RequireAuth>} />
+            <Route path="/vehicle-detail/:id" element={<RequireAuth><PageWrapper><VehicleDetail /></PageWrapper></RequireAuth>} />
+            <Route path="/vehicle-detail" element={<RequireAuth><PageWrapper><VehicleDetail /></PageWrapper></RequireAuth>} />
+            <Route path="/notifications" element={<RequireAuth><PageWrapper><NotificationsInbox /></PageWrapper></RequireAuth>} />
+            <Route path="/notification-detail/:id" element={<RequireAuth><PageWrapper><NotificationDetail /></PageWrapper></RequireAuth>} />
+            <Route path="/notification-detail" element={<RequireAuth><PageWrapper><NotificationDetail /></PageWrapper></RequireAuth>} />
+            <Route path="/document-vault" element={<RequireAuth><PageWrapper><DocumentVault /></PageWrapper></RequireAuth>} />
+            <Route path="/document-upload" element={<RequireAuth><PageWrapper><DocumentUpload /></PageWrapper></RequireAuth>} />
+            <Route path="/settings" element={<RequireAuth><PageWrapper><Settings /></PageWrapper></RequireAuth>} />
+            <Route path="/emergency-contacts" element={<RequireAuth><PageWrapper><EmergencyContacts /></PageWrapper></RequireAuth>} />
+            <Route path="/profile" element={<RequireAuth><PageWrapper><MyProfile /></PageWrapper></RequireAuth>} />
+            <Route path="/privacy-controls" element={<RequireAuth><PageWrapper><PrivacyControls /></PageWrapper></RequireAuth>} />
+            <Route path="/terms" element={<RequireAuth><PageWrapper><TermsPrivacy /></PageWrapper></RequireAuth>} />
             <Route path="/scanner" element={<PageWrapper><QRScanner /></PageWrapper>} />
 
             {/* Catch all */}

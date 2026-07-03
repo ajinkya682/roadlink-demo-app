@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Button from '../../components/Button';
-import { useDemoData } from '../../context/DemoContext';
+import { useAppData } from '../../context/AppContext';
 
 export default function NotificationDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { notifications, markResolved } = useDemoData();
+  const { notifications, markResolved } = useAppData();
 
   const notif = notifications.find(n => n.id === id) || notifications[0];
   const [resolved, setResolved] = useState(notif?.resolved || false);

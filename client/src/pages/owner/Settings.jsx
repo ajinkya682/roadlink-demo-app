@@ -13,11 +13,11 @@ import {
 } from "lucide-react";
 import AppHeader from "../../components/AppHeader";
 import Toggle from "../../components/Toggle";
-import { useDemoData } from "../../context/DemoContext";
+import { useAppData } from "../../context/AppContext";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, updateNotifPref } = useDemoData();
+  const { user, updateNotifPref, signOut } = useAppData();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -232,7 +232,10 @@ export default function Settings() {
                 </button>
                 <button
                   className="flex-1 bg-alert-red text-white rounded-xl py-3 font-body text-sm font-semibold"
-                  onClick={() => navigate("/")}
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/");
+                  }}
                 >
                   Delete
                 </button>
@@ -273,7 +276,10 @@ export default function Settings() {
               <div className="flex flex-col gap-3">
                 <button
                   className="w-full bg-[#1B4B8F] text-white font-body text-[14px] font-bold tracking-[0.08em] uppercase py-3.5 rounded-xl hover:bg-[#153a6f] active:scale-[0.98] transition-all"
-                  onClick={() => navigate("/")}
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/");
+                  }}
                 >
                   Yes, Log Out
                 </button>

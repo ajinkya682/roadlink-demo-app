@@ -5,14 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Toggle from '../../components/Toggle';
-import { useDemoData } from '../../context/DemoContext';
+import { useAppData } from '../../context/AppContext';
 
 const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
 
 export default function VehicleDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { vehicles, notifications, documents, contacts, togglePrivacyMode } = useDemoData();
+  const { vehicles, notifications, documents, contacts, togglePrivacyMode } = useAppData();
 
   // Use first vehicle as default
   const vehicle = vehicles.find(v => v.id === id) || vehicles[0];

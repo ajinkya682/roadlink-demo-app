@@ -3,8 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
 import { reportCategories } from '../../demo-data/categories';
-import { scannedVehicle } from '../../demo-data/scannedVehicle';
-
+// Fallback mock since backend isn't ready
+const scannedVehicle = {
+  plate: 'MH 14 AB 1234',
+  displayName: 'Honda Activa',
+  isVerified: true,
+  qrId: 'ROADLINK-MH14AB1234',
+};
 const containerVariants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.04, delayChildren: 0.1 } },

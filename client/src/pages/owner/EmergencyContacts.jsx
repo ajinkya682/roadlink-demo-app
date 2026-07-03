@@ -5,12 +5,12 @@ import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Toggle from '../../components/Toggle';
-import { useDemoData } from '../../context/DemoContext';
+import { useAppData } from "../../context/AppContext";
 
 const relations = ['Family', 'Friend', 'Colleague', 'Spouse', 'Brother', 'Other'];
 
 export default function EmergencyContacts() {
-  const { contacts, addContact, updateContact, deleteContact } = useDemoData();
+  const { contacts, addContact, updateContact, deleteContact } = useAppData();
   
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);

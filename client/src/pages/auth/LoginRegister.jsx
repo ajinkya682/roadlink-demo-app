@@ -101,15 +101,7 @@ export default function LoginRegister() {
               Get OTP
             </Button>
 
-            {/* Demo shortcut */}
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-2 text-sm font-semibold text-signal-amber font-body rounded-lg border border-signal-amber/30 bg-signal-amber/5"
-              onClick={fillDemo}
-            >
-              <Zap size={15} />
-              Demo Login — Fill credentials
-            </button>
+
           </form>
         </div>
 

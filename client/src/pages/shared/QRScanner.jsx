@@ -5,10 +5,13 @@ import { X, Flashlight, Image as ImageIcon } from 'lucide-react';
 import { BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
 import { NativeFeedback } from '../../hooks/useNative';
+import { useAppData } from '../../context/AppContext';
 
 export default function QRScanner() {
   const navigate = useNavigate();
+  const { vehicles } = useAppData();
   const [scanned, setScanned] = useState(false);
+  const [errorFlash, setErrorFlash] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
 
@@ -19,7 +22,7 @@ export default function QRScanner() {
       if (!Capacitor.isNativePlatform()) {
         console.warn('Camera is only supported on native devices via Capacitor.');
         // Simulate successful scan on web
-        setTimeout(() => handleScanSuccess('SIMULATED_QR'), 3500);
+        setTimeout(() => handleScanSuccess('roadlink://v/ROADLINK-SIMULATED123'), 3500);
         return;
       }
 
@@ -59,6 +62,15 @@ export default function QRScanner() {
 
   const handleScanSuccess = async (value) => {
     if (scanned) return;
+
+    // Check if it's a valid RoadLink QR format
+    if (!value.startsWith('roadlink://v/')) {
+      setErrorFlash(true);
+      await NativeFeedback.vibrateError();
+      setTimeout(() => setErrorFlash(false), 500);
+      return; // Resume scanning
+    }
+
     setScanned(true);
     await NativeFeedback.vibrateSuccess();
     
@@ -69,7 +81,19 @@ export default function QRScanner() {
     }
     
     setTimeout(() => {
-      navigate('/scan-landing');
+      // Parse QR token (currently just the qrId locally)
+      // TODO (Phase 3/4): Replace local matching logic with a POST /vehicles/resolve API call.
+      const scannedQrId = value.split('roadlink://v/')[1];
+      
+      const matchedVehicle = vehicles.find(v => v.qrId === scannedQrId);
+      
+      if (matchedVehicle) {
+        // User owns this vehicle, go to detail
+        navigate(`/vehicle-detail/${matchedVehicle.id}`);
+      } else {
+        // External scan, route to guest flow
+        navigate('/scan-landing', { state: { qrId: scannedQrId } });
+      }
     }, 500);
   };
 
@@ -115,10 +139,18 @@ export default function QRScanner() {
           {/* The Clear Cutout */}
           <div className="relative w-[70vw] aspect-square">
             {/* 4 Corner Brackets */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl shadow-lg" />
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl shadow-lg" />
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl shadow-lg" />
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl shadow-lg" />
+            <motion.div
+              className={`absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 rounded-tl-2xl shadow-lg ${errorFlash ? 'border-alert-red' : 'border-white'}`}
+            />
+            <motion.div
+              className={`absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 rounded-tr-2xl shadow-lg ${errorFlash ? 'border-alert-red' : 'border-white'}`}
+            />
+            <motion.div
+              className={`absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 rounded-bl-2xl shadow-lg ${errorFlash ? 'border-alert-red' : 'border-white'}`}
+            />
+            <motion.div
+              className={`absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 rounded-br-2xl shadow-lg ${errorFlash ? 'border-alert-red' : 'border-white'}`}
+            />
 
             {/* Scanning Laser Line */}
             {!scanned && (

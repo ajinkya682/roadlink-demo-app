@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
+import { useAppData } from '../../context/AppContext';
 
 export default function OTPVerification() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function OTPVerification() {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const { signIn } = useAppData();
   const inputRefs = useRef([]);
 
   // Countdown timer
@@ -51,8 +53,19 @@ export default function OTPVerification() {
 
   const submitCode = (code) => {
     setLoading(true);
+    // TODO (Phase 3/4): Replace this local mock with a real backend verification call (POST /auth/verify).
+    // Currently accepts ANY 6-digit code as a local placeholder.
     setTimeout(() => {
-      if (code === '123456') {
+      if (code.length === 6) {
+        signIn({
+          id: 'u-temp',
+          name: 'Ajinkya Saivar', // Temp mock data
+          phone: '+91 98765 43210',
+          maskedPhone: '+91 98•••••210',
+          avatar: 'AS',
+          joinedDate: 'January 2025',
+          notificationPrefs: { push: true, whatsapp: true, sms: true, email: false },
+        });
         navigate('/add-vehicle');
       } else {
         setLoading(false);
@@ -110,12 +123,7 @@ export default function OTPVerification() {
           ))}
         </motion.div>
 
-        {/* Demo hint */}
-        <div className="bg-signal-amber/10 border border-signal-amber/30 rounded-xl px-4 py-3 text-center">
-          <p className="font-body text-sm text-signal-amber font-semibold">
-            💡 Demo: Enter <span className="font-mono tracking-widest">1 2 3 4 5 6</span> to verify
-          </p>
-        </div>
+
 
         <Button fullWidth onClick={handleVerify} disabled={!allFilled} isLoading={loading}>
           Verify

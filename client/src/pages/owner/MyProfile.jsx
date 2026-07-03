@@ -4,10 +4,10 @@ import { Camera, Mail, MapPin } from "lucide-react";
 import AppHeader from "../../components/AppHeader";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
-import { useDemoData } from "../../context/DemoContext";
+import { useAppData } from "../../context/AppContext";
 
 export default function MyProfile() {
-  const { user } = useDemoData();
+  const { user } = useAppData();
   const [form, setForm] = useState({
     name: user.name,
     phone: user.maskedPhone,

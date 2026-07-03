@@ -4,12 +4,19 @@ import { Download, Truck, HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
-import { useDemoData } from '../../context/DemoContext';
+import { useAppData } from '../../context/AppContext';
+
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function QRDetail() {
   const navigate = useNavigate();
-  const { vehicles } = useDemoData();
+  const { vehicles } = useAppData();
+  // Safe fallback if no vehicle exists yet (e.g. testing directly)
   const vehicle = vehicles[0] || { plate: 'MH 12 AB 1234', displayName: 'HONDA ACTIVA', qrId: 'ROADLINK-123456' };
+
+  // TODO (Phase 3/4): This payload must be replaced with a real signed HMAC token
+  // from the backend once POST /vehicles is implemented. Right now it's a raw local ID.
+  const qrPayload = `roadlink://v/${vehicle.qrId}`;
 
   const [downloaded, setDownloaded] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -67,10 +74,13 @@ export default function QRDetail() {
             />
             
             <div className="relative w-full h-full flex items-center justify-center p-6" style={{ transform: 'translateZ(20px)' }}>
-              <img 
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXznFWQRigemE8PLC-jdYOTe-GVyO_RPVcSVIUJzu5iU7RdIWJEAtqyCTQy9qK-xy5f18Ls0PrqSF5LiZ7nCCzAptWlXLz0rw9yXXe8zmtf7_XirICIvEdYwnFX010JEGks8NcBuq6Va7uvLmIU4_X8CkXDqAvrc7jnA82uhKEaFqzpS2Sj4H2SLdgL1QYYYBBh7YF0EYV-WbWIT0chx5DlEKkBsPc0pKw04bjPLtRPVAQq-WTh-tzVSTiP0YM-v5wn5aeQPcjZQ" 
-                alt="Vehicle QR Code" 
+              <QRCodeSVG 
+                value={qrPayload}
+                size={280}
+                level="Q"
+                className="w-full h-full transition-transform duration-500 group-hover:scale-105"
+                fgColor="#1A1A1A"
+                bgColor="transparent"
               />
             </div>
           </motion.div>

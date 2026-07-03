@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Plus, QrCode, ChevronRight, UserCircle, Car, LayoutGrid, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PlateTag from '../../components/PlateTag';
-import { useDemoData } from '../../context/DemoContext';
+import { useAppData } from '../../context/AppContext';
 
 const stagger = {
   hidden: {},
@@ -30,7 +30,7 @@ const quickActions = [
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { vehicles, user, unreadCount } = useDemoData();
+  const { vehicles, user, unreadCount } = useAppData();
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] pb-28">
@@ -52,7 +52,7 @@ export default function Dashboard() {
               <h1 className="font-display text-[22px] font-bold text-[#1c1b1b] leading-tight">
                 {user.name.split(' ')[0]} 👋
               </h1>
-              <p className="font-body text-[12px] text-[#737782] mt-1 tracking-wider">
+              <p className="font-body text-[12px] text-on-surface-muted mt-1 tracking-wider">
                 {user.phone.slice(0, 6)} ••••• {user.phone.slice(-3)}
               </p>
             </div>
@@ -60,7 +60,7 @@ export default function Dashboard() {
 
           {/* Bell — only account-level notification entry */}
           <motion.button
-            className="relative w-11 h-11 bg-[#003470]/5 rounded-full flex items-center justify-center text-[#003470] mt-1 shadow-sm border border-[#003470]/10"
+            className="relative w-11 h-11 bg-road-navy/5 rounded-full flex items-center justify-center text-road-navy mt-1 shadow-sm border border-road-navy/10"
             whileTap={{ scale: 0.88 }}
             onClick={() => navigate('/notifications')}
           >
@@ -69,7 +69,7 @@ export default function Dashboard() {
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute top-1.5 right-1.5 min-w-[16px] h-4 bg-[#ba1a1a] rounded-full flex items-center justify-center text-white font-bold px-0.5"
+                className="absolute top-1.5 right-1.5 min-w-[16px] h-4 bg-alert-red rounded-full flex items-center justify-center text-white font-bold px-0.5"
                 style={{ fontSize: '9px' }}
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -88,11 +88,11 @@ export default function Dashboard() {
               onClick={() => action(navigate)}
             >
               <div
-                className="w-[52px] h-[52px] rounded-full flex items-center justify-center bg-[#003470]/5 shadow-sm border border-[#003470]/10 group-hover:bg-[#003470]/10 transition-colors"
+                className="w-[52px] h-[52px] rounded-full flex items-center justify-center bg-road-navy/5 shadow-sm border border-road-navy/10 group-hover:bg-road-navy/10 transition-colors"
               >
-                <Icon size={22} strokeWidth={1.75} className="text-[#003470]" />
+                <Icon size={22} strokeWidth={1.75} className="text-road-navy" />
               </div>
-              <span className="font-body text-[11px] font-semibold text-[#434751] text-center leading-tight whitespace-nowrap">
+              <span className="font-body text-[11px] font-semibold text-on-surface-muted text-center leading-tight whitespace-nowrap">
                 {label}
               </span>
             </motion.button>
@@ -139,13 +139,13 @@ export default function Dashboard() {
 
               {/* QR button with per-vehicle alert dot */}
               <motion.button
-                className="relative w-10 h-10 bg-[#003470]/8 rounded-xl flex items-center justify-center text-[#003470]"
+                className="relative w-10 h-10 bg-road-navy/8 rounded-xl flex items-center justify-center text-road-navy"
                 whileTap={{ scale: 0.88 }}
                 onClick={(e) => { e.stopPropagation(); navigate('/qr-detail'); }}
               >
                 <QrCode size={20} strokeWidth={1.75} />
                 {v.unreadAlerts > 0 && (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#ba1a1a] rounded-full border border-white" />
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-alert-red rounded-full border border-white" />
                 )}
               </motion.button>
             </div>
@@ -157,21 +157,21 @@ export default function Dashboard() {
 
             {/* Status banner — amber for alerts, green for privacy */}
             {v.unreadAlerts > 0 ? (
-              <div className="bg-[#F5A623]/10 border-t border-[#F5A623]/20 px-4 py-2.5 flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#F5A623] rounded-full animate-pulse flex-shrink-0" />
-                <span className="font-body text-[12px] font-semibold text-[#835500]">
+              <div className="bg-signal-amber/10 border-t border-signal-amber/20 px-4 py-2.5 flex items-center gap-2">
+                <span className="w-2 h-2 bg-signal-amber rounded-full animate-pulse flex-shrink-0" />
+                <span className="font-body text-[12px] font-semibold text-signal-amber">
                   {v.unreadAlerts} new alert{v.unreadAlerts > 1 ? 's' : ''} — tap to view
                 </span>
               </div>
             ) : v.privacyMode ? (
-              <div className="bg-[#1E8E5A]/8 border-t border-[#1E8E5A]/20 px-4 py-2.5 flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#1E8E5A] rounded-full flex-shrink-0" />
-                <span className="font-body text-[12px] font-semibold text-[#005834]">Privacy Mode Active</span>
+              <div className="bg-verified-green/8 border-t border-verified-green/20 px-4 py-2.5 flex items-center gap-2">
+                <span className="w-2 h-2 bg-verified-green rounded-full flex-shrink-0" />
+                <span className="font-body text-[12px] font-semibold text-verified-green">Privacy Mode Active</span>
               </div>
             ) : (
-              <div className="bg-[#1E8E5A]/8 border-t border-[#1E8E5A]/20 px-4 py-2.5 flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#1E8E5A] rounded-full flex-shrink-0" />
-                <span className="font-body text-[12px] font-semibold text-[#005834]">Active & Protected</span>
+              <div className="bg-verified-green/8 border-t border-verified-green/20 px-4 py-2.5 flex items-center gap-2">
+                <span className="w-2 h-2 bg-verified-green rounded-full flex-shrink-0" />
+                <span className="font-body text-[12px] font-semibold text-verified-green">Active & Protected</span>
               </div>
             )}
           </motion.div>
@@ -180,12 +180,12 @@ export default function Dashboard() {
         {/* Add another vehicle card */}
         <motion.div
           variants={fadeUp}
-          className="border-2 border-dashed border-[#c3c6d2] rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-[#003470]/40 hover:bg-[#003470]/2 transition-colors cursor-pointer bg-white"
+          className="border-2 border-dashed border-outline-light rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-road-navy/40 hover:bg-road-navy/2 transition-colors cursor-pointer bg-white"
           onClick={() => navigate('/add-vehicle')}
           whileTap={{ scale: 0.97 }}
         >
-          <div className="w-10 h-10 bg-[#003470]/8 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Plus size={22} className="text-[#003470]" />
+          <div className="w-10 h-10 bg-road-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Plus size={22} className="text-road-navy" />
           </div>
           <div className="flex-1">
             <span className="font-body font-semibold text-[14px] text-[#434751]">

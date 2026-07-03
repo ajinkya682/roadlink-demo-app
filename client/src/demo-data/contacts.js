@@ -1,19 +1,3 @@
-// Emergency contacts (owner-facing, phone numbers masked)
-export const emergencyContacts = [
-  {
-    id: 'c1',
-    name: 'Rahul Sharma',
-    relation: 'Brother',
-    phone: '+91 98765 12345',
-    maskedPhone: '+91 98•••••45',
-    isPrimary: true,
-  },
-  {
-    id: 'c2',
-    name: 'Priya Savarkar',
-    relation: 'Mother',
-    phone: '+91 87654 98765',
-    maskedPhone: '+91 87•••••65',
-    isPrimary: false,
-  },
-];
+// This file has been intentionally emptied.
+// Demo emergency contact data has been removed — contacts array starts empty in AppContext.
+// Real contacts will be fetched from GET /contacts in Phase 3/4.

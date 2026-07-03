@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { Search, Shield } from 'lucide-react';
 import Button from '../../components/Button';
 import PlateTag from '../../components/PlateTag';
-import { vehicles } from '../../demo-data/vehicles';
-
+// Fallback mock since backend isn't ready
+const vehicles = [
+  { plate: 'MH 14 AB 1234', displayName: 'Honda Activa', isVerified: true },
+];
 export default function SearchResult() {
   const navigate = useNavigate();
   const location = useLocation();

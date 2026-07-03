@@ -1,33 +1,3 @@
-// Owner's registered vehicles
-export const vehicles = [
-  {
-    id: "v1",
-    plate: "MH 14 AB 1234",
-    displayName: "Honda Activa",
-    make: "Honda",
-    model: "Activa 6G",
-    color: "Pearl Metallic White",
-    year: "2023",
-    nickname: "Daily Commute",
-    addedDate: "Jun 2025",
-    isVerified: true,
-    privacyMode: false,
-    qrId: "ROADLINK-MH14AB1234",
-    unreadAlerts: 2,
-  },
-  {
-    id: "v2",
-    plate: "MH 12 XY 5678",
-    displayName: "Royal Enfield Classic 350",
-    make: "Royal Enfield",
-    model: "Classic 350",
-    color: "Stealth Black",
-    year: "2022",
-    nickname: "Weekend Ride",
-    addedDate: "Nov 2025",
-    isVerified: true,
-    privacyMode: true,
-    qrId: "ROADLINK-MH12XY5678",
-    unreadAlerts: 0,
-  },
-];
+// This file has been intentionally emptied.
+// Demo vehicle data has been removed — vehicles array starts empty in AppContext.
+// Real vehicle records will be fetched from GET /vehicles in Phase 3/4.

@@ -6,8 +6,8 @@ import AppHeader from "../../components/AppHeader";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import Toggle from "../../components/Toggle";
-import BottomTabBar from "../../components/BottomTabBar";
-import { useDemoData } from "../../context/DemoContext";
+import PlateTag from "../../components/PlateTag";
+import { useAppData } from "../../context/AppContext";
 
 function formatPlate(val) {
   const raw = val.replace(/[^A-Z0-9]/g, "").slice(0, 10);
@@ -29,7 +29,7 @@ function formatPlate(val) {
 
 export default function AddVehicle() {
   const navigate = useNavigate();
-  const { addVehicle } = useDemoData();
+  const { addVehicle } = useAppData();
 
   const [plate, setPlate] = useState("");
   const [make, setMake] = useState("");
@@ -68,7 +68,7 @@ export default function AddVehicle() {
         title={
           <span className="text-navy font-bold tracking-wide">ADD VEHICLE</span>
         }
-        onBack={() => navigate("/dashboard")}
+        onBack={() => navigate(-1)}
         rightSlot={
           <button className="text-on-surface-muted hover:opacity-80 transition-opacity active:scale-95">
             <HelpCircle size={22} />
@@ -80,39 +80,16 @@ export default function AddVehicle() {
         {/* Live plate preview */}
         <div className="flex flex-col items-center mb-10">
           <motion.div
-            className="w-full max-w-[340px] aspect-[2.5/1] rounded-lg flex flex-col items-center justify-center relative overflow-hidden bg-white border-2 border-[#1c1b1b] px-4"
-            style={{ boxShadow: "0 4px 0px rgba(0,0,0,0.05)" }}
             animate={{ opacity: 1, y: 0 }}
             initial={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.3 }}
+            className="w-full flex justify-center"
           >
-            {/* Blue strip */}
-            <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-navy"></div>
-
-            <div className="font-body text-[9px] sm:text-[10px] font-bold tracking-[0.08em] text-on-surface-muted/50 absolute top-2 left-1/2 -translate-x-1/2 uppercase whitespace-nowrap">
-              ROADLINK DIGITAL IDENTITY
-            </div>
-
-            <div
-              className={`font-mono text-[28px] sm:text-[34px] md:text-[38px] whitespace-nowrap font-bold tracking-[0.1em] uppercase transition-opacity duration-300 w-full text-center ${plate ? "text-on-surface" : "text-[#1c1b1b] opacity-30"}`}
-            >
-              {plate || "MH 12 AB 1234"}
-            </div>
-
-            <div className="flex gap-2 absolute bottom-2 left-1/2 -translate-x-1/2 opacity-40">
-              <Shield size={13} className="text-[#1c1b1b]" />
-              <div
-                className="w-[13px] h-[13px] bg-[#1c1b1b]"
-                style={{
-                  maskImage:
-                    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 3H11V11H3V3ZM5 5V9H9V5H5ZM13 3H21V11H13V3ZM15 5V9H19V5H15ZM3 13H11V21H3V13ZM5 15V19H9V15H5ZM13 13H16V16H13V13ZM18 13H21V16H18V13ZM13 18H16V21H13V18ZM18 18H21V21H18V18ZM16 16H18V18H16V16Z' fill='currentColor'/%3E%3C/svg%3E\")",
-                  WebkitMaskImage:
-                    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 3H11V11H3V3ZM5 5V9H9V5H5ZM13 3H21V11H13V3ZM15 5V9H19V5H15ZM3 13H11V21H3V13ZM5 15V19H9V15H5ZM13 13H16V16H13V13ZM18 13H21V16H18V13ZM13 18H16V21H13V18ZM18 18H21V21H18V18ZM16 16H18V18H16V16Z' fill='currentColor'/%3E%3C/svg%3E\")",
-                  maskSize: "contain",
-                  WebkitMaskSize: "contain",
-                }}
-              />
-            </div>
+            <PlateTag 
+              plate={plate || "MH 12 AB 1234"} 
+              size="lg" 
+              className={!plate ? "opacity-30" : ""}
+            />
           </motion.div>
 
           <p className="font-body text-[11px] font-bold tracking-[0.08em] uppercase text-on-surface-muted mt-4 opacity-70">
@@ -214,7 +191,7 @@ export default function AddVehicle() {
           </motion.div>
           <button
             className="w-full py-2 text-on-surface font-body text-[14px] font-medium underline hover:text-navy transition-colors"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(-1)}
           >
             Skip for now
           </button>

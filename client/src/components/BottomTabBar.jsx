@@ -94,25 +94,23 @@ export default function BottomTabBar() {
               <Icon
                 size={22}
                 strokeWidth={isActive ? 2.25 : 1.75}
-                style={{ color: isActive ? '#003470' : 'rgba(28,27,27,0.50)' }}
+                className={isActive ? 'text-road-navy' : 'text-slate-400'}
               />
 
               {/* Active underline pill */}
               <div className="h-[3px] w-4 flex items-center justify-center">
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-underline"
-                    className="w-4 h-[3px] rounded-full"
-                    style={{ background: '#003470' }}
-                    transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-                  />
-                )}
+                {isActive && <motion.div
+                      layoutId="nav-indicator"
+                      className="absolute -top-[14px] w-12 h-1 bg-road-navy rounded-full shadow-[0_2px_8px_rgba(0,52,112,0.4)]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                }
               </div>
 
-              <span
-                className="text-[10px] font-semibold leading-none"
-                style={{ color: isActive ? '#003470' : 'rgba(28,27,27,0.50)' }}
-              >
+              <span className={`font-body text-[10px] font-semibold mt-1 ${isActive ? 'text-road-navy' : 'text-slate-400'}`}>
                 {tab.label}
               </span>
             </motion.button>

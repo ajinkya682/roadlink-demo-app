@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, AlertTriangle, Lightbulb, FileWarning, CheckCircle, Bell, ChevronRight, ShieldCheck } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
-import { useDemoData } from '../../context/DemoContext';
+import { useAppData } from '../../context/AppContext';
 
 const filters = ['All', 'Unresolved', 'Resolved'];
 
@@ -64,7 +64,7 @@ const getNotificationStyle = (type, resolved) => {
 
 export default function NotificationsInbox() {
   const navigate = useNavigate();
-  const { notifications, markRead } = useDemoData();
+  const { notifications, markRead } = useAppData();
   const [filter, setFilter] = useState('All');
 
   const filtered = notifications.filter(n => {
