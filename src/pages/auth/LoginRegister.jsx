@@ -113,10 +113,23 @@ export default function LoginRegister() {
           </form>
         </div>
 
-        <p className="mt-4 text-center font-body text-body-sm text-on-surface-muted px-4">
-          By continuing, you agree to our Terms of Service.<br />
-          Your number is <strong>never</strong> shown publicly.
-        </p>
+        <div className="mt-8 pb-4 text-center px-4">
+          <p className="font-body text-[15px] text-on-surface-muted mb-8 leading-relaxed">
+            We only use this to verify you and deliver alerts —<br />never shown publicly.
+          </p>
+          <div className="border-t border-outline-light pt-6">
+            <p className="font-body text-[15px] text-on-surface mb-5 leading-relaxed">
+              Privacy Encrypted. This page never shows the<br />owner's phone number.
+            </p>
+            <div className="flex justify-center gap-6 mb-6">
+              <button className="font-body text-[15px] text-on-surface-muted hover:text-navy underline underline-offset-4">Privacy Policy</button>
+              <button className="font-body text-[15px] text-on-surface-muted hover:text-navy underline underline-offset-4">Legal Terms</button>
+            </div>
+            <p className="font-body text-[11px] font-bold tracking-[0.1em] text-on-surface-muted uppercase mt-8">
+              ROADLINK IDENTITY SYSTEMS © 2026
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
