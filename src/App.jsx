@@ -34,41 +34,45 @@ function App() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Entry */}
-        <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
+    <div className="app-shell">
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          {/* Entry */}
+          <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
 
-        {/* Guest */}
-        <Route path="/guest-dashboard" element={<PageWrapper><GuestDashboard /></PageWrapper>} />
-        <Route path="/scan-landing" element={<PageWrapper><ScanLanding /></PageWrapper>} />
-        <Route path="/report-detail" element={<PageWrapper><ReportDetail /></PageWrapper>} />
-        <Route path="/report-confirmation" element={<PageWrapper><ReportConfirmation /></PageWrapper>} />
-        <Route path="/search" element={<PageWrapper><SearchVehicle /></PageWrapper>} />
-        <Route path="/search-result" element={<PageWrapper><SearchResult /></PageWrapper>} />
+          {/* Guest */}
+          <Route path="/guest-dashboard" element={<PageWrapper><GuestDashboard /></PageWrapper>} />
+          <Route path="/scan-landing" element={<PageWrapper><ScanLanding /></PageWrapper>} />
+          <Route path="/report-detail" element={<PageWrapper><ReportDetail /></PageWrapper>} />
+          <Route path="/report-confirmation" element={<PageWrapper><ReportConfirmation /></PageWrapper>} />
+          <Route path="/search" element={<PageWrapper><SearchVehicle /></PageWrapper>} />
+          <Route path="/search-result" element={<PageWrapper><SearchResult /></PageWrapper>} />
 
-        {/* Auth */}
-        <Route path="/login" element={<PageWrapper><LoginRegister /></PageWrapper>} />
-        <Route path="/otp" element={<PageWrapper><OTPVerification /></PageWrapper>} />
+          {/* Auth */}
+          <Route path="/login" element={<PageWrapper><LoginRegister /></PageWrapper>} />
+          <Route path="/otp" element={<PageWrapper><OTPVerification /></PageWrapper>} />
 
-        {/* Owner */}
-        <Route path="/add-vehicle" element={<PageWrapper><AddVehicle /></PageWrapper>} />
-        <Route path="/qr-detail" element={<PageWrapper><QRDetail /></PageWrapper>} />
-        <Route path="/order-sticker" element={<PageWrapper><OrderSticker /></PageWrapper>} />
-        <Route path="/order-confirmation" element={<PageWrapper><OrderConfirmation /></PageWrapper>} />
-        <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
-        <Route path="/vehicle-detail" element={<PageWrapper><VehicleDetail /></PageWrapper>} />
-        <Route path="/notifications" element={<PageWrapper><NotificationsInbox /></PageWrapper>} />
-        <Route path="/notification-detail" element={<PageWrapper><NotificationDetail /></PageWrapper>} />
-        <Route path="/document-vault" element={<PageWrapper><DocumentVault /></PageWrapper>} />
-        <Route path="/document-upload" element={<PageWrapper><DocumentUpload /></PageWrapper>} />
-        <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
-        <Route path="/emergency-contacts" element={<PageWrapper><EmergencyContacts /></PageWrapper>} />
+          {/* Owner */}
+          <Route path="/add-vehicle" element={<PageWrapper><AddVehicle /></PageWrapper>} />
+          <Route path="/qr-detail" element={<PageWrapper><QRDetail /></PageWrapper>} />
+          <Route path="/order-sticker" element={<PageWrapper><OrderSticker /></PageWrapper>} />
+          <Route path="/order-confirmation" element={<PageWrapper><OrderConfirmation /></PageWrapper>} />
+          <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+          <Route path="/vehicle-detail/:id" element={<PageWrapper><VehicleDetail /></PageWrapper>} />
+          <Route path="/vehicle-detail" element={<PageWrapper><VehicleDetail /></PageWrapper>} />
+          <Route path="/notifications" element={<PageWrapper><NotificationsInbox /></PageWrapper>} />
+          <Route path="/notification-detail/:id" element={<PageWrapper><NotificationDetail /></PageWrapper>} />
+          <Route path="/notification-detail" element={<PageWrapper><NotificationDetail /></PageWrapper>} />
+          <Route path="/document-vault" element={<PageWrapper><DocumentVault /></PageWrapper>} />
+          <Route path="/document-upload" element={<PageWrapper><DocumentUpload /></PageWrapper>} />
+          <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+          <Route path="/emergency-contacts" element={<PageWrapper><EmergencyContacts /></PageWrapper>} />
 
-        {/* Catch all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AnimatePresence>
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </div>
   )
 }
 
