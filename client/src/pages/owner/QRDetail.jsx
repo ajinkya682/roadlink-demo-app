@@ -22,17 +22,41 @@ export default function QRDetail() {
 
   const [downloaded, setDownloaded] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
 
   const handleDownload = () => {
-    setDownloaded(true);
-    setTimeout(() => setDownloaded(false), 2500);
-  };
+    const svgElement = document.getElementById('vehicle-qr-svg');
+    if (!svgElement) return;
 
-  const handleRegenerate = () => {
-    setShowRegenerateDialog(false);
-    // Real app would make API call here
-    alert('QR Regenerated successfully!');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    const xml = new XMLSerializer().serializeToString(svgElement);
+    const svg64 = btoa(unescape(encodeURIComponent(xml)));
+    const image64 = 'data:image/svg+xml;base64,' + svg64;
+
+    img.onload = () => {
+      const padding = 40;
+      canvas.width = img.width + (padding * 2);
+      canvas.height = img.height + (padding * 2);
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, padding, padding);
+
+      const pngUrl = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pngUrl;
+      downloadLink.download = `RoadLink-QR-${vehicle.plate.replace(/\s/g, '')}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2500);
+    };
+
+    img.src = image64;
   };
 
   useEffect(() => {
@@ -84,6 +108,7 @@ export default function QRDetail() {
             
             <div className="relative w-full h-full flex items-center justify-center p-6" style={{ transform: 'translateZ(20px)' }}>
               <QRCodeSVG 
+                id="vehicle-qr-svg"
                 value={qrPayload}
                 size={280}
                 level="Q"
@@ -123,41 +148,7 @@ export default function QRDetail() {
               <><Download size={18} /> <span className="font-body text-[13px] font-bold tracking-widest uppercase ml-1">DOWNLOAD QR</span></>
             )}
           </Button>
-
-          <button 
-            onClick={() => setShowRegenerateDialog(true)}
-            className="w-full py-4 text-alert-red font-body text-[13px] font-bold tracking-widest uppercase hover:underline transition-all"
-          >
-            REGENERATE QR
-          </button>
         </div>
-
-        {/* Regenerate Dialog */}
-        <AnimatePresence>
-          {showRegenerateDialog && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-asphalt/50">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-              >
-                <h3 className="font-display text-[20px] font-bold text-on-surface mb-2">Regenerate QR?</h3>
-                <p className="font-body text-[14px] text-on-surface-muted mb-6">
-                  This will immediately invalidate your current QR code. Any existing stickers will stop working. Are you sure?
-                </p>
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1 border-outline-light" onClick={() => setShowRegenerateDialog(false)}>
-                    CANCEL
-                  </Button>
-                  <Button className="flex-1 bg-alert-red hover:bg-alert-red/90" onClick={handleRegenerate}>
-                    REGENERATE
-                  </Button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
 
         {/* Footer Reassurance */}
         <div className="mt-12 text-center max-w-[260px] mx-auto">
