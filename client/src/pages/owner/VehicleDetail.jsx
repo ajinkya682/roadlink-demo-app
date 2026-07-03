@@ -9,6 +9,7 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
 import api from '../../lib/api';
+import { QRCodeSVG } from 'qrcode.react';
 
 const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
 
@@ -341,36 +342,22 @@ export default function VehicleDetail() {
                   transition={{ type: 'spring', damping: 16, stiffness: 100 }}
                   style={{ perspective: 800, transformOrigin: 'center top' }}
                 >
-                  <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
-                    <rect width="160" height="160" fill="white" />
-                    <rect x="10" y="10" width="60" height="60" rx="6" fill="#1A1A1A" />
-                    <rect x="18" y="18" width="44" height="44" rx="4" fill="white" />
-                    <rect x="26" y="26" width="28" height="28" fill="#1A1A1A" />
-                    <rect x="90" y="10" width="60" height="60" rx="6" fill="#1A1A1A" />
-                    <rect x="98" y="18" width="44" height="44" rx="4" fill="white" />
-                    <rect x="106" y="26" width="28" height="28" fill="#1A1A1A" />
-                    <rect x="10" y="90" width="60" height="60" rx="6" fill="#1A1A1A" />
-                    <rect x="18" y="98" width="44" height="44" rx="4" fill="white" />
-                    <rect x="26" y="106" width="28" height="28" fill="#1A1A1A" />
-                    <rect x="90" y="90" width="24" height="24" fill="#1A1A1A" rx="3" />
-                    <rect x="122" y="90" width="28" height="24" fill="#1A1A1A" rx="3" />
-                    <rect x="90" y="122" width="24" height="28" fill="#1A1A1A" rx="3" />
-                    <rect x="122" y="122" width="28" height="28" fill="#1A1A1A" rx="3" />
-                  </svg>
+                  <QRCodeSVG 
+                    value={`${window.location.origin}/scan-landing?qr=${vehicle.qrToken}`}
+                    size={160}
+                    level="Q"
+                    className="w-full h-full"
+                    fgColor="#1A1A1A"
+                    bgColor="transparent"
+                  />
                 </motion.div>
                 <p className="font-mono text-xs tracking-wider text-on-surface-muted">{vehicle.qrToken}</p>
-                <div className="flex gap-3 w-full">
+                <div className="flex w-full">
                   <button
-                    className="flex-1 border-2 border-navy text-navy rounded-xl py-3 font-body text-sm font-semibold flex items-center justify-center gap-2"
+                    className="flex-1 border-2 border-navy text-navy rounded-xl py-3 font-body text-sm font-semibold flex items-center justify-center gap-2 hover:bg-navy/5 transition-colors"
                     onClick={() => navigate('/qr-detail')}
                   >
                     <QrCode size={16} /> Full QR Page
-                  </button>
-                  <button
-                    className="flex-1 bg-signal-amber text-asphalt rounded-xl py-3 font-body text-sm font-semibold"
-                    onClick={() => navigate('/order-sticker')}
-                  >
-                    Order Sticker
                   </button>
                 </div>
               </div>
