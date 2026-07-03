@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../components/Button';
-import styles from './SearchVehicle.module.css';
 
 function formatPlate(val) {
   const raw = val.replace(/\s/g, '').toUpperCase().slice(0, 10);
@@ -18,9 +17,7 @@ export default function SearchVehicle() {
   const navigate = useNavigate();
   const [plate, setPlate] = useState('');
 
-  const handleChange = (e) => {
-    setPlate(formatPlate(e.target.value));
-  };
+  const handleChange = (e) => setPlate(formatPlate(e.target.value));
 
   const handleSearch = () => {
     if (plate.replace(/\s/g, '').length >= 6) {
@@ -31,23 +28,31 @@ export default function SearchVehicle() {
   const isValid = plate.replace(/\s/g, '').length >= 6;
 
   return (
-    <div className={styles.page}>
+    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12">
       <motion.div
-        className={styles.center}
+        className="w-full max-w-sm space-y-6"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        <Search size={32} color="var(--on-surface-variant)" />
-        <h1 className={styles.headline}>Search a Vehicle</h1>
-
-        <div className={styles.plateInput}>
-          <div className={styles.plateHeader}>
-            <span className={styles.ind}>IND</span>
-            <div className={styles.rivet} />
+        <div className="text-center space-y-2">
+          <div className="w-14 h-14 bg-navy/10 rounded-2xl flex items-center justify-center mx-auto">
+            <Search size={28} className="text-navy" />
           </div>
+          <h1 className="font-display text-headline-sm text-on-surface">Search a Vehicle</h1>
+          <p className="font-body text-body-sm text-on-surface-muted">Enter the registration number below</p>
+        </div>
+
+        {/* Plate-styled input */}
+        <div className="bg-white border-2 border-asphalt rounded-xl overflow-hidden shadow-plate">
+          {/* Plate header */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-asphalt/15">
+            <span className="font-mono text-[10px] font-medium text-on-surface-muted tracking-[0.2em] uppercase">IND</span>
+            <div className="w-2 h-2 rounded-full bg-outline-light" />
+          </div>
+          {/* Input */}
           <input
-            className={styles.plateField}
+            className="w-full px-4 py-4 font-mono font-medium text-xl text-asphalt tracking-widest bg-transparent focus:outline-none placeholder:text-outline-light text-center uppercase"
             value={plate}
             onChange={handleChange}
             placeholder="MH 14 AB 1234"
@@ -57,10 +62,15 @@ export default function SearchVehicle() {
         </div>
 
         <Button fullWidth onClick={handleSearch} disabled={!isValid}>
-          Search
+          <Search size={18} /> Search
         </Button>
 
-        <p className={styles.privacy}>We will never show you a phone number.</p>
+        <div className="flex items-center justify-center gap-2">
+          <Shield size={13} className="text-verified-green" />
+          <p className="font-body text-xs text-on-surface-muted">
+            We will never show you a phone number.
+          </p>
+        </div>
       </motion.div>
     </div>
   );

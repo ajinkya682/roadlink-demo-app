@@ -1,89 +1,87 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { CheckCircle, Phone } from 'lucide-react';
 import Button from '../../components/Button';
-import styles from './ReportConfirmation.module.css';
-
-// Animated SVG checkmark
-function CheckmarkSVG() {
-  return (
-    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-      <motion.circle
-        cx="40" cy="40" r="36"
-        stroke="var(--verified-green)"
-        strokeWidth="3"
-        fill="rgba(30,142,90,0.08)"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      />
-      <motion.path
-        d="M24 41L35 52L56 30"
-        stroke="var(--verified-green)"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 0.4, delay: 0.4, ease: 'easeOut' }}
-      />
-    </svg>
-  );
-}
 
 export default function ReportConfirmation() {
   const navigate = useNavigate();
   const location = useLocation();
-  const cat = location.state?.category || {};
-  const isEmergency = cat.alert;
+  const cat = location.state?.category || { label: 'Wrong Parking', isAlert: false };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.center}>
-        <CheckmarkSVG />
-
+    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12">
+      <motion.div
+        className="w-full max-w-sm flex flex-col items-center text-center space-y-6"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        {/* Checkmark in plate-tag shape */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.3 }}
-          className={styles.textBlock}
+          className="w-24 h-24 bg-verified-green/10 border-2 border-verified-green rounded-2xl flex items-center justify-center"
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', damping: 12, stiffness: 150, delay: 0.1 }}
         >
-          <h1 className={styles.headline}>Notification sent.</h1>
-          <p className={styles.sub}>The owner has been notified. No further action needed.</p>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', damping: 10, stiffness: 200, delay: 0.35 }}
+          >
+            <CheckCircle size={44} className="text-verified-green" strokeWidth={2} />
+          </motion.div>
         </motion.div>
 
-        {isEmergency && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <h1 className="font-display text-headline-sm text-on-surface mb-2">Notification Sent</h1>
+          <p className="font-body text-body-sm text-on-surface-muted">
+            The owner has been notified about the <strong>{cat.label}</strong>. No further action needed.
+          </p>
+        </motion.div>
+
+        {/* Emergency: show emergency numbers */}
+        {cat.isAlert && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1, type: 'spring' }}
-            className={styles.emergencyBlock}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="w-full bg-alert-red/5 border-2 border-alert-red/30 rounded-xl p-4 space-y-3"
           >
-            <p className={styles.emergencyNote}>If this is a genuine emergency, call immediately:</p>
-            <motion.a
-              href="tel:112"
-              className={styles.callBtn}
-              animate={{ scale: [1, 1.03, 1] }}
-              transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
-            >
-              <Phone size={18} />
-              Call 112 — Emergency
-            </motion.a>
+            <p className="font-body text-sm font-semibold text-alert-red">
+              If this is a genuine emergency, call now:
+            </p>
+            <div className="flex flex-col gap-2">
+              <a
+                href="tel:112"
+                className="flex items-center justify-center gap-2 bg-alert-red text-white rounded-xl py-3 font-body font-bold text-sm"
+              >
+                <Phone size={16} /> Call 112 — National Emergency
+              </a>
+              <a
+                href="tel:108"
+                className="flex items-center justify-center gap-2 border-2 border-alert-red text-alert-red rounded-xl py-3 font-body font-semibold text-sm"
+              >
+                <Phone size={16} /> Call 108 — Ambulance
+              </a>
+            </div>
           </motion.div>
         )}
-      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.9 }}
-        className={styles.doneBtn}
-      >
-        <Button variant="outline" fullWidth onClick={() => navigate('/guest-dashboard')}>
-          Done
-        </Button>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
+          className="w-full"
+        >
+          <Button variant="outline" fullWidth onClick={() => navigate('/guest-dashboard')}>
+            Done
+          </Button>
+        </motion.div>
       </motion.div>
     </div>
   );
