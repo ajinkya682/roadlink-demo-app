@@ -102,12 +102,14 @@ export default function NotificationsInbox() {
         </section>
 
         {/* Notification Feed */}
-        <div className="space-y-4">
+        <div className="pb-10">
           <AnimatePresence mode="popLayout">
             {filtered.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                key="empty-state"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
                 className="flex flex-col items-center justify-center py-20 gap-3 text-center"
               >
                 <div className="w-14 h-14 bg-[#f0eded] rounded-2xl flex items-center justify-center text-[#434751]">
@@ -123,12 +125,12 @@ export default function NotificationsInbox() {
                   <motion.article
                     key={n.id}
                     layout
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -60, transition: { duration: 0.2 } }}
-                    transition={{ delay: i * 0.05 }}
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                     onClick={() => handleNotificationClick(n)}
-                    className={`rounded-xl border-l-4 ${style.borderClass} ${style.cardOpacity} shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-start p-4 transition-transform hover:translate-x-1 duration-200 cursor-pointer group`}
+                    className={`mb-4 rounded-xl border-l-4 ${style.borderClass} ${style.cardOpacity} shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-start p-4 transition-transform hover:translate-x-1 duration-200 cursor-pointer group origin-top`}
                   >
                     <div className={`mr-4 flex-shrink-0 ${style.bgClass} p-2 rounded-lg`}>
                       <style.Icon size={24} className={style.iconColor} />
