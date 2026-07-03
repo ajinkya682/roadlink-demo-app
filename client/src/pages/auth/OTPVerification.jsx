@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
+import api from '../../lib/api';
 
 export default function OTPVerification() {
   const navigate = useNavigate();
@@ -54,30 +55,44 @@ export default function OTPVerification() {
     }
   };
 
-  const submitCode = (code) => {
+  const [error, setError] = useState(null);
+
+  const submitCode = async (code) => {
     setLoading(true);
-    // TODO (Phase 3/4): Replace this local mock with a real backend verification call (POST /auth/verify).
-    // Currently accepts ANY 6-digit code as a local placeholder.
-    setTimeout(() => {
-      if (code.length === 6) {
-        signIn({
-          id: 'u-' + Math.random().toString(36).substr(2, 9),
-          name: name,
-          phone: `+91 ${phone}`,
-          maskedPhone: maskedPhone,
-          avatar: name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+    setError(null);
+    
+    try {
+      const formattedPhone = '+91' + phone;
+      const res = await api.post('/auth/otp/verify', {
+        phone: formattedPhone,
+        otp: code
+      });
+
+      if (res.data.success) {
+        const { user, accessToken, refreshToken } = res.data.data;
+        
+        // Enhance user object with some frontend-only UI state properties
+        const enhancedUser = {
+          ...user,
+          maskedPhone,
+          avatar: (user.name || 'Guest').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
           joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          notificationPrefs: { push: true, whatsapp: true, sms: true, email: false },
-        });
+          notificationPrefs: { push: true, whatsapp: true, sms: true, email: false }
+        };
+
+        await signIn(enhancedUser, accessToken, refreshToken);
         navigate('/add-vehicle');
       } else {
-        setLoading(false);
-        setShake(true);
-        setDigits(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
-        setTimeout(() => setShake(false), 600);
+        throw new Error(res.data.error?.message || 'Invalid OTP');
       }
-    }, 900);
+    } catch (err) {
+      setError(err.response?.data?.error?.message || err.message || 'Verification failed');
+      setLoading(false);
+      setShake(true);
+      setDigits(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+      setTimeout(() => setShake(false), 600);
+    }
   };
 
   const handleVerify = () => {
@@ -101,31 +116,33 @@ export default function OTPVerification() {
 
         {/* OTP boxes */}
         <motion.div
-          className="flex items-center justify-center gap-2"
+          className="flex flex-col items-center justify-center gap-2"
           animate={shake ? { x: [0, -8, 8, -6, 6, -3, 3, 0] } : {}}
           transition={{ duration: 0.5 }}
         >
-          {digits.map((d, i) => (
-            <motion.div
-              key={i}
-              animate={d ? { scale: [1, 1.1, 1] } : {}}
-              transition={{ type: 'spring', damping: 12, stiffness: 300 }}
-            >
-              <input
-                ref={el => inputRefs.current[i] = el}
-                className={`otp-box ${d ? 'filled' : ''}`}
-                type="tel"
-                inputMode="numeric"
-                maxLength={1}
-                value={d}
-                onChange={e => handleDigit(i, e.target.value)}
-                onKeyDown={e => handleKeyDown(i, e)}
-                autoFocus={i === 0}
-              />
-            </motion.div>
-          ))}
+          <div className="flex items-center justify-center gap-2">
+            {digits.map((d, i) => (
+              <motion.div
+                key={i}
+                animate={d ? { scale: [1, 1.1, 1] } : {}}
+                transition={{ type: 'spring', damping: 12, stiffness: 300 }}
+              >
+                <input
+                  ref={el => inputRefs.current[i] = el}
+                  className={`otp-box ${d ? 'filled' : ''}`}
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={d}
+                  onChange={e => handleDigit(i, e.target.value)}
+                  onKeyDown={e => handleKeyDown(i, e)}
+                  autoFocus={i === 0}
+                />
+              </motion.div>
+            ))}
+          </div>
+          {error && <p className="text-red-500 text-sm font-body text-center mt-2">{error}</p>}
         </motion.div>
-
 
 
         <Button fullWidth onClick={handleVerify} disabled={!allFilled} isLoading={loading}>

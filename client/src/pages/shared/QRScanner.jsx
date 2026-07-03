@@ -6,6 +6,7 @@ import { BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
 import { NativeFeedback } from '../../hooks/useNative';
 import { useAppData } from '../../context/AppContext';
+import api from '../../lib/api';
 
 export default function QRScanner() {
   const navigate = useNavigate();
@@ -62,15 +63,6 @@ export default function QRScanner() {
 
   const handleScanSuccess = async (value) => {
     if (scanned) return;
-
-    // Check if it's a valid RoadLink QR format
-    if (!value.startsWith('roadlink://v/')) {
-      setErrorFlash(true);
-      await NativeFeedback.vibrateError();
-      setTimeout(() => setErrorFlash(false), 500);
-      return; // Resume scanning
-    }
-
     setScanned(true);
     await NativeFeedback.vibrateSuccess();
     
@@ -80,21 +72,35 @@ export default function QRScanner() {
       document.documentElement.style.backgroundColor = '';
     }
     
-    setTimeout(() => {
-      // Parse QR token (currently just the qrId locally)
-      // TODO (Phase 3/4): Replace local matching logic with a POST /vehicles/resolve API call.
-      const scannedQrId = value.split('roadlink://v/')[1];
-      
-      const matchedVehicle = vehicles.find(v => v.qrId === scannedQrId);
-      
+    try {
+      // 1. Check if user owns this vehicle
+      const matchedVehicle = vehicles.find(v => v.qrToken === value || v.qrId === value.replace('roadlink://v/', ''));
       if (matchedVehicle) {
-        // User owns this vehicle, go to detail
         navigate(`/vehicle-detail/${matchedVehicle.id}`);
-      } else {
-        // External scan, route to guest flow
-        navigate('/scan-landing', { state: { qrId: scannedQrId } });
+        return;
       }
-    }, 500);
+
+      // 2. Guest flow - resolve the token via backend
+      const token = value.startsWith('roadlink://v/') ? value.split('roadlink://v/')[1] : value;
+      
+      // If simulated scanning in dev without a real token
+      if (token === 'ROADLINK-SIMULATED123') {
+        return navigate('/scan-landing', { state: { qrId: token, profile: { publicDisplayName: 'TEST VEHICLE' } } });
+      }
+
+      const res = await api.get(`/vehicles/resolve?token=${token}`);
+      if (res.data.success) {
+        navigate('/scan-landing', { state: { qrId: token, profile: res.data.data.profile } });
+      } else {
+        throw new Error('Invalid QR');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorFlash(true);
+      await NativeFeedback.vibrateError();
+      setTimeout(() => setErrorFlash(false), 500);
+      setScanned(false); // allow retry
+    }
   };
 
   const toggleTorch = async () => {

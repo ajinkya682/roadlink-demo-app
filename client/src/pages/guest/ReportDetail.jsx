@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Toggle from '../../components/Toggle';
+import api from '../../lib/api';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const fadeUp = {
@@ -22,11 +23,26 @@ export default function ReportDetail() {
   const [hasPhoto, setHasPhoto] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const token = location.state?.token || '';
   const isEmergency = cat.isAlert;
 
-  const handleSend = () => {
+  const handleSend = async () => {
     setLoading(true);
-    setTimeout(() => navigate('/report-confirmation', { state: { category: cat } }), 1200);
+    try {
+      if (token) {
+        await api.post('/reports', {
+          qrToken: token,
+          category: cat.id || cat.label.toLowerCase().replace(/ /g, '_'),
+          notes: notes
+        });
+      }
+      setTimeout(() => navigate('/report-confirmation', { state: { category: cat } }), 800);
+    } catch (err) {
+      console.error('Failed to submit report', err);
+      setLoading(false);
+      // In a real app we'd show a toast error here
+      alert('Failed to send report: ' + (err.response?.data?.error?.message || err.message));
+    }
   };
 
   return (

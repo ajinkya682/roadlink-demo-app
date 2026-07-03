@@ -6,25 +6,48 @@ import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { useAppData } from '../../context/AppContext';
+import api from '../../lib/api';
 
 export default function DocumentUpload() {
   const navigate = useNavigate();
   const location = useLocation();
   const docType = location.state?.type || 'RC Book';
-  const { documents } = useAppData();
+  const vehicleId = location.state?.vehicleId;
   const [file, setFile] = useState(null);
   const [expiryDate, setExpiryDate] = useState('');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
+    if (!vehicleId) return setError('Missing vehicle ID');
+    
     setUploading(true);
-    let p = 0;
-    const interval = setInterval(() => {
-      p += 12;
-      if (p >= 100) {
-        clearInterval(interval);
+    setError(null);
+    setProgress(20);
+
+    try {
+      const formData = new FormData();
+      formData.append('vehicleId', vehicleId);
+      formData.append('documentType', docType);
+      if (expiryDate) formData.append('expiryDate', expiryDate);
+      
+      // Since UI mocks the file picker, we create a mock blob for the upload
+      const mockBlob = new Blob(['Mock PDF Content'], { type: 'application/pdf' });
+      formData.append('file', mockBlob, 'document.pdf');
+
+      const res = await api.post('/documents', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setProgress(Math.max(20, percentCompleted));
+        }
+      });
+
+      if (res.data.success) {
         setProgress(100);
         setTimeout(() => {
           setUploading(false);
@@ -32,9 +55,12 @@ export default function DocumentUpload() {
           setTimeout(() => navigate('/document-vault'), 1800);
         }, 400);
       } else {
-        setProgress(p);
+        throw new Error(res.data.error?.message || 'Failed to upload document');
       }
-    }, 160);
+    } catch (err) {
+      setError(err.response?.data?.error?.message || err.message || 'Upload failed');
+      setUploading(false);
+    }
   };
 
   return (
@@ -135,6 +161,8 @@ export default function DocumentUpload() {
             </div>
           </motion.div>
         )}
+        
+        {error && <p className="text-red-500 text-sm font-body text-center">{error}</p>}
       </div>
 
       <div className="px-5 pb-10 pt-4 border-t border-outline-light bg-fog">

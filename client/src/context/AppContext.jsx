@@ -6,6 +6,7 @@ import { SecureStorage } from '../hooks/useNative';
 //
 // Central app state — replaces DemoContext (which seeded from hardcoded demo
 // files). All arrays start empty; data will come from real API calls in Phase 3.
+import api from '../lib/api';
 //
 // TODO (Phase 3/4): Replace SecureStorage persistence with real access/refresh
 // token session management. isAuthenticated here is a local placeholder only.
@@ -53,7 +54,12 @@ export function AppProvider({ children }) {
       const storedDocuments     = await SecureStorage.get('roadlink_documents');
       const storedContacts      = await SecureStorage.get('roadlink_contacts');
 
-      if (storedAuth)          setIsAuthenticated(storedAuth === true || storedAuth === 'true');
+      if (storedAuth === true || storedAuth === 'true') {
+        const accessToken = await SecureStorage.get('roadlink_access_token');
+        if (accessToken) {
+          setIsAuthenticated(true);
+        }
+      }
       if (storedUser)          setUser(storedUser);
       if (storedVehicles)      setVehicles(storedVehicles);
       if (storedNotifications) setNotifications(storedNotifications);
@@ -77,9 +83,12 @@ export function AppProvider({ children }) {
   }, [user, vehicles, notifications, documents, contacts, isAuthenticated, isInitialized]);
 
   // ── Auth actions ──────────────────────────────────────────────────────────
-  const signIn = (userProfile) => {
+  const signIn = async (userProfile, accessToken, refreshToken) => {
     setUser(userProfile);
     setIsAuthenticated(true);
+    await SecureStorage.set('roadlink_access_token', accessToken);
+    await SecureStorage.set('roadlink_refresh_token', refreshToken);
+    await SecureStorage.set('roadlink_auth', true);
   };
 
   const signOut = async () => {
@@ -90,6 +99,8 @@ export function AppProvider({ children }) {
     setDocuments([]);
     setContacts([]);
     // Clear persisted session
+    await SecureStorage.remove('roadlink_access_token');
+    await SecureStorage.remove('roadlink_refresh_token');
     await SecureStorage.clear();
   };
 
@@ -112,6 +123,28 @@ export function AppProvider({ children }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const refreshNotifications = async () => {
+    try {
+      const res = await api.get('/reports');
+      if (res.data.success) {
+        // Map reports to notification format
+        const fetchedReports = res.data.data.reports.map(r => ({
+          id: r._id,
+          type: 'alert',
+          title: `Report on ${r.vehicleId.registrationNumber || 'Vehicle'}`,
+          message: r.message,
+          timestamp: new Date(r.createdAt).toLocaleString('en-IN', { hour: 'numeric', minute: 'numeric', hour12: true }),
+          read: r.status === 'resolved',
+          resolved: r.status === 'resolved',
+          vehicleId: r.vehicleId._id || r.vehicleId
+        }));
+        setNotifications(fetchedReports);
+      }
+    } catch (err) {
+      console.error('Failed to fetch reports', err);
+    }
+  };
+
   // ── Vehicle actions ───────────────────────────────────────────────────────
   const addVehicle = (vehicle) => {
     const newVehicle = {
@@ -133,6 +166,31 @@ export function AppProvider({ children }) {
     );
   };
 
+  const refreshVehicles = async () => {
+    try {
+      const res = await api.get('/vehicles');
+      if (res.data.success) {
+        // Map backend format to frontend expected format
+        const fetchedVehicles = res.data.data.vehicles.map(v => ({
+          id: v._id,
+          plate: v.registrationNumber,
+          make: v.make,
+          model: v.model,
+          displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
+          isVerified: v.isVerified,
+          privacyMode: v.privacySettings?.showOwnerName === false,
+          addedDate: new Date(v.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+          unreadAlerts: 0,
+          qrToken: v.qrToken,
+          qrId: v._id
+        }));
+        setVehicles(fetchedVehicles);
+      }
+    } catch (err) {
+      console.error('Failed to fetch vehicles', err);
+    }
+  };
+
   // ── Document actions ──────────────────────────────────────────────────────
   const addDocument = (doc) => {
     const newDoc = { ...doc, id: `d${Date.now()}` };
@@ -151,39 +209,102 @@ export function AppProvider({ children }) {
     setDocuments(prev => prev.filter(d => d.id !== id));
   };
 
-  // ── Contact actions ───────────────────────────────────────────────────────
-  const addContact = (contact) => {
-    const newContact = { ...contact, id: `c${Date.now()}`, maskedPhone: maskPhone(contact.phone) };
-    if (contact.isPrimary) {
-      setContacts(prev => [
-        ...prev.map(c => ({ ...c, isPrimary: false })),
-        newContact,
-      ]);
-    } else {
-      setContacts(prev => [...prev, newContact]);
+  const refreshDocuments = async () => {
+    try {
+      const res = await api.get('/documents');
+      if (res.data.success) {
+        // Map backend format to frontend
+        const fetchedDocs = res.data.data.documents.map(d => ({
+          id: d._id,
+          vehicleId: d.vehicleId,
+          type: d.documentType,
+          number: d.documentNumber,
+          expiry: new Date(d.expiryDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+          status: new Date(d.expiryDate) < new Date() ? 'expired' : 'valid'
+        }));
+        setDocuments(fetchedDocs);
+      }
+    } catch (err) {
+      console.error('Failed to fetch documents', err);
     }
   };
 
-  const deleteContact = (id) => {
-    setContacts(prev => prev.filter(c => c.id !== id));
-  };
-
-  const setPrimaryContact = (id) => {
-    setContacts(prev => prev.map(c => ({ ...c, isPrimary: c.id === id })));
-  };
-
-  const updateContact = (id, updatedContact) => {
-    setContacts(prev => {
-      const newContacts = prev.map(c =>
-        c.id === id
-          ? { ...c, ...updatedContact, maskedPhone: maskPhone(updatedContact.phone || c.phone) }
-          : c
-      );
-      if (updatedContact.isPrimary) {
-        return newContacts.map(c => ({ ...c, isPrimary: c.id === id }));
+  // ── Contact actions ───────────────────────────────────────────────────────
+  const refreshContacts = async () => {
+    try {
+      const res = await api.get('/emergency-contacts');
+      if (res.data.success) {
+        const fetchedContacts = res.data.data.contacts.map(c => ({
+          id: c._id,
+          name: c.name,
+          phone: c.phone,
+          maskedPhone: maskPhone(c.phone),
+          relation: c.relationship,
+          isPrimary: c.isPrimary
+        }));
+        setContacts(fetchedContacts);
       }
-      return newContacts;
-    });
+    } catch (err) {
+      console.error('Failed to fetch contacts', err);
+    }
+  };
+
+  const addContact = async (contact) => {
+    try {
+      const res = await api.post('/emergency-contacts', {
+        name: contact.name,
+        phone: contact.phone,
+        relationship: contact.relation,
+        isPrimary: contact.isPrimary
+      });
+      if (res.data.success) {
+        await refreshContacts();
+      }
+    } catch (err) {
+      console.error('Failed to add contact', err);
+      throw err;
+    }
+  };
+
+  const deleteContact = async (id) => {
+    try {
+      const res = await api.delete(`/emergency-contacts/${id}`);
+      if (res.data.success) {
+        setContacts(prev => prev.filter(c => c.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to delete contact', err);
+      throw err;
+    }
+  };
+
+  const updateContact = async (id, updatedContact) => {
+    try {
+      const res = await api.patch(`/emergency-contacts/${id}`, {
+        name: updatedContact.name,
+        phone: updatedContact.phone,
+        relationship: updatedContact.relation,
+        isPrimary: updatedContact.isPrimary
+      });
+      if (res.data.success) {
+        await refreshContacts();
+      }
+    } catch (err) {
+      console.error('Failed to update contact', err);
+      throw err;
+    }
+  };
+
+  const setPrimaryContact = async (id) => {
+    try {
+      const res = await api.patch(`/emergency-contacts/${id}`, { isPrimary: true });
+      if (res.data.success) {
+        await refreshContacts();
+      }
+    } catch (err) {
+      console.error('Failed to set primary', err);
+      throw err;
+    }
   };
 
   // ── User preference actions ───────────────────────────────────────────────
@@ -208,13 +329,17 @@ export function AppProvider({ children }) {
       markResolved,
       dismissNotification,
       markRead,
+      refreshNotifications,
       // Vehicle actions
       addVehicle,
       togglePrivacyMode,
+      refreshVehicles,
       // Document actions
       addDocument,
       removeDocument,
+      refreshDocuments,
       // Contact actions
+      refreshContacts,
       addContact,
       updateContact,
       deleteContact,

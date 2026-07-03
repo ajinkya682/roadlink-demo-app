@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Plus, QrCode, ChevronRight, UserCircle, Car, LayoutGrid, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -30,7 +30,12 @@ const quickActions = [
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { vehicles, user, unreadCount } = useAppData();
+  const { vehicles, user, unreadCount, refreshVehicles, refreshNotifications } = useAppData();
+
+  useEffect(() => {
+    refreshVehicles();
+    refreshNotifications();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] pb-28">

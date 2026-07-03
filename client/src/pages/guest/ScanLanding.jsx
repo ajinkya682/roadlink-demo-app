@@ -3,13 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
 import { reportCategories } from '../../demo-data/categories';
-// Fallback mock since backend isn't ready
-const scannedVehicle = {
-  plate: 'MH 14 AB 1234',
-  displayName: 'Honda Activa',
-  isVerified: true,
-  qrId: 'ROADLINK-MH14AB1234',
-};
+import { useLocation } from 'react-router-dom';
 const containerVariants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.04, delayChildren: 0.1 } },
@@ -21,9 +15,16 @@ const itemVariants = {
 
 export default function ScanLanding() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const profile = location.state?.profile || {
+    publicDisplayName: 'VEHICLE',
+    isVerified: true,
+  };
+  const token = location.state?.qrId || '';
 
   const handleCategory = (cat) => {
-    navigate('/report-detail', { state: { category: cat } });
+    navigate('/report-detail', { state: { category: cat, token, profile } });
   };
 
   return (
@@ -33,10 +34,10 @@ export default function ScanLanding() {
           <div className="flex items-center gap-3">
             <div className="bg-white rounded-lg px-4 py-2 flex items-center justify-center border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(26,26,26,0.1)]">
               <span className="font-mono text-[14px] text-[#1c1b1b] font-medium tracking-widest uppercase">
-                {scannedVehicle.displayName}
+                {profile.publicDisplayName}
               </span>
             </div>
-            {scannedVehicle.isVerified && (
+            {profile.isVerified && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1E8E5A]/10 text-[#1E8E5A] border border-[#1E8E5A]/20">
                 <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                   verified

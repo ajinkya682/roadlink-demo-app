@@ -6,6 +6,7 @@ import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Toggle from '../../components/Toggle';
 import { useAppData } from '../../context/AppContext';
+import api from '../../lib/api';
 
 const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
 
@@ -14,9 +15,41 @@ export default function VehicleDetail() {
   const { id } = useParams();
   const { vehicles, notifications, documents, contacts, togglePrivacyMode } = useAppData();
 
-  // Use first vehicle as default
-  const vehicle = vehicles.find(v => v.id === id) || vehicles[0];
+  // Initial fallback to context, then update via API
+  const contextVehicle = vehicles.find(v => v.id === id) || vehicles[0];
+  const [vehicle, setVehicle] = useState(contextVehicle);
   const [activeTab, setActiveTab] = useState(0);
+
+  React.useEffect(() => {
+    async function loadVehicle() {
+      if (!id) return;
+      try {
+        const res = await api.get(`/vehicles/${id}`);
+        if (res.data.success) {
+          const v = res.data.data.vehicle;
+          setVehicle({
+            id: v._id,
+            plate: v.registrationNumber,
+            make: v.make,
+            model: v.model,
+            displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
+            isVerified: v.isVerified,
+            privacyMode: v.privacySettings?.showOwnerName === false,
+            addedDate: new Date(v.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+            unreadAlerts: 0,
+            qrId: v._id,
+            qrToken: v.qrToken,
+            nickname: v.nickname,
+            color: v.color || 'Unknown',
+            year: new Date(v.createdAt).getFullYear(),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch vehicle', err);
+      }
+    }
+    loadVehicle();
+  }, [id]);
 
   const recentNotifs = notifications
     .filter(n => n.vehicleId === vehicle.id)
@@ -99,14 +132,27 @@ export default function VehicleDetail() {
                 <div className="bg-white rounded-2xl border border-outline-light px-4 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-verified-green/10 rounded-xl flex items-center justify-center">
-                      <Shield size={18} className="text-verified-green" />
+                      <Shield size={22} className={vehicle.privacyMode ? 'text-verified-green' : 'text-outline'} />
                     </div>
                     <div>
-                      <p className="font-body text-sm font-semibold text-on-surface">Privacy Mode</p>
-                      <p className="font-body text-xs text-on-surface-muted">Hide your name when scanned</p>
+                      <h4 className="font-body text-sm font-semibold text-on-surface">Privacy Mode</h4>
+                      <p className="font-body text-xs text-on-surface-muted">Hide name when scanned</p>
                     </div>
                   </div>
-                  <Toggle on={vehicle.privacyMode} onChange={() => togglePrivacyMode(vehicle.id)} />
+                  <Toggle 
+                    on={vehicle.privacyMode} 
+                    onChange={async (newVal) => {
+                      // Optimistic update
+                      setVehicle(prev => ({ ...prev, privacyMode: newVal }));
+                      try {
+                        await api.patch(`/vehicles/${vehicle.id}/privacy`, { showOwnerName: !newVal });
+                      } catch (err) {
+                        console.error(err);
+                        // Revert on failure
+                        setVehicle(prev => ({ ...prev, privacyMode: !newVal }));
+                      }
+                    }} 
+                  />
                 </div>
 
                 {/* Recent alerts */}

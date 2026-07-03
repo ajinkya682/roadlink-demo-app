@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Download, Truck, HelpCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
@@ -10,13 +10,14 @@ import { QRCodeSVG } from 'qrcode.react';
 
 export default function QRDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { vehicles } = useAppData();
+  
   // Safe fallback if no vehicle exists yet (e.g. testing directly)
-  const vehicle = vehicles[0] || { plate: 'MH 12 AB 1234', displayName: 'HONDA ACTIVA', qrId: 'ROADLINK-123456' };
+  const vehicle = location.state?.vehicle || vehicles[0] || { plate: 'MH 12 AB 1234', displayName: 'HONDA ACTIVA', qrId: 'ROADLINK-123456' };
 
-  // TODO (Phase 3/4): This payload must be replaced with a real signed HMAC token
-  // from the backend once POST /vehicles is implemented. Right now it's a raw local ID.
-  const qrPayload = `roadlink://v/${vehicle.qrId}`;
+  // Use real signed HMAC token from POST /vehicles if available, else fallback
+  const qrPayload = location.state?.qrToken || `roadlink://v/${vehicle.qrId || vehicle._id}`;
 
   const [downloaded, setDownloaded] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });

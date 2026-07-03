@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit2, ShieldCheck, User, UserPlus, Info, AlertTriangle } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
@@ -10,7 +10,11 @@ import { useAppData } from "../../context/AppContext";
 const relations = ['Family', 'Friend', 'Colleague', 'Spouse', 'Brother', 'Other'];
 
 export default function EmergencyContacts() {
-  const { contacts, addContact, updateContact, deleteContact } = useAppData();
+  const { contacts, refreshContacts, addContact, updateContact, deleteContact } = useAppData();
+  
+  useEffect(() => {
+    refreshContacts();
+  }, []);
   
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);

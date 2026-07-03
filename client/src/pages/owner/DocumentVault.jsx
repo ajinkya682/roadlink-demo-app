@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Plus, UploadCloud, Trash2 } from 'lucide-react';
@@ -79,8 +79,17 @@ function DocCard({ doc, onClick }) {
 
 export default function DocumentVault() {
   const navigate = useNavigate();
-  const { documents } = useAppData();
-  const vehicleDocs = documents.filter(d => d.vehicleId === 'v1');
+  const { documents, vehicles, refreshDocuments, refreshVehicles } = useAppData();
+  
+  useEffect(() => {
+    refreshVehicles();
+    refreshDocuments();
+  }, []);
+
+  const activeVehicle = vehicles[0];
+  const vehicleId = activeVehicle?.id || null;
+
+  const vehicleDocs = documents.filter(d => d.vehicleId === vehicleId);
 
   const expiredCount = vehicleDocs.filter(d => d.status === 'expired').length;
   const expiringCount = vehicleDocs.filter(d => d.status === 'expiring').length;
@@ -130,7 +139,7 @@ export default function DocumentVault() {
           {REQUIRED_DOCS.map(type => {
             const uploadedDoc = vehicleDocs.find(d => d.type === type);
             if (uploadedDoc) {
-              return <DocCard key={type} doc={uploadedDoc} onClick={() => navigate('/document-upload', { state: { type } })} />;
+              return <DocCard key={type} doc={uploadedDoc} onClick={() => navigate('/document-upload', { state: { type, vehicleId } })} />;
             }
             
             // Empty state card
@@ -139,7 +148,10 @@ export default function DocumentVault() {
                 key={type}
                 variants={fadeUp}
                 className="border-2 border-dashed border-outline-light rounded-2xl flex flex-col items-center justify-center gap-2 py-8 cursor-pointer hover:border-navy/40 transition-colors bg-white/50"
-                onClick={() => navigate('/document-upload', { state: { type } })}
+                onClick={() => {
+                  if (!vehicleId) return alert('Please add a vehicle first');
+                  navigate('/document-upload', { state: { type, vehicleId } });
+                }}
                 whileTap={{ scale: 0.97 }}
               >
                 <div className="w-9 h-9 bg-navy/8 rounded-xl flex items-center justify-center">

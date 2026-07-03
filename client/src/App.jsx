@@ -85,16 +85,15 @@ function App() {
   }, [navigate]);
 
   const showNavRoutes = [
-    '/dashboard',
-    '/document-vault',
-    '/settings',
-    '/add-vehicle',
-    '/notifications',
+    '/dashboard',       // Home
+    '/document-vault',  // Docs
+    '/vehicle-detail',  // Vehicles (Root tab)
+    '/settings',        // Profile
+    '/profile'
   ];
 
-  const shouldShowNav = showNavRoutes.includes(location.pathname) || 
-                        location.pathname.startsWith('/vehicle-detail') ||
-                        location.pathname.startsWith('/notification-detail');
+  // Only show nav on exact matches of the root tab routes
+  const shouldShowNav = showNavRoutes.includes(location.pathname);
 
   return (
     <div className="app-shell">
