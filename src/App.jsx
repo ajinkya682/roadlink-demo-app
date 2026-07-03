@@ -34,6 +34,9 @@ import MyProfile from './pages/owner/MyProfile'
 import PrivacyControls from './pages/owner/PrivacyControls'
 import TermsPrivacy from './pages/owner/TermsPrivacy'
 
+// Shared
+import QRScanner from './pages/shared/QRScanner'
+
 function App() {
   const location = useLocation();
 
@@ -82,6 +85,7 @@ function App() {
           <Route path="/profile" element={<PageWrapper><MyProfile /></PageWrapper>} />
           <Route path="/privacy-controls" element={<PageWrapper><PrivacyControls /></PageWrapper>} />
           <Route path="/terms" element={<PageWrapper><TermsPrivacy /></PageWrapper>} />
+          <Route path="/scanner" element={<PageWrapper><QRScanner /></PageWrapper>} />
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />

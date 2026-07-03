@@ -47,20 +47,24 @@ export default function BottomTabBar() {
       </svg>
 
       {/* ── Amber scan button (floats above the notch) ────────── */}
-      <motion.button
-        aria-label="Scan QR Code"
-        className="absolute left-1/2 -translate-x-1/2 w-[60px] h-[60px] rounded-full flex items-center justify-center z-10"
-        style={{
-          bottom: '34px',            // sits ~2/3 above bar, 1/3 inside notch
-          background: '#F5A623',
-          boxShadow: '0 6px 24px rgba(245,166,35,0.45), 0 2px 8px rgba(0,0,0,0.12)',
-          border: '3px solid white', // clean ring where button meets notch
-        }}
-        whileTap={{ scale: 0.90 }}
-        onClick={handleScan}
+      <div 
+        className="absolute left-1/2 -translate-x-1/2 z-10"
+        style={{ bottom: '34px' }} // sits ~2/3 above bar, 1/3 inside notch
       >
-        <QrCode size={26} color="white" strokeWidth={2} />
-      </motion.button>
+        <motion.button
+          aria-label="Scan QR Code"
+          className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
+          style={{
+            background: '#F5A623',
+            boxShadow: '0 6px 24px rgba(245,166,35,0.45), 0 2px 8px rgba(0,0,0,0.12)',
+            border: '3px solid white', // clean ring where button meets notch
+          }}
+          whileTap={{ scale: 0.90 }}
+          onClick={() => navigate('/scanner')}
+        >
+          <QrCode size={26} color="white" strokeWidth={2} />
+        </motion.button>
+      </div>
 
       {/* ── Tab row ──────────────────────────────────────────── */}
       <div

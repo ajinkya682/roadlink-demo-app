@@ -22,10 +22,10 @@ function greeting() {
 }
 
 const quickActions = [
-  { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile'),       color: '#EEF2FF' },
-  { label: 'Add Vehicle', Icon: Plus,       action: (nav) => nav('/add-vehicle'),   color: '#FFF7E6' },
-  { label: 'My Vehicles', Icon: LayoutGrid, action: (nav) => nav('/vehicle-detail'),color: '#E8F5EE' },
-  { label: 'Invite',      Icon: Share2,     action: () => alert('Share RoadLink – Coming Soon!'), color: '#FCF0FF' },
+  { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile') },
+  { label: 'Add Vehicle', Icon: Plus,       action: (nav) => nav('/add-vehicle') },
+  { label: 'My Vehicles', Icon: LayoutGrid, action: (nav) => nav('/vehicle-detail') },
+  { label: 'Invite',      Icon: Share2,     action: () => alert('Share RoadLink – Coming Soon!') },
 ];
 
 export default function Dashboard() {
@@ -36,23 +36,31 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#F7F8FA] pb-28">
 
       {/* ── HEADER ────────────────────────────────────────────── */}
-      <div className="bg-white sticky top-0 z-30 px-5 pt-5 pb-4 border-b border-[#e5e2e1]/60">
+      <div className="bg-gradient-to-b from-[#eef2ff] to-white sticky top-0 z-30 px-5 pt-6 pb-5 border-b border-[#e5e2e1] shadow-sm">
         <div className="flex items-start justify-between">
-          <div>
-            <p className="font-body text-[13px] text-[#737782] font-medium mb-0.5">
-              {greeting()}
-            </p>
-            <h1 className="font-display text-[26px] font-bold text-[#003470] leading-tight">
-              {user.name.split(' ')[0]} 👋
-            </h1>
-            <p className="font-body text-[12px] text-[#737782] mt-0.5">
-              {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} registered
-            </p>
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="w-16 h-16 rounded-full bg-[#1B4B8F] flex items-center justify-center text-white text-[24px] font-display font-bold shrink-0 shadow-md border-2 border-white">
+              {user.name.split(' ').map(n => n[0]).join('')}
+            </div>
+            
+            {/* User Info */}
+            <div className="flex flex-col">
+              <p className="font-body text-[13px] text-[#737782] font-medium mb-0.5">
+                {greeting()},
+              </p>
+              <h1 className="font-display text-[22px] font-bold text-[#1c1b1b] leading-tight">
+                {user.name.split(' ')[0]} 👋
+              </h1>
+              <p className="font-body text-[12px] text-[#737782] mt-1 tracking-wider">
+                {user.phone.slice(0, 6)} ••••• {user.phone.slice(-3)}
+              </p>
+            </div>
           </div>
 
           {/* Bell — only account-level notification entry */}
           <motion.button
-            className="relative w-11 h-11 bg-[#f6f3f2] rounded-full flex items-center justify-center text-[#1c1b1b] mt-1"
+            className="relative w-11 h-11 bg-[#003470]/5 rounded-full flex items-center justify-center text-[#003470] mt-1 shadow-sm border border-[#003470]/10"
             whileTap={{ scale: 0.88 }}
             onClick={() => navigate('/notifications')}
           >
@@ -71,17 +79,16 @@ export default function Dashboard() {
         </div>
 
         {/* ── QUICK ACTIONS ROW ───────────────────────────────── */}
-        <div className="flex justify-center gap-4 mt-5 overflow-x-auto pb-1 scrollbar-hide">
-          {quickActions.map(({ label, Icon, action, color }) => (
+        <div className="flex justify-center gap-4 mt-6 overflow-x-auto pb-1 scrollbar-hide">
+          {quickActions.map(({ label, Icon, action }) => (
             <motion.button
               key={label}
-              className="flex flex-col items-center gap-2 min-w-[64px]"
+              className="flex flex-col items-center gap-2 min-w-[64px] group"
               whileTap={{ scale: 0.90 }}
               onClick={() => action(navigate)}
             >
               <div
-                className="w-[52px] h-[52px] rounded-full flex items-center justify-center shadow-sm"
-                style={{ background: color }}
+                className="w-[52px] h-[52px] rounded-full flex items-center justify-center bg-[#003470]/5 shadow-sm border border-[#003470]/10 group-hover:bg-[#003470]/10 transition-colors"
               >
                 <Icon size={22} strokeWidth={1.75} className="text-[#003470]" />
               </div>
