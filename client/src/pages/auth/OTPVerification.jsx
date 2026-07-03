@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
@@ -7,6 +7,9 @@ import { useAppData } from '../../context/AppContext';
 
 export default function OTPVerification() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { name, phone, maskedPhone } = location.state || { name: 'Guest', phone: '9999999999', maskedPhone: '+91 99••••9999' };
+  
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,12 +61,12 @@ export default function OTPVerification() {
     setTimeout(() => {
       if (code.length === 6) {
         signIn({
-          id: 'u-temp',
-          name: 'Ajinkya Saivar', // Temp mock data
-          phone: '+91 98765 43210',
-          maskedPhone: '+91 98•••••210',
-          avatar: 'AS',
-          joinedDate: 'January 2025',
+          id: 'u-' + Math.random().toString(36).substr(2, 9),
+          name: name,
+          phone: `+91 ${phone}`,
+          maskedPhone: maskedPhone,
+          avatar: name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
           notificationPrefs: { push: true, whatsapp: true, sms: true, email: false },
         });
         navigate('/add-vehicle');
@@ -93,7 +96,7 @@ export default function OTPVerification() {
         {/* Header */}
         <div className="text-center">
           <h1 className="font-display text-headline-sm text-on-surface mb-2">Enter the 6-digit code</h1>
-          <p className="font-body text-body-sm text-on-surface-muted">Code sent to +91 98•••••210</p>
+          <p className="font-body text-body-sm text-on-surface-muted">Code sent to {maskedPhone}</p>
         </div>
 
         {/* OTP boxes */}

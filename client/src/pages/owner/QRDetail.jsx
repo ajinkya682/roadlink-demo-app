@@ -20,10 +20,17 @@ export default function QRDetail() {
 
   const [downloaded, setDownloaded] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
 
   const handleDownload = () => {
     setDownloaded(true);
     setTimeout(() => setDownloaded(false), 2500);
+  };
+
+  const handleRegenerate = () => {
+    setShowRegenerateDialog(false);
+    // Real app would make API call here
+    alert('QR Regenerated successfully!');
   };
 
   useEffect(() => {
@@ -98,7 +105,11 @@ export default function QRDetail() {
 
         {/* Action Hierarchy */}
         <div className="w-full mt-10 space-y-4 px-2">
-          <Button variant="secondary" fullWidth onClick={() => navigate('/order-sticker')} className="bg-[#FFAB30] text-[#001B3F] hover:bg-[#FFAB30]/90 border-0 h-[56px]">
+          <Button fullWidth onClick={() => navigate('/dashboard')} className="h-[56px]">
+            <span className="font-body text-[13px] font-bold tracking-widest uppercase">CONTINUE TO DASHBOARD</span>
+          </Button>
+
+          <Button fullWidth onClick={() => navigate('/order-sticker')} className="bg-signal-amber text-on-surface hover:bg-signal-amber/90 border-0 h-[56px]">
             <Truck size={20} /> 
             <span className="font-body text-[13px] font-bold tracking-widest uppercase ml-1">ORDER STICKER</span>
           </Button>
@@ -110,7 +121,41 @@ export default function QRDetail() {
               <><Download size={18} /> <span className="font-body text-[13px] font-bold tracking-widest uppercase ml-1">DOWNLOAD QR</span></>
             )}
           </Button>
+
+          <button 
+            onClick={() => setShowRegenerateDialog(true)}
+            className="w-full py-4 text-alert-red font-body text-[13px] font-bold tracking-widest uppercase hover:underline transition-all"
+          >
+            REGENERATE QR
+          </button>
         </div>
+
+        {/* Regenerate Dialog */}
+        <AnimatePresence>
+          {showRegenerateDialog && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-asphalt/50">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+              >
+                <h3 className="font-display text-[20px] font-bold text-on-surface mb-2">Regenerate QR?</h3>
+                <p className="font-body text-[14px] text-on-surface-muted mb-6">
+                  This will immediately invalidate your current QR code. Any existing stickers will stop working. Are you sure?
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1 border-outline-light" onClick={() => setShowRegenerateDialog(false)}>
+                    CANCEL
+                  </Button>
+                  <Button className="flex-1 bg-alert-red hover:bg-alert-red/90" onClick={handleRegenerate}>
+                    REGENERATE
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Footer Reassurance */}
         <div className="mt-12 text-center max-w-[260px] mx-auto">

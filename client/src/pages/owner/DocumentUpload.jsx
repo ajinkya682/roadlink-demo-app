@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, FileText, CheckCircle, Lock } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
-
-const types = ['RC Book', 'Insurance', 'PUC', 'Driving License'];
+import { useAppData } from '../../context/AppContext';
 
 export default function DocumentUpload() {
   const navigate = useNavigate();
-  const [docType, setDocType] = useState(types[0]);
+  const location = useLocation();
+  const docType = location.state?.type || 'RC Book';
+  const { documents } = useAppData();
   const [file, setFile] = useState(null);
   const [expiryDate, setExpiryDate] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -44,27 +45,8 @@ export default function DocumentUpload() {
         {/* Document type selector */}
         <div>
           <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest mb-2">Document Type</p>
-          <div className="flex gap-2 flex-wrap">
-            {types.map(t => (
-              <button
-                key={t}
-                className={`relative px-3 py-2 rounded-xl font-body text-sm font-semibold border-2 transition-colors ${
-                  docType === t
-                    ? 'border-navy text-navy bg-navy/5'
-                    : 'border-outline-light text-on-surface-muted bg-white hover:border-navy/30'
-                }`}
-                onClick={() => setDocType(t)}
-              >
-                {docType === t && (
-                  <motion.div
-                    layoutId="doc-type-bg"
-                    className="absolute inset-0 rounded-xl bg-navy/5 border-2 border-navy"
-                    transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-                  />
-                )}
-                <span className="relative z-10">{t}</span>
-              </button>
-            ))}
+          <div className="bg-white px-4 py-3 border border-outline-light rounded-xl font-body text-sm font-semibold text-on-surface">
+            {docType}
           </div>
         </div>
 
@@ -157,7 +139,7 @@ export default function DocumentUpload() {
 
       <div className="px-5 pb-10 pt-4 border-t border-outline-light bg-fog">
         <Button fullWidth disabled={!file || uploading || done} onClick={handleUpload}>
-          <Lock size={16} /> Securely Upload
+          <Lock size={16} /> Save Document
         </Button>
       </div>
     </div>

@@ -21,9 +21,7 @@ export default function BottomTabBar() {
   const location  = useLocation();
 
   const handleScan = () => {
-    // Demo: show a coming-soon toast via window.dispatchEvent for simplicity
-    const event = new CustomEvent('roadlink-scan-tap');
-    window.dispatchEvent(event);
+    navigate('/scanner');
   };
 
   return (
@@ -60,7 +58,7 @@ export default function BottomTabBar() {
             border: '3px solid white', // clean ring where button meets notch
           }}
           whileTap={{ scale: 0.90 }}
-          onClick={() => navigate('/scanner')}
+          onClick={handleScan}
         >
           <QrCode size={26} color="white" strokeWidth={2} />
         </motion.button>

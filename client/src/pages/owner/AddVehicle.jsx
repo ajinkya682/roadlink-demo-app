@@ -42,10 +42,7 @@ export default function AddVehicle() {
     setPlate(formatPlate(e.target.value.toUpperCase()));
 
   const rawPlate = plate.replace(/\s/g, "");
-  const showModel = rawPlate.length >= 5;
-  const showNickname = make.length >= 2 || model.length >= 2;
-  const canSave =
-    rawPlate.length >= 6 && (make.length >= 2 || model.length >= 2);
+  const canSave = rawPlate.length >= 6 && make.length >= 2 && model.length >= 2;
 
   const handleSave = () => {
     setLoading(true);
@@ -86,7 +83,7 @@ export default function AddVehicle() {
             className="w-full flex justify-center"
           >
             <PlateTag 
-              plate={plate || "MH 12 AB 1234"} 
+              plateNumber={plate || "MH 12 AB 1234"} 
               size="lg" 
               className={!plate ? "opacity-30" : ""}
             />
@@ -107,74 +104,44 @@ export default function AddVehicle() {
             inputClassName="font-mono uppercase tracking-widest text-lg"
           />
 
-          <AnimatePresence>
-            {showModel && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ type: "spring", damping: 22, stiffness: 180 }}
-                className="grid grid-cols-2 gap-4"
-              >
-                <Input
-                  label="MAKE"
-                  value={make}
-                  onChange={(e) => setMake(e.target.value)}
-                  placeholder="e.g. Honda"
-                />
-                <Input
-                  label="MODEL"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  placeholder="e.g. Activa"
-                />
-              </motion.div>
-            )}
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="MAKE"
+              value={make}
+              onChange={(e) => setMake(e.target.value)}
+              placeholder="e.g. Honda"
+            />
+            <Input
+              label="MODEL"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="e.g. Activa"
+            />
+          </div>
 
-            {showNickname && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{
-                  type: "spring",
-                  damping: 22,
-                  stiffness: 180,
-                  delay: 0.05,
-                }}
-                className="space-y-6 pt-1"
-              >
-                <Input
-                  label="NICKNAME (OPTIONAL)"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="e.g. Blue Bullet"
-                />
+          <div className="space-y-6 pt-1">
+            <Input
+              label="NICKNAME (OPTIONAL)"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="e.g. Blue Bullet"
+            />
 
-                {/* Privacy Controls */}
-                <div className="bg-white/50 p-4 rounded-xl space-y-4 border border-outline-light/50 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col pr-4">
-                      <span className="font-body text-xs font-bold tracking-wider uppercase text-on-surface">
-                        SHOW MY NAME PUBLICLY
-                      </span>
-                      <span className="text-[11px] text-on-surface-muted font-body mt-0.5">
-                        Visible when your plate is scanned
-                      </span>
-                    </div>
-                    <Toggle on={showName} onChange={setShowName} />
-                  </div>
-                  <div className="flex gap-3 items-start p-3 bg-white rounded-lg border border-outline-light/40 shadow-card">
-                    <Shield size={20} className="text-navy flex-shrink-0" />
-                    <p className="font-body text-[12px] text-on-surface-muted leading-relaxed">
-                      Your phone number and sensitive PII are always encrypted
-                      and never shown. Privacy is our administrative mandate.
-                    </p>
-                  </div>
+            {/* Privacy Controls */}
+            <div className="bg-white/50 p-4 rounded-xl space-y-4 border border-outline-light/50 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col pr-4">
+                  <span className="font-body text-xs font-bold tracking-wider uppercase text-on-surface">
+                    SHOW MY NAME PUBLICLY
+                  </span>
+                  <span className="text-[11px] text-on-surface-muted font-body mt-0.5">
+                    When OFF, only the vehicle's display name is shown. Your name is never shown.
+                  </span>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <Toggle on={showName} onChange={setShowName} />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Actions */}
@@ -190,10 +157,11 @@ export default function AddVehicle() {
             </Button>
           </motion.div>
           <button
-            className="w-full py-2 text-on-surface font-body text-[14px] font-medium underline hover:text-navy transition-colors"
-            onClick={() => navigate(-1)}
+            className="w-full py-2 text-on-surface font-body text-[14px] font-medium underline hover:text-navy transition-colors disabled:opacity-50"
+            onClick={handleSave}
+            disabled={!canSave}
           >
-            Skip for now
+            Skip documents for now
           </button>
         </div>
       </main>

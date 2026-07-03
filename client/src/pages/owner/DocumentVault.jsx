@@ -9,6 +9,8 @@ import { documentStatusMeta } from '../../demo-data/documents';
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } } };
 
+const REQUIRED_DOCS = ['RC Book', 'Insurance', 'PUC', 'Driving License'];
+
 function DocCard({ doc, onClick }) {
   const [flipped, setFlipped] = useState(false);
   const meta = documentStatusMeta[doc.status] || documentStatusMeta.missing;
@@ -125,22 +127,28 @@ export default function DocumentVault() {
           initial="hidden"
           animate="show"
         >
-          {vehicleDocs.map(doc => (
-            <DocCard key={doc.id} doc={doc} onClick={() => navigate('/document-upload')} />
-          ))}
-
-          {/* Add card */}
-          <motion.div
-            variants={fadeUp}
-            className="border-2 border-dashed border-outline-light rounded-2xl flex flex-col items-center justify-center gap-2 py-8 cursor-pointer hover:border-navy/40 transition-colors"
-            onClick={() => navigate('/document-upload')}
-            whileTap={{ scale: 0.97 }}
-          >
-            <div className="w-9 h-9 bg-navy/8 rounded-xl flex items-center justify-center">
-              <Plus size={20} className="text-navy" />
-            </div>
-            <span className="font-body text-xs font-semibold text-on-surface-muted text-center">Add Document</span>
-          </motion.div>
+          {REQUIRED_DOCS.map(type => {
+            const uploadedDoc = vehicleDocs.find(d => d.type === type);
+            if (uploadedDoc) {
+              return <DocCard key={type} doc={uploadedDoc} onClick={() => navigate('/document-upload', { state: { type } })} />;
+            }
+            
+            // Empty state card
+            return (
+              <motion.div
+                key={type}
+                variants={fadeUp}
+                className="border-2 border-dashed border-outline-light rounded-2xl flex flex-col items-center justify-center gap-2 py-8 cursor-pointer hover:border-navy/40 transition-colors bg-white/50"
+                onClick={() => navigate('/document-upload', { state: { type } })}
+                whileTap={{ scale: 0.97 }}
+              >
+                <div className="w-9 h-9 bg-navy/8 rounded-xl flex items-center justify-center">
+                  <Plus size={20} className="text-navy" />
+                </div>
+                <span className="font-body text-xs font-semibold text-on-surface-muted text-center leading-tight">Add<br/>{type}</span>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </div>
