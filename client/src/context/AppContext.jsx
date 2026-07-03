@@ -172,6 +172,10 @@ export function AppProvider({ children }) {
     return newVehicle;
   };
 
+  const updateVehicleInContext = (id, updates) => {
+    setVehicles(prev => prev.map(v => v.id === id ? { ...v, ...updates } : v));
+  };
+
   const togglePrivacyMode = (vehicleId) => {
     setVehicles(prev =>
       prev.map(v => v.id === vehicleId ? { ...v, privacyMode: !v.privacyMode } : v)
@@ -348,6 +352,7 @@ export function AppProvider({ children }) {
       refreshNotifications,
       // Vehicle actions
       addVehicle,
+      updateVehicleInContext,
       togglePrivacyMode,
       refreshVehicles,
       // Document actions

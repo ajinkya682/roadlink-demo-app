@@ -16,7 +16,7 @@ const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
 export default function VehicleDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { vehicles, notifications, documents, contacts, togglePrivacyMode } = useAppData();
+  const { vehicles, notifications, documents, contacts, updateVehicleInContext } = useAppData();
 
   // Initial fallback to context, then update via API
   const contextVehicle = vehicles.find(v => v.id === id) || vehicles[0];
@@ -47,7 +47,7 @@ export default function VehicleDetail() {
             qrToken: v.qrToken,
             nickname: v.nickname,
             color: v.color || 'Unknown',
-            year: new Date(v.createdAt).getFullYear(),
+            year: v.year || new Date(v.createdAt).getFullYear(),
           });
         }
       } catch (err) {
@@ -102,16 +102,17 @@ export default function VehicleDetail() {
       const res = await api.patch(`/vehicles/${vehicle.id}`, payload);
       if (res.data.success) {
         const v = res.data.data.vehicle;
-        setVehicle(prev => ({
-          ...prev,
+        const updatedFields = {
           make: v.make,
           model: v.model,
-          year: editForm.year, // just taking from form since it's not strongly mapped in DB yet except via update
+          year: v.year || editForm.year,
           color: v.color || editForm.color,
           nickname: v.nickname,
-          privacyMode: v.showOwnerName === false || editForm.privacyMode,
+          privacyMode: v.showOwnerName === false,
           displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE'
-        }));
+        };
+        setVehicle(prev => ({ ...prev, ...updatedFields }));
+        updateVehicleInContext(vehicle.id, updatedFields);
         setIsEditing(false);
       }
     } catch (err) {
@@ -229,12 +230,14 @@ export default function VehicleDetail() {
                       } else {
                         // Optimistic update
                         setVehicle(prev => ({ ...prev, privacyMode: newVal }));
+                        updateVehicleInContext(vehicle.id, { privacyMode: newVal });
                         try {
-                          await api.patch(`/vehicles/${vehicle.id}/privacy`, { showOwnerName: !newVal });
+                          await api.patch(`/vehicles/${vehicle.id}`, { showOwnerName: !newVal });
                         } catch (err) {
                           console.error(err);
                           // Revert on failure
                           setVehicle(prev => ({ ...prev, privacyMode: !newVal }));
+                          updateVehicleInContext(vehicle.id, { privacyMode: !newVal });
                         }
                       }
                     }} 
