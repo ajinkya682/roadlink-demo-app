@@ -41,7 +41,7 @@ export default function ReportDetail() {
               ? 'border-alert-red bg-alert-red/5 text-alert-red'
               : 'border-outline-light bg-white text-on-surface'
           }`}>
-            <span className="text-lg">{cat.emoji}</span>
+            <span className="material-symbols-outlined text-[18px]">{cat.icon || 'local_parking'}</span>
             {cat.label}
           </div>
         </motion.div>

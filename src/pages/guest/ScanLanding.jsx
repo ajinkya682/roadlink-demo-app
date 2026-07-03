@@ -1,14 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
-import PlateTag from '../../components/PlateTag';
 import { reportCategories } from '../../demo-data/categories';
 import { scannedVehicle } from '../../demo-data/scannedVehicle';
 
 const containerVariants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.04, delayChildren: 0.2 } },
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.1 } },
 };
 const itemVariants = {
   hidden: { opacity: 0, y: 16, scale: 0.95 },
@@ -23,64 +22,90 @@ export default function ScanLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-fog flex flex-col pb-8">
-      {/* Plate hero */}
-      <div className="bg-navy/5 px-5 pt-8 pb-6 flex flex-col items-center border-b border-outline-light/50">
-        <PlateTag
-          plateNumber={scannedVehicle.plate}
-          displayName={scannedVehicle.displayName}
-          isVerified={scannedVehicle.isVerified}
-          size="lg"
-          animateEntry
-        />
-        <p className="mt-4 font-display text-headline-sm text-on-surface text-center">
-          What's happening with this vehicle?
-        </p>
-      </div>
+    <div className="bg-[#F7F8FA] text-[#1c1b1b] font-body min-h-screen flex flex-col">
+      <main className="flex-grow container mx-auto px-4 md:px-10 py-8 max-w-2xl">
+        <header className="flex flex-col items-center justify-center gap-4 mb-10 mt-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-white rounded-lg px-4 py-2 flex items-center justify-center border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(26,26,26,0.1)]">
+              <span className="font-mono text-[14px] text-[#1c1b1b] font-medium tracking-widest uppercase">
+                {scannedVehicle.displayName}
+              </span>
+            </div>
+            {scannedVehicle.isVerified && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1E8E5A]/10 text-[#1E8E5A] border border-[#1E8E5A]/20">
+                <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  verified
+                </span>
+                <span className="font-body text-[12px] font-bold tracking-widest uppercase">VERIFIED</span>
+              </div>
+            )}
+          </div>
+          <h1 className="font-display text-[20px] font-semibold text-[#1c1b1b] text-center opacity-80">
+            Report an issue with this vehicle
+          </h1>
+        </header>
 
-      {/* Category grid */}
-      <div className="px-4 py-5 flex-1">
-        <motion.div
-          className="grid grid-cols-3 gap-3"
+        <motion.section
+          className="grid grid-cols-2 gap-4"
           variants={containerVariants}
           initial="hidden"
           animate="show"
         >
-          {reportCategories.map((cat) => (
-            <motion.button
-              key={cat.id}
-              variants={itemVariants}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => handleCategory(cat)}
-              className={`
-                flex flex-col items-center justify-center gap-2 rounded-xl p-3 min-h-[88px]
-                border-2 transition-colors duration-150 font-body
-                ${cat.isAlert
-                  ? 'border-alert-red bg-alert-red/5 hover:bg-alert-red/10'
-                  : 'border-outline-light bg-white hover:bg-surface-low hover:border-navy/30'
-                }
-              `}
-            >
-              <span className="text-2xl leading-none" role="img" aria-label={cat.label}>
-                {cat.emoji}
-              </span>
-              <span className={`text-[11px] font-semibold leading-tight text-center ${cat.isAlert ? 'text-alert-red' : 'text-on-surface'}`}>
-                {cat.label}
-              </span>
-            </motion.button>
-          ))}
-        </motion.div>
-      </div>
+          {reportCategories.map((cat) => {
+            const isRedAlert = cat.isAlert;
+            const isFullWidth = cat.fullWidth;
+            
+            return (
+              <motion.button
+                key={cat.id}
+                variants={itemVariants}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleCategory(cat)}
+                className={`
+                  flex flex-col items-center justify-center gap-3 p-6 rounded-xl transition-colors min-h-[110px]
+                  ${isFullWidth ? 'col-span-2 flex-row' : ''}
+                  ${isRedAlert 
+                    ? 'bg-white border-2 border-[#ba1a1a]/60 shadow-sm hover:bg-[#ba1a1a]/5' 
+                    : 'bg-white border border-[#1c1b1b]/10 hover:border-[#003470]/30'
+                  }
+                `}
+              >
+                <span
+                  className={`material-symbols-outlined ${isRedAlert ? 'text-[#ba1a1a]' : 'text-[#003470]'}`}
+                  style={isRedAlert ? { fontVariationSettings: "'FILL' 1" } : {}}
+                >
+                  {cat.icon}
+                </span>
+                <span
+                  className={`font-body text-[12px] font-bold tracking-widest uppercase text-center ${
+                    isRedAlert ? 'text-[#ba1a1a]' : 'text-[#1c1b1b]'
+                  }`}
+                >
+                  {cat.label}
+                </span>
+              </motion.button>
+            );
+          })}
+        </motion.section>
 
-      {/* Footer */}
-      <footer className="px-5 pt-2 pb-6 text-center border-t border-outline-light/50">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <Shield size={13} className="text-verified-green" />
-          <p className="font-body text-xs text-on-surface-muted">
-            This page never shows the owner's phone number.
-          </p>
+        <div className="mt-12 flex justify-center">
+          <div className="bg-[#003470]/5 rounded-2xl p-6 border border-[#003470]/10 flex items-start gap-4 max-w-sm">
+            <span className="material-symbols-outlined text-[#003470] mt-1">info</span>
+            <div className="flex flex-col">
+              <p className="font-body text-[14px] text-[#1c1b1b]/70 leading-relaxed">
+                Selecting an option will immediately notify the vehicle owner via a privacy-protected link. Do not use this service for harassment.
+              </p>
+            </div>
+          </div>
         </div>
-        <span className="font-display text-sm font-semibold text-navy/50">RoadLink</span>
+      </main>
+
+      <footer className="w-full py-8 px-4 text-center flex flex-col items-center gap-4 border-t border-[#1c1b1b]/5 mt-4">
+        <p className="font-body text-[14px] text-[#434751]">This page never shows the owner's phone number.</p>
+        <div className="flex items-center gap-2">
+          <span className="font-display text-[18px] tracking-tight text-[#003470] font-bold">RoadLink</span>
+          <span className="font-mono text-[10px] bg-[#1c1b1b]/5 px-2 py-0.5 rounded text-[#1c1b1b]/60">v2.4.0</span>
+        </div>
       </footer>
     </div>
   );

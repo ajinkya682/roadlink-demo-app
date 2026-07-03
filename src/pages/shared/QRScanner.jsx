@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { X, Flashlight, Image as ImageIcon } from 'lucide-react';
@@ -6,8 +6,37 @@ import { X, Flashlight, Image as ImageIcon } from 'lucide-react';
 export default function QRScanner() {
   const navigate = useNavigate();
   const [scanned, setScanned] = useState(false);
+  const videoRef = useRef(null);
 
-  // Simulate a scan after 2.5 seconds
+  // Initialize the real device camera
+  useEffect(() => {
+    let stream = null;
+    
+    async function startCamera() {
+      try {
+        // Request the back camera
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error("Camera access denied or unavailable:", err);
+      }
+    }
+    
+    startCamera();
+
+    // Cleanup: turn off the camera when the user leaves the page
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  // Simulate a scan after 3.5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setScanned(true);
@@ -15,7 +44,7 @@ export default function QRScanner() {
         // After showing success state briefly, navigate to scan landing
         navigate('/scan-landing');
       }, 500);
-    }, 2500);
+    }, 3500);
 
     return () => clearTimeout(timer);
   }, [navigate]);
@@ -36,14 +65,16 @@ export default function QRScanner() {
         <div className="w-10" /> {/* Spacer for centering */}
       </div>
 
-      {/* ── CAMERA FEED (Simulated) ── */}
-      {/* In a real app, the camera feed would sit here. We simulate it with a dark blur background. */}
-      <div 
-        className="absolute inset-0 z-0 bg-[#2a2a2a]"
-        style={{
-          backgroundImage: 'radial-gradient(circle at center, #3a3a3a 0%, #1c1b1b 100%)'
-        }}
-      />
+      {/* ── REAL CAMERA FEED ── */}
+      <div className="absolute inset-0 z-0 bg-black">
+        <video 
+          ref={videoRef}
+          autoPlay 
+          playsInline 
+          muted 
+          className="w-full h-full object-cover"
+        />
+      </div>
 
       {/* ── VIEWFINDER OVERLAY ── */}
       <div className="absolute inset-0 z-10 flex flex-col">

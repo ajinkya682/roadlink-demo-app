@@ -37,7 +37,7 @@ export default function GuestDashboard() {
         <motion.div
           variants={fadeUp}
           className="bg-white rounded-2xl border border-outline-light shadow-card overflow-hidden"
-          onClick={() => navigate('/scan-landing')}
+          onClick={() => navigate('/scanner')}
           whileTap={{ scale: 0.98 }}
         >
           <div className="flex items-center gap-4 p-5">
