@@ -69,10 +69,10 @@ export default function AddVehicle() {
       if (res.data.success) {
         const { vehicle, qrToken } = res.data.data;
         // Prepend to local AppContext cache to immediately show in dashboard
-        if (addVehicle) addVehicle(vehicle, qrToken);
+        const newVehicle = addVehicle ? addVehicle(vehicle, qrToken) : vehicle;
 
         // Navigate to QR Detail, passing the raw QR token string
-        navigate("/qr-detail", { state: { qrToken, vehicle } });
+        navigate("/qr-detail", { state: { qrToken, vehicle: newVehicle } });
       } else {
         throw new Error(res.data.error?.message || "Failed to add vehicle");
       }
