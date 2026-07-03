@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Toggle from '../../components/Toggle';
-import BottomTabBar from '../../components/BottomTabBar';
 import { useDemoData } from '../../context/DemoContext';
 
 const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
@@ -237,8 +236,6 @@ export default function VehicleDetail() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      <BottomTabBar />
     </div>
   );
 }

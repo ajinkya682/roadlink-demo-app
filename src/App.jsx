@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import PageWrapper from './components/PageWrapper'
+import BottomTabBar from './components/BottomTabBar'
 
 // Guest
 import GuestDashboard from './pages/GuestDashboard'
@@ -35,6 +36,18 @@ import TermsPrivacy from './pages/owner/TermsPrivacy'
 
 function App() {
   const location = useLocation();
+
+  const noNavRoutes = [
+    '/',
+    '/login',
+    '/otp',
+    '/guest-dashboard',
+    '/scan-landing',
+    '/report-detail',
+    '/report-confirmation',
+    '/search',
+    '/search-result'
+  ];
 
   return (
     <div className="app-shell">
@@ -78,6 +91,11 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
+
+      {/* Global persistent bottom nav */}
+      {!noNavRoutes.includes(location.pathname) && (
+        <BottomTabBar />
+      )}
     </div>
   )
 }

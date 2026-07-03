@@ -17,9 +17,6 @@ export default function AppHeader({ title, rightSlot, onBack, transparent = fals
           ? 'bg-transparent'
           : 'bg-fog/95 backdrop-blur-md border-b border-outline-light/60',
       )}
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
     >
       {/* Back button */}
       <motion.button

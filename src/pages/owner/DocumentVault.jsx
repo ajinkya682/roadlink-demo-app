@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Plus, UploadCloud, Trash2 } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
-import BottomTabBar from '../../components/BottomTabBar';
 import { useDemoData } from '../../context/DemoContext';
 import { documentStatusMeta } from '../../demo-data/documents';
 
@@ -144,8 +143,6 @@ export default function DocumentVault() {
           </motion.div>
         </motion.div>
       </div>
-
-      <BottomTabBar />
     </div>
   );
 }

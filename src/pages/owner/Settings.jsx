@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Shield, Phone, FileText, User, ChevronRight, LogOut, Trash2 } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
-import BottomTabBar from '../../components/BottomTabBar';
 import Toggle from '../../components/Toggle';
 import { useDemoData } from '../../context/DemoContext';
 
@@ -211,8 +210,6 @@ export default function Settings() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <BottomTabBar />
     </div>
   );
 }

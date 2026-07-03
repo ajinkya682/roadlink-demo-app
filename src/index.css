@@ -87,8 +87,9 @@ button { background: none; border: none; cursor: pointer; outline: none; }
 .otp-box:focus { border-color: #1B4B8F; outline: none; }
 .otp-box.filled { border-color: #1B4B8F; background: #f0f4ff; }
 
-/* ── Card flip ─────────────────────────────────────────────── */
-.card-3d { perspective: 800px; }
-.card-inner { transform-style: preserve-3d; position: relative; transition: transform 0.5s; }
-.card-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.card-back { transform: rotateY(180deg); }
+/* ── Scrollbar hide ──────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Nav scallop safe-area ───────────────────────────────── */
+.safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 0px); }

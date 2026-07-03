@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, AlertTriangle, Lightbulb, FileWarning, CheckCircle, Bell, ChevronRight, ShieldCheck } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
-import BottomTabBar from '../../components/BottomTabBar';
 import { useDemoData } from '../../context/DemoContext';
 
 const filters = ['All', 'Unresolved', 'Resolved'];
@@ -161,8 +160,6 @@ export default function NotificationsInbox() {
           )}
         </div>
       </main>
-
-      <BottomTabBar />
     </div>
   );
 }
