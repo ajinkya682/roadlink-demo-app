@@ -58,26 +58,28 @@ export default function AddVehicle() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post('/vehicles', {
+      const res = await api.post("/vehicles", {
         registrationNumber: plate,
         make: make || undefined,
         model: model || undefined,
         nickname: nickname || undefined,
-        showOwnerName: showName
+        showOwnerName: showName,
       });
 
       if (res.data.success) {
         const { vehicle, qrToken } = res.data.data;
         // Prepend to local AppContext cache to immediately show in dashboard
-        if (addVehicle) addVehicle(vehicle);
-        
+        if (addVehicle) addVehicle(vehicle, qrToken);
+
         // Navigate to QR Detail, passing the raw QR token string
         navigate("/qr-detail", { state: { qrToken, vehicle } });
       } else {
-        throw new Error(res.data.error?.message || 'Failed to add vehicle');
+        throw new Error(res.data.error?.message || "Failed to add vehicle");
       }
     } catch (err) {
-      setError(err.response?.data?.error?.message || err.message || 'Network error');
+      setError(
+        err.response?.data?.error?.message || err.message || "Network error",
+      );
       setLoading(false);
     }
   };
@@ -114,7 +116,9 @@ export default function AddVehicle() {
             </div>
 
             <div
-              className={`font-mono text-[28px] sm:text-[34px] md:text-[38px] whitespace-nowrap font-bold tracking-[0.1em] uppercase transition-opacity duration-300 w-full text-center ${plate ? "text-on-surface" : "text-[#1c1b1b] opacity-30"}`}
+              className={`font-mono text-[24px] sm:text-[28px] md:text-[32px] whitespace-nowrap font-bold tracking-[0.1em] uppercase transition-opacity duration-300 w-full text-center ${
+                plate ? "text-on-surface" : "text-[#1c1b1b] opacity-30"
+              }`}
             >
               {plate || "MH 12 AB 1234"}
             </div>
@@ -224,7 +228,11 @@ export default function AddVehicle() {
 
         {/* Actions */}
         <div className="mt-12 space-y-4">
-          {error && <p className="text-red-500 text-sm font-body text-center">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm font-body text-center">
+              {error}
+            </p>
+          )}
           <motion.div animate={{ opacity: canSave ? 1 : 0.45 }}>
             <Button
               fullWidth
@@ -235,7 +243,7 @@ export default function AddVehicle() {
               SAVE VEHICLE
             </Button>
           </motion.div>
-          
+
           {isNewSetup && (
             <button
               className="w-full py-2 text-on-surface font-body text-[14px] font-medium underline hover:text-navy transition-colors"

@@ -133,14 +133,24 @@ export default function LoginRegister() {
             />
 
             {error && <p className="text-red-500 text-sm font-body text-center">{error}</p>}
-            <Button
-              fullWidth
-              type="submit"
-              disabled={!canSubmit}
-              isLoading={loading}
-            >
-              Get OTP
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button
+                fullWidth
+                type="submit"
+                disabled={!canSubmit}
+                isLoading={loading}
+              >
+                Get OTP
+              </Button>
+              <Button
+                fullWidth
+                variant="outline"
+                type="button"
+                onClick={() => navigate('/guest-dashboard')}
+              >
+                Continue as Guest
+              </Button>
+            </div>
           </form>
         </div>
 

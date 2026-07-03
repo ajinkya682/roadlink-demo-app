@@ -151,15 +151,19 @@ export function AppProvider({ children }) {
   };
 
   // ── Vehicle actions ───────────────────────────────────────────────────────
-  const addVehicle = (vehicle) => {
+  const addVehicle = (v, qrToken) => {
     const newVehicle = {
-      ...vehicle,
-      id: `v${Date.now()}`,
-      isVerified: true,
-      privacyMode: false,
-      addedDate: new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+      id: v._id,
+      plate: v.registrationNumber,
+      make: v.make,
+      model: v.model,
+      displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
+      isVerified: v.isVerified,
+      privacyMode: v.privacySettings?.showOwnerName === false,
+      addedDate: new Date(v.createdAt || Date.now()).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
       unreadAlerts: 0,
-      qrId: `ROADLINK-${vehicle.plate.replace(/\s/g, '')}`,
+      qrToken: qrToken || v.qrToken,
+      qrId: v._id
     };
     setVehicles(prev => [newVehicle, ...prev]);
     return newVehicle;
