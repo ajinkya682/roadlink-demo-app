@@ -95,19 +95,14 @@ export default function BottomTabBar() {
 
               {/* Active underline pill */}
               <div className="h-[3px] w-4 flex items-center justify-center">
-                <AnimatePresence>
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-underline"
-                      className="w-4 h-[3px] rounded-full"
-                      style={{ background: '#003470' }}
-                      initial={{ opacity: 0, scaleX: 0 }}
-                      animate={{ opacity: 1, scaleX: 1 }}
-                      exit={{ opacity: 0, scaleX: 0 }}
-                      transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-                    />
-                  )}
-                </AnimatePresence>
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-underline"
+                    className="w-4 h-[3px] rounded-full"
+                    style={{ background: '#003470' }}
+                    transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+                  />
+                )}
               </div>
 
               <span

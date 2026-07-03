@@ -37,17 +37,13 @@ import TermsPrivacy from './pages/owner/TermsPrivacy'
 function App() {
   const location = useLocation();
 
-  const noNavRoutes = [
-    '/',
-    '/login',
-    '/otp',
-    '/guest-dashboard',
-    '/scan-landing',
-    '/report-detail',
-    '/report-confirmation',
-    '/search',
-    '/search-result'
+  const showNavRoutes = [
+    '/dashboard',
+    '/document-vault',
+    '/settings'
   ];
+
+  const shouldShowNav = showNavRoutes.includes(location.pathname) || location.pathname.startsWith('/vehicle-detail');
 
   return (
     <div className="app-shell">
@@ -93,7 +89,7 @@ function App() {
       </AnimatePresence>
 
       {/* Global persistent bottom nav */}
-      {!noNavRoutes.includes(location.pathname) && (
+      {shouldShowNav && (
         <BottomTabBar />
       )}
     </div>
