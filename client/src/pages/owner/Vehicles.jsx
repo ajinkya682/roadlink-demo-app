@@ -4,6 +4,7 @@ import { Plus, ChevronRight, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
+import VehicleIcon from '../../components/VehicleIcon';
 import { useAppData } from '../../context/AppContext';
 import { Car } from 'lucide-react';
 
@@ -69,7 +70,7 @@ export default function Vehicles() {
                   {v.imageUrl ? (
                     <img src={v.imageUrl} alt="Vehicle" className="w-full h-full object-cover" />
                   ) : (
-                    <Car size={24} className="text-navy" />
+                    <VehicleIcon type={v.type} size={24} className="text-navy" />
                   )}
                 </div>
                 <div>

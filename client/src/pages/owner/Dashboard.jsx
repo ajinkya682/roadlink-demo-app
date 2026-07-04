@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Plus, QrCode, ChevronRight, UserCircle, Car, LayoutGrid, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PlateTag from '../../components/PlateTag';
+import VehicleIcon from '../../components/VehicleIcon';
 import { useAppData } from '../../context/AppContext';
 
 const stagger = {
@@ -144,7 +145,7 @@ export default function Dashboard() {
                   {v.imageUrl ? (
                     <img src={v.imageUrl} alt="Vehicle" className="w-full h-full object-cover" />
                   ) : (
-                    <Car size={24} className="text-navy" />
+                    <VehicleIcon type={v.type} size={24} className="text-navy" />
                   )}
                 </div>
                 <div>

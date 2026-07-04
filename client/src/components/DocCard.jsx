@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Car, Cloud, User, CheckCircle, AlertTriangle, AlertCircle, RefreshCw } from 'lucide-react';
+import VehicleIcon from './VehicleIcon';
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } } };
 
@@ -15,7 +16,7 @@ export default function DocCard({ doc, vehicles, onClick }) {
   let Icon = FileText;
   let subtitle = 'Uploaded Document';
   
-  if (isRC) { Icon = Car; subtitle = 'Vehicle Identification Document'; }
+  if (isRC) { subtitle = 'Vehicle Identification Document'; }
   else if (isIns) { Icon = FileText; subtitle = doc.number ? `Policy #${doc.number}` : 'Vehicle Insurance Policy'; }
   else if (isPUC) { Icon = Cloud; subtitle = 'Emission Compliance Certificate'; }
   else if (isLicense) { Icon = User; subtitle = 'Driver Identification'; }
@@ -50,7 +51,11 @@ export default function DocCard({ doc, vehicles, onClick }) {
         {/* Top Header Row */}
         <div className="flex justify-between items-start mb-4">
           <div className="w-12 h-12 rounded-xl bg-surface-low border border-outline-light/50 flex items-center justify-center">
-            <Icon size={24} className="text-navy" />
+            {isRC ? (
+              <VehicleIcon type={vehicle?.type} size={24} className="text-navy" />
+            ) : (
+              <Icon size={24} className="text-navy" />
+            )}
           </div>
           <div className={`px-2.5 py-1 rounded-full flex items-center gap-1.5 ${tagBg}`}>
             <TagIcon size={12} className={tagText} strokeWidth={3} />

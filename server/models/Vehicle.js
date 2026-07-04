@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const vehicleSchema = new mongoose.Schema({
   ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   registrationNumber: { type: String, required: true, unique: true, uppercase: true, trim: true },
+  type: { type: String, enum: ['two-wheeler', 'four-wheeler', 'commercial'], default: 'four-wheeler' },
   make: { type: String },
   model: { type: String },
   year: { type: String },

@@ -8,7 +8,7 @@ const { uploadBuffer } = require('../../services/cloudinary');
 exports.createVehicle = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { registrationNumber, make, model, nickname, publicDisplayName, showOwnerName } = req.body;
+    const { registrationNumber, type, make, model, nickname, publicDisplayName, showOwnerName } = req.body;
 
     if (!registrationNumber) {
       return sendError(res, 'Registration number is required');
@@ -17,6 +17,7 @@ exports.createVehicle = async (req, res) => {
     const vehicle = new Vehicle({
       ownerId: userId,
       registrationNumber,
+      type: type || 'four-wheeler',
       make,
       model,
       nickname,

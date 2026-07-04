@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, HelpCircle, Image as ImageIcon, Camera } from "lucide-react";
+import { Shield, HelpCircle, Image as ImageIcon, Camera, Car, Bike, Bus } from "lucide-react";
 import AppHeader from "../../components/AppHeader";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
@@ -37,6 +37,7 @@ export default function AddVehicle() {
   const { addVehicle } = useAppData();
 
   const [plate, setPlate] = useState("");
+  const [type, setType] = useState("four-wheeler");
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [nickname, setNickname] = useState("");
@@ -62,6 +63,7 @@ export default function AddVehicle() {
     try {
       const formData = new FormData();
       formData.append("registrationNumber", plate);
+      formData.append("type", type);
       if (make) formData.append("make", make);
       if (model) formData.append("model", model);
       if (nickname) formData.append("nickname", nickname);
@@ -198,6 +200,32 @@ export default function AddVehicle() {
             placeholder="MH 12 AB 1234"
             inputClassName="font-mono uppercase tracking-widest text-lg"
           />
+
+          <div>
+            <label className="block font-body text-[12px] font-bold tracking-[0.08em] text-on-surface-muted uppercase mb-3">
+              VEHICLE TYPE
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { id: 'two-wheeler', icon: Bike, label: 'Bike' },
+                { id: 'four-wheeler', icon: Car, label: 'Car' },
+                { id: 'commercial', icon: Bus, label: 'Bus' }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setType(opt.id)}
+                  className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all ${
+                    type === opt.id 
+                      ? 'border-navy bg-navy/5 text-navy' 
+                      : 'border-outline-light bg-white text-on-surface hover:bg-surface-low'
+                  }`}
+                >
+                  <opt.icon size={28} className="mb-2" />
+                  <span className="font-body text-xs font-semibold">{opt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           <AnimatePresence>
             {showModel && (

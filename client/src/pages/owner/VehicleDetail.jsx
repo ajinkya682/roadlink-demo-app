@@ -6,6 +6,7 @@ import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Toggle from '../../components/Toggle';
 import DocCard from '../../components/DocCard';
+import VehicleIcon from '../../components/VehicleIcon';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
@@ -226,9 +227,13 @@ export default function VehicleDetail() {
 
       {/* Plate hero */}
       <div className="bg-white border-b border-outline-light px-5 py-5 flex flex-col items-center gap-3 relative">
-        {vehicle.imageUrl && (
+        {vehicle.imageUrl ? (
           <div className="w-20 h-20 rounded-full border-4 border-white shadow-sm overflow-hidden mb-2 bg-surface-low">
             <img src={vehicle.imageUrl} alt="Vehicle" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-20 h-20 rounded-full border-4 border-white shadow-sm overflow-hidden mb-2 bg-surface-low flex items-center justify-center">
+            <VehicleIcon type={vehicle.type} size={32} className="text-navy" />
           </div>
         )}
         <PlateTag plateNumber={vehicle.plate} displayName={vehicle.displayName} isVerified={vehicle.isVerified} size="lg" />
@@ -292,10 +297,32 @@ export default function VehicleDetail() {
                   ) : (
                     <div className="p-4 space-y-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <Input label="MAKE" value={editForm.make} onChange={e => setEditForm({...editForm, make: e.target.value})} />
-                        <Input label="MODEL" value={editForm.model} onChange={e => setEditForm({...editForm, model: e.target.value})} />
+                        <Input label="Make" value={editForm.make || ''} onChange={e => setEditForm({ ...editForm, make: e.target.value })} />
+                        <Input label="Model" value={editForm.model || ''} onChange={e => setEditForm({ ...editForm, model: e.target.value })} />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      
+                      <div className="mt-4">
+                        <label className="block font-body text-[12px] font-bold tracking-[0.08em] text-on-surface-muted uppercase mb-3">
+                          VEHICLE TYPE
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          {['two-wheeler', 'four-wheeler', 'commercial'].map(t => (
+                            <button
+                              key={t}
+                              onClick={() => setEditForm({ ...editForm, type: t })}
+                              className={`py-3 rounded-xl border-2 font-body text-xs font-semibold capitalize transition-colors ${
+                                editForm.type === t
+                                  ? 'border-navy bg-navy/5 text-navy' 
+                                  : 'border-outline-light bg-white text-on-surface hover:bg-surface-low'
+                              }`}
+                            >
+                              {t.replace('-', ' ')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mt-4">
                         <Input label="YEAR" value={editForm.year} onChange={e => setEditForm({...editForm, year: e.target.value})} />
                         <Input label="COLOR" value={editForm.color} onChange={e => setEditForm({...editForm, color: e.target.value})} />
                       </div>
