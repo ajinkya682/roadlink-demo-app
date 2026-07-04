@@ -48,13 +48,16 @@ exports.uploadDocument = async (req, res) => {
 exports.getDocuments = async (req, res) => {
   try {
     const { vehicleId } = req.query;
-    if (!vehicleId) return sendError(res, 'vehicleId query param is required');
 
-    // Verify ownership
-    const vehicle = await Vehicle.findOne({ _id: vehicleId, ownerId: req.user.userId, status: { $ne: 'deleted' } });
-    if (!vehicle) return sendError(res, 'Vehicle not found', 404);
+    let query = { ownerId: req.user.userId };
+    if (vehicleId) {
+      // Verify ownership
+      const vehicle = await Vehicle.findOne({ _id: vehicleId, ownerId: req.user.userId, status: { $ne: 'deleted' } });
+      if (!vehicle) return sendError(res, 'Vehicle not found', 404);
+      query.vehicleId = vehicleId;
+    }
 
-    const documents = await Document.find({ vehicleId, ownerId: req.user.userId });
+    const documents = await Document.find(query);
     
     // In MVP, we might simulate short-lived signed URLs. Since it's local, we just return the path.
     return sendSuccess(res, { documents });
