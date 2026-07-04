@@ -4,16 +4,8 @@ const controller = require('./controller');
 const { requireAuth, requireOwner } = require('../../middleware/auth');
 const multer = require('multer');
 
-// Configure multer for local file storage (MVP placeholder for encrypted S3)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + '-' + file.originalname);
-  }
-});
+// Configure multer for memory storage (uploaded to Cloudinary in controller)
+const storage = multer.memoryStorage();
 
 // Max size 10MB per Section 9.3
 const upload = multer({ 

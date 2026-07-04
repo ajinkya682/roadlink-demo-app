@@ -137,6 +137,24 @@ export function AppProvider({ children }) {
     }
   };
 
+  const updateProfile = async (formData) => {
+    try {
+      const res = await api.patch('/users/me', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.success) {
+        setUser(prev => ({
+          ...prev,
+          ...res.data.data.user
+        }));
+        return res.data.data.user;
+      }
+    } catch (err) {
+      console.error('Failed to update profile', err);
+      throw err;
+    }
+  };
+
   const deleteAccount = async () => {
     try {
       // Best effort API call to delete from DB

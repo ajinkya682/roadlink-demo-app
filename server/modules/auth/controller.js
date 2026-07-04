@@ -104,7 +104,9 @@ exports.verifyOtp = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        email: user.email,
         phone: user.phone,
+        avatarUrl: user.avatarUrl,
         role: user.role,
         notificationPrefs: user.notificationPrefs
       }

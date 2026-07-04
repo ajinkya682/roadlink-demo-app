@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, required: true, unique: true },
   name: { type: String },
   email: { type: String },
+  avatarUrl: { type: String },
   role: { type: String, default: 'owner' },
   refreshTokens: [{
     tokenHash: String,

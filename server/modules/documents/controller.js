@@ -2,6 +2,7 @@ const Document = require('../../models/Document');
 const Vehicle = require('../../models/Vehicle');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { logger } = require('../../middleware/logger');
+const { uploadBuffer } = require('../../services/cloudinary');
 
 exports.uploadDocument = async (req, res) => {
   try {
@@ -18,8 +19,9 @@ exports.uploadDocument = async (req, res) => {
     const vehicle = await Vehicle.findOne({ _id: vehicleId, ownerId: req.user.userId, status: { $ne: 'deleted' } });
     if (!vehicle) return sendError(res, 'Vehicle not found', 404);
 
-    // Simulate S3/encrypted URL via local path
-    const fileUrl = `/uploads/${req.file.filename}`;
+    // Upload to Cloudinary
+    const result = await uploadBuffer(req.file.buffer, 'roadlink/documents', 'auto');
+    const fileUrl = result.secure_url;
     
     // Default reminder schedule if expiry is provided
     let reminderSchedule = [];
