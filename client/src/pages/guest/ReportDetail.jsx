@@ -6,6 +6,7 @@ import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Toggle from '../../components/Toggle';
 import api from '../../lib/api';
+import { useDialog } from '../../context/DialogContext';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const fadeUp = {
@@ -16,6 +17,7 @@ const fadeUp = {
 export default function ReportDetail() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { showAlert } = useDialog();
   const cat = location.state?.category || { label: 'Wrong Parking', emoji: '🅿️', isAlert: false };
 
   const [notes, setNotes] = useState('');
@@ -41,7 +43,7 @@ export default function ReportDetail() {
       console.error('Failed to submit report', err);
       setLoading(false);
       // In a real app we'd show a toast error here
-      alert('Failed to send report: ' + (err.response?.data?.error?.message || err.message));
+      showAlert('Error', 'Failed to send report: ' + (err.response?.data?.error?.message || err.message));
     }
   };
 

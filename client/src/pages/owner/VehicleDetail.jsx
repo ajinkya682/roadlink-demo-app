@@ -10,6 +10,7 @@ import VehicleIcon from '../../components/VehicleIcon';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
+import { useDialog } from '../../context/DialogContext';
 import api from '../../lib/api';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -20,6 +21,7 @@ export default function VehicleDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { vehicles, notifications, documents, contacts, medicalProfile, updateVehicleInContext } = useAppData();
+  const { showAlert, showConfirm } = useDialog();
 
   // Initial fallback to context, then update via API
   const contextVehicle = vehicles.find(v => v.id === id);
@@ -163,7 +165,7 @@ export default function VehicleDetail() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to save vehicle details');
+      showAlert('Error', 'Failed to save vehicle details');
     } finally {
       setIsSaving(false);
     }
@@ -197,12 +199,13 @@ export default function VehicleDetail() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to add contact');
+      showAlert('Error', 'Failed to add contact');
     }
   };
 
   const handleDeleteContact = async (contactId) => {
-    if (window.confirm('Delete this contact?')) {
+    const confirmed = await showConfirm('Delete Contact', 'Are you sure you want to delete this contact?');
+    if (confirmed) {
       try {
         await api.delete(`/emergency-contacts/${contactId}`);
         setVehicleContacts(prev => prev.filter(c => c.id !== contactId));

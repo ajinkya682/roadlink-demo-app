@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Plus, QrCode, ChevronRight, UserCircle, Car, LayoutGrid, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PlateTag from '../../components/PlateTag';
 import VehicleIcon from '../../components/VehicleIcon';
+import ShareModal from '../../components/ShareModal';
 import { useAppData } from '../../context/AppContext';
 
 const stagger = {
@@ -27,6 +28,7 @@ function greeting() {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { vehicles, user, unreadCount, refreshVehicles, refreshNotifications, showComingSoon, showUpgradeModal } = useAppData();
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     refreshVehicles();
@@ -37,7 +39,7 @@ export default function Dashboard() {
     { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile') },
     { label: 'Add Vehicle', Icon: Plus,       action: (nav) => vehicles.length >= 5 ? showUpgradeModal() : nav('/add-vehicle') },
     { label: 'My Vehicles', Icon: LayoutGrid, action: (nav) => nav('/vehicles') },
-    { label: 'Invite',      Icon: Share2,     action: () => showComingSoon('Invites & Sharing') },
+    { label: 'Invite',      Icon: Share2,     action: () => setShowShareModal(true) },
   ];
 
   return (
@@ -222,6 +224,8 @@ export default function Dashboard() {
         {/* Bottom spacer */}
         <div className="h-4" />
       </motion.div>
+
+      <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} />
     </div>
   );
 }

@@ -6,11 +6,13 @@ import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { useAppData } from '../../context/AppContext';
+import { useDialog } from '../../context/DialogContext';
 
 export default function DocumentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { documents, updateDocument, removeDocument } = useAppData();
+  const { showConfirm } = useDialog();
   
   const [doc, setDoc] = useState(null);
   const [docType, setDocType] = useState('');
@@ -61,7 +63,8 @@ export default function DocumentDetail() {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to permanently delete this document?')) {
+    const confirmed = await showConfirm('Delete Document', 'Are you sure you want to permanently delete this document?');
+    if (confirmed) {
       setDeleting(true);
       try {
         await removeDocument(doc.id);
