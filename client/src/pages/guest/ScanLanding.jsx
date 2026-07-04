@@ -76,48 +76,83 @@ export default function ScanLanding() {
   return (
     <div className="bg-[#F7F8FA] text-[#1c1b1b] font-body min-h-screen flex flex-col">
       <main className="flex-grow container mx-auto px-4 md:px-10 py-8 max-w-2xl">
-        <header className="flex flex-col items-center justify-center gap-4 mb-10 mt-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-white rounded-lg px-4 py-2 flex items-center justify-center border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(26,26,26,0.1)]">
-              <span className="font-mono text-[14px] text-[#1c1b1b] font-medium tracking-widest uppercase">
+        <header className="flex flex-col gap-6 mb-10 mt-4 items-center w-full">
+          <div className="flex flex-col items-center gap-3">
+             {/* Vehicle Icon */}
+             <div className="w-16 h-16 bg-[#003470]/10 rounded-full flex items-center justify-center mb-2 border border-[#003470]/20 shadow-sm">
+               <span className="material-symbols-outlined text-[32px] text-[#003470]">
+                 {profile.type === 'two-wheeler' ? 'two_wheeler' : profile.type === 'heavy-vehicle' ? 'directions_bus' : 'directions_car'}
+               </span>
+             </div>
+
+            <div className="bg-white rounded-lg px-4 py-2 flex items-center justify-center border-2 border-[#1c1b1b] shadow-[2px_2px_0px_0px_rgba(28,27,27,0.1)]">
+              <span className="font-mono text-[16px] text-[#1c1b1b] font-bold tracking-widest uppercase">
                 {profile.publicDisplayName}
               </span>
             </div>
+            
             {profile.isVerified && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1E8E5A]/10 text-[#1E8E5A] border border-[#1E8E5A]/20">
-                <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  verified
-                </span>
-                <span className="font-body text-[12px] font-bold tracking-widest uppercase">VERIFIED</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E8E5A]/10 text-[#1E8E5A] border border-[#1E8E5A]/20 mt-1">
+                <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                <span className="font-body text-[11px] font-bold tracking-widest uppercase">VERIFIED</span>
               </div>
             )}
           </div>
           
-          <div className="flex flex-col items-center gap-1 mt-2 text-sm text-[#1c1b1b]/70 text-center">
-            {profile.make && profile.model && (
-              <p><strong>Make/Model:</strong> {profile.make} {profile.model}</p>
-            )}
-            {profile.type && (
-              <p className="capitalize"><strong>Type:</strong> {profile.type.replace('-', ' ')}</p>
-            )}
-            {profile.year && (
-              <p><strong>Year:</strong> {profile.year}</p>
-            )}
-            {profile.color && (
-              <p><strong>Color:</strong> {profile.color}</p>
-            )}
-            {profile.nickname && (
-              <p><strong>Nickname:</strong> "{profile.nickname}"</p>
-            )}
-            {profile.ownerName && (
-              <p><strong>Owner:</strong> {profile.ownerName}</p>
-            )}
-            {profile.ownerPhone && (
-              <p className="font-bold text-[#003470] mt-2">Emergency Contact: {profile.ownerPhone}</p>
-            )}
+          <div className="bg-white rounded-2xl border border-[#1c1b1b]/10 shadow-sm p-5 space-y-4 w-full">
+            <h3 className="font-display text-[16px] font-bold text-[#1c1b1b] border-b border-[#1c1b1b]/10 pb-2">Vehicle Details</h3>
+            <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+              {profile.make && profile.model && (
+                <div>
+                  <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-1">Make / Model</p>
+                  <p className="font-semibold text-[#1c1b1b]">{profile.make} {profile.model}</p>
+                </div>
+              )}
+              {profile.type && (
+                <div>
+                  <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-1">Type</p>
+                  <p className="font-semibold text-[#1c1b1b] capitalize">{profile.type.replace('-', ' ')}</p>
+                </div>
+              )}
+              {profile.year && (
+                <div>
+                  <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-1">Year</p>
+                  <p className="font-semibold text-[#1c1b1b]">{profile.year}</p>
+                </div>
+              )}
+              {profile.color && (
+                <div>
+                  <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-1">Color</p>
+                  <p className="font-semibold text-[#1c1b1b]">{profile.color}</p>
+                </div>
+              )}
+              {profile.ownerName && (
+                <div className="col-span-2">
+                  <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-1">Owner Name</p>
+                  <p className="font-semibold text-[#1c1b1b]">{profile.ownerName}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-[#1c1b1b]/10 pt-4 mt-4 space-y-3">
+               <div>
+                  <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-2">Emergency Contact</p>
+                  {profile.ownerPhone ? (
+                    <a href={`tel:${profile.ownerPhone}`} className="inline-flex items-center justify-center w-full gap-2 bg-[#003470]/10 text-[#003470] px-4 py-3 rounded-xl font-bold hover:bg-[#003470]/20 transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">call</span>
+                      {profile.ownerPhone}
+                    </a>
+                  ) : (
+                    <div className="inline-flex items-center justify-center w-full gap-2 bg-[#1c1b1b]/5 text-[#434751] px-4 py-3 rounded-xl font-medium border border-[#1c1b1b]/10">
+                      <span className="material-symbols-outlined text-[18px]">lock</span>
+                      Masked for Privacy
+                    </div>
+                  )}
+               </div>
+            </div>
           </div>
 
-          <h1 className="font-display text-[20px] font-semibold text-[#1c1b1b] text-center opacity-80 mt-6">
+          <h1 className="font-display text-[20px] font-semibold text-[#1c1b1b] text-center opacity-80 mt-2">
             Report an issue with this vehicle
           </h1>
         </header>

@@ -5,6 +5,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PlateTag from '../../components/PlateTag';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
+const getNotificationStyle = (type, categoryId) => {
+  const cat = categoryId || type || '';
+  const isRed = cat.includes('theft') || cat.includes('emergency') || cat.includes('fire');
+  const colorClass = isRed ? 'text-[#ba1a1a]' : 'text-[#003470]';
+  
+  let icon = 'notifications';
+  let label = type;
+  
+  if (cat === 'wrong-parking' || cat.includes('Parking')) { icon = 'local_parking'; label = 'WRONG PARKING'; }
+  else if (cat === 'blocking-road' || cat.includes('Blocking')) { icon = 'block'; label = 'BLOCKING ROAD'; }
+  else if (cat === 'hit-and-run' || cat.includes('Hit')) { icon = 'car_crash'; label = 'HIT & RUN'; }
+  else if (cat === 'vehicle-damage' || cat.includes('Damage')) { icon = 'build'; label = 'VEHICLE DAMAGE'; }
+  else if (cat === 'fire' || cat.includes('Fire')) { icon = 'fire_truck'; label = 'FIRE'; }
+  else if (cat === 'theft' || cat.includes('Theft')) { icon = 'lock_reset'; label = 'VEHICLE THEFT'; }
+  else if (cat === 'tow-alert' || cat.includes('Tow')) { icon = 'minor_crash'; label = 'TOW ALERT'; }
+  else if (cat === 'headlights-on' || cat.includes('Headlights')) { icon = 'light_mode'; label = 'HEADLIGHTS ON'; }
+  else if (cat === 'windows-open' || cat.includes('Windows')) { icon = 'sensor_window'; label = 'WINDOWS OPEN'; }
+  else if (cat === 'emergency' || cat.includes('Emergency')) { icon = 'e911_emergency'; label = 'EMERGENCY'; }
+  else if (cat === 'lost-vehicle' || cat.includes('Lost')) { icon = 'location_searching'; label = 'LOST VEHICLE'; }
+  else if (cat === 'abandoned' || cat.includes('Abandoned')) { icon = 'delete_forever'; label = 'ABANDONED VEHICLE'; }
+  else if (cat === 'accident-alert' || cat.includes('Accident')) { icon = 'emergency_share'; label = 'ACCIDENT ALERT'; }
+  
+  return { colorClass, icon, label };
+};
 
 export default function NotificationDetail() {
   const navigate = useNavigate();
@@ -23,6 +47,8 @@ export default function NotificationDetail() {
 
   if (!notif) return null;
 
+  const style = getNotificationStyle(notif.type, notif.categoryId);
+
   return (
     <>
       <div className="min-h-screen bg-[#F7F8FA] font-body text-[#1c1b1b] pb-10">
@@ -35,23 +61,22 @@ export default function NotificationDetail() {
         <main className="max-w-2xl mx-auto px-4 space-y-6">
           
           {/* Header Block */}
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${
-                notif.isAlert ? 'bg-[#ba1a1a] text-white' : 'bg-[#1b4b8f] text-white'
-              }`}>
-                {notif.isAlert ? <AlertTriangle size={14} /> : null}
-                {notif.isAlert ? 'EMERGENCY: THEFT' : 'ALERT'}
-              </div>
-              <span className="text-[14px] text-[#737782] font-medium flex items-center gap-1">
-                🕒 {notif.time}
-              </span>
-            </div>
-
-            <h1 className="font-display text-[26px] font-bold text-[#1c1b1b] leading-tight mb-4">
-              {notif.isAlert ? 'Attempted Unauthorized Access' : notif.type}
+          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-2xl border border-outline-light shadow-sm">
+            <span 
+              className={`material-symbols-outlined text-[48px] mb-3 ${style.colorClass}`} 
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              {style.icon}
+            </span>
+            <h1 className={`font-display text-[18px] font-bold tracking-widest uppercase text-center leading-tight ${style.colorClass}`}>
+              {style.label}
             </h1>
+            <span className="text-[13px] text-[#737782] font-medium flex items-center gap-1 mt-4">
+              🕒 {notif.time}
+            </span>
+          </div>
 
+          <div>
             <div className="mb-6">
               <PlateTag plateNumber={notif.plate} size="lg" />
             </div>

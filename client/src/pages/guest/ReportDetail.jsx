@@ -22,6 +22,7 @@ export default function ReportDetail() {
 
   const [notes, setNotes] = useState('');
   const [locationShare, setLocationShare] = useState(false);
+  const [locationCoords, setLocationCoords] = useState(null);
   
   const fileInputRef = useRef(null);
   const [hasPhoto, setHasPhoto] = useState(false);
@@ -86,30 +87,41 @@ export default function ReportDetail() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
+  const handleLocationToggle = async (val) => {
+    if (!val) {
+      setLocationShare(false);
+      setLocationCoords(null);
+      return;
+    }
+    
+    // User wants to turn it on
+    try {
+      const pos = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+      });
+      setLocationCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      setLocationShare(true);
+    } catch(err) {
+      console.error('Failed to get location', err);
+      showAlert(
+        'Location Services Disabled',
+        'Please enable device location and grant browser permissions to share your exact coordinates.'
+      );
+      setLocationShare(false);
+      setLocationCoords(null);
+    }
+  };
+
   const handleSend = async () => {
     setLoading(true);
     try {
       if (token) {
-        let reporterLocation = null;
-        if (locationShare) {
-          try {
-            const pos = await new Promise((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
-            });
-            reporterLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          } catch(err) {
-            console.error('Failed to get location, using fallback for testing', err);
-            // Fallback for local development testing (Pune, India)
-            reporterLocation = { lat: 18.5204, lng: 73.8567 };
-          }
-        }
-
         const formData = new FormData();
         formData.append('qrToken', token);
         formData.append('category', cat.id || cat.label.toLowerCase().replace(/ /g, '_'));
         formData.append('notes', notes);
-        if (reporterLocation) {
-          formData.append('reporterLocation', JSON.stringify(reporterLocation));
+        if (locationCoords) {
+          formData.append('reporterLocation', JSON.stringify(locationCoords));
         }
         if (photoBlob) {
           formData.append('media', photoBlob, 'photo.jpg');
@@ -219,7 +231,7 @@ export default function ReportDetail() {
                   <p className="font-body text-xs text-on-surface-muted">Helps the owner find the vehicle faster</p>
                 </div>
               </div>
-              <Toggle on={locationShare} onChange={setLocationShare} />
+              <Toggle on={locationShare} onChange={handleLocationToggle} />
             </motion.div>
 
             <motion.div variants={fadeUp}>

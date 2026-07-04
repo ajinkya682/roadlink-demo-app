@@ -224,6 +224,20 @@ export function AppProvider({ children }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const getRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    const diff = new Date() - new Date(dateString);
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
+    const months = Math.floor(days / 30);
+    return `${months} month${months > 1 ? 's' : ''} ago`;
+  };
+
   const refreshNotifications = async () => {
     try {
       const res = await api.get('/reports');
@@ -240,12 +254,13 @@ export function AppProvider({ children }) {
             type: categoryLabel,
             emoji: emoji,
             category: r.category,
+            categoryId: r.category,
             title: `Report on ${r.vehicleId?.registrationNumber || 'Vehicle'}`,
             plate: r.vehicleId?.registrationNumber || 'UNKNOWN',
             message: r.message,
             notes: r.notes || '',
-            timestamp: new Date(r.createdAt).toLocaleString('en-IN', { hour: 'numeric', minute: 'numeric', hour12: true }),
-            time: new Date(r.createdAt).toLocaleString('en-IN', { hour: 'numeric', minute: 'numeric', hour12: true }),
+            timestamp: r.createdAt,
+            time: getRelativeTime(r.createdAt),
             read: r.status === 'resolved',
             resolved: r.status === 'resolved',
             vehicleId: r.vehicleId?._id || r.vehicleId,

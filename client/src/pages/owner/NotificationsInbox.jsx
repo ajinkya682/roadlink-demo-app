@@ -1,57 +1,50 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, AlertTriangle, FileWarning, CheckCircle, Bell, ChevronRight, ShieldCheck } from 'lucide-react';
+import { CheckCircle, ChevronRight } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import { useAppData } from '../../context/AppContext';
 
 const filters = ['All', 'Unresolved', 'Resolved'];
 
-const getNotificationStyle = (type, resolved) => {
+const getNotificationStyle = (type, resolved, categoryId) => {
+  const baseStyle = { cardOpacity: 'bg-white' };
+  const cat = categoryId || type || '';
+  
+  let materialIcon = 'notifications';
+  let label = type;
+  
+  if (cat === 'wrong-parking' || cat.includes('Parking')) { materialIcon = 'local_parking'; label = 'WRONG PARKING'; }
+  else if (cat === 'blocking-road' || cat.includes('Blocking')) { materialIcon = 'block'; label = 'BLOCKING ROAD'; }
+  else if (cat === 'hit-and-run' || cat.includes('Hit')) { materialIcon = 'car_crash'; label = 'HIT & RUN'; }
+  else if (cat === 'vehicle-damage' || cat.includes('Damage')) { materialIcon = 'build'; label = 'VEHICLE DAMAGE'; }
+  else if (cat === 'fire' || cat.includes('Fire')) { materialIcon = 'fire_truck'; label = 'FIRE'; }
+  else if (cat === 'theft' || cat.includes('Theft')) { materialIcon = 'lock_reset'; label = 'VEHICLE THEFT'; }
+  else if (cat === 'tow-alert' || cat.includes('Tow')) { materialIcon = 'minor_crash'; label = 'TOW ALERT'; }
+  else if (cat === 'headlights-on' || cat.includes('Headlights')) { materialIcon = 'light_mode'; label = 'HEADLIGHTS ON'; }
+  else if (cat === 'windows-open' || cat.includes('Windows')) { materialIcon = 'sensor_window'; label = 'WINDOWS OPEN'; }
+  else if (cat === 'emergency' || cat.includes('Emergency')) { materialIcon = 'e911_emergency'; label = 'EMERGENCY'; }
+  else if (cat === 'lost-vehicle' || cat.includes('Lost')) { materialIcon = 'location_searching'; label = 'LOST VEHICLE'; }
+  else if (cat === 'abandoned' || cat.includes('Abandoned')) { materialIcon = 'delete_forever'; label = 'ABANDONED VEHICLE'; }
+  else if (cat === 'accident-alert' || cat.includes('Accident')) { materialIcon = 'emergency_share'; label = 'ACCIDENT ALERT'; }
+
+  const isRed = cat.includes('theft') || cat.includes('emergency') || cat.includes('fire');
+  const iconColor = isRed ? 'text-[#ba1a1a]' : 'text-[#003470]';
+  const bgClass = isRed ? 'bg-[#ba1a1a]/5' : 'bg-[#003470]/5';
+  const borderClass = isRed ? 'border-[#ba1a1a]/20' : 'border-[#003470]/20';
+
   if (resolved) {
     return {
       borderClass: 'border-[#005834]', 
       bgClass: 'bg-[#90f7ba]/20',
       iconColor: 'text-[#005834]',
       Icon: CheckCircle,
-      cardOpacity: 'opacity-80 hover:opacity-100 bg-white'
+      cardOpacity: 'opacity-80 hover:opacity-100 bg-white',
+      label
     };
   }
 
-  const t = (type || '').toLowerCase();
-  if (t.includes('theft') || t.includes('emergency')) {
-    return {
-      borderClass: 'border-[#ba1a1a]',
-      bgClass: 'bg-[#ffdad6]/30',
-      iconColor: 'text-[#ba1a1a]',
-      Icon: ShieldAlert,
-      cardOpacity: 'bg-white'
-    };
-  } else if (t.includes('parking') || t.includes('warning')) {
-    return {
-      borderClass: 'border-[#835500]',
-      bgClass: 'bg-[#feae2c]/20',
-      iconColor: 'text-[#835500]',
-      Icon: AlertTriangle,
-      cardOpacity: 'bg-white'
-    };
-  } else if (t.includes('verified') || t.includes('document')) {
-    return {
-      borderClass: 'border-[#005834]',
-      bgClass: 'bg-[#90f7ba]/20',
-      iconColor: 'text-[#005834]',
-      Icon: ShieldCheck,
-      cardOpacity: 'bg-white'
-    };
-  } else {
-    return {
-      borderClass: 'border-[#1b4b8f]',
-      bgClass: 'bg-[#d7e2ff]/30',
-      iconColor: 'text-[#003470]',
-      Icon: Bell,
-      cardOpacity: 'bg-white'
-    };
-  }
+  return { ...baseStyle, borderClass, bgClass, iconColor, materialIcon, label };
 };
 
 export default function NotificationsInbox() {
@@ -112,13 +105,22 @@ export default function NotificationsInbox() {
                   className={`rounded-2xl border-l-[6px] ${style.borderClass} ${style.cardOpacity} shadow-sm border-t border-r border-b border-[#1c1b1b]/10 flex items-start p-5 transition-transform hover:translate-x-1 duration-200 cursor-pointer group origin-top`}
                 >
                   <div className={`mr-4 mt-0.5 flex-shrink-0 ${style.bgClass} w-10 h-10 flex items-center justify-center rounded-xl`}>
-                    <style.Icon size={20} className={style.iconColor} />
+                    {style.Icon ? (
+                      <style.Icon size={20} className={style.iconColor} />
+                    ) : (
+                      <span
+                        className={`material-symbols-outlined text-[20px] ${style.iconColor}`}
+                        style={{ fontVariationSettings: "'FILL' 1" }}
+                      >
+                        {style.materialIcon}
+                      </span>
+                    )}
                   </div>
                   
                   <div className="flex-grow">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className={`font-display text-[18px] font-bold ${n.resolved ? 'text-[#434751]' : 'text-[#1c1b1b]'}`}>
-                        {n.type}
+                      <h3 className={`font-display text-[14px] font-bold tracking-widest uppercase ${n.resolved ? 'text-[#434751]' : style.iconColor}`}>
+                        {style.label || n.type}
                       </h3>
                       <span className="font-body text-[12px] text-[#c3c6d2] font-medium mt-1">{n.time}</span>
                     </div>

@@ -1,6 +1,7 @@
 const User = require('../../models/User');
 const Document = require('../../models/Document');
 const Vehicle = require('../../models/Vehicle');
+const Report = require('../../models/Report');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { logger } = require('../../middleware/logger');
 const { uploadBuffer, extractPublicId, deleteResource } = require('../../services/cloudinary');
@@ -84,10 +85,39 @@ exports.deleteAccount = async (req, res) => {
     // 3. Delete documents from DB
     await Document.deleteMany({ ownerId: userId });
 
-    // 4. Delete vehicles from DB
+    // 4. Cascade delete Vehicles, their Reports, and their respective Cloudinary images
+    const vehicles = await Vehicle.find({ ownerId: userId });
+    for (const vehicle of vehicles) {
+      // Delete vehicle image from Cloudinary
+      if (vehicle.imageUrl) {
+        const publicId = extractPublicId(vehicle.imageUrl);
+        if (publicId) {
+          await deleteResource(publicId).catch(err => logger.error('Failed to delete vehicle image from Cloudinary', err));
+        }
+      }
+
+      // Find reports for this vehicle
+      const reports = await Report.find({ vehicleId: vehicle._id });
+      for (const report of reports) {
+        // Delete all report media from Cloudinary
+        if (report.mediaUrls && report.mediaUrls.length > 0) {
+          for (const url of report.mediaUrls) {
+            const publicId = extractPublicId(url);
+            if (publicId) {
+              await deleteResource(publicId).catch(err => logger.error('Failed to delete report media from Cloudinary', err));
+            }
+          }
+        }
+      }
+
+      // Delete reports from DB
+      await Report.deleteMany({ vehicleId: vehicle._id });
+    }
+
+    // 5. Delete vehicles from DB
     await Vehicle.deleteMany({ ownerId: userId });
     
-    // 5. Delete User from DB
+    // 6. Delete User from DB
     await User.findByIdAndDelete(userId);
     
     return sendSuccess(res, { message: 'Account deleted successfully, including all data and files' });
