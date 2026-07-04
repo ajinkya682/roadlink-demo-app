@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Plus, UploadCloud, Trash2 } from 'lucide-react';
+import { Shield, Plus, FileText, Car, Cloud, User, CheckCircle, AlertTriangle, AlertCircle, RefreshCw } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import { useAppData } from '../../context/AppContext';
 import { documentStatusMeta } from '../../demo-data/documents';
@@ -9,70 +9,111 @@ import { documentStatusMeta } from '../../demo-data/documents';
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } } };
 
-const REQUIRED_DOCS = ['RC Book', 'Insurance', 'PUC', 'Driving License'];
+function DocCard({ doc, vehicle, onClick }) {
+  const docType = doc.type || '';
+  const isRC = docType.toLowerCase().includes('rc') || docType.toLowerCase().includes('registration');
+  const isIns = docType.toLowerCase().includes('insur');
+  const isPUC = docType.toLowerCase().includes('puc') || docType.toLowerCase().includes('pollution');
+  const isLicense = docType.toLowerCase().includes('licen');
 
-function DocCard({ doc, onClick }) {
-  const [flipped, setFlipped] = useState(false);
-  const meta = documentStatusMeta[doc.status] || documentStatusMeta.missing;
+  let Icon = FileText;
+  let subtitle = 'Uploaded Document';
+  
+  if (isRC) { Icon = Car; subtitle = 'Vehicle Identification Document'; }
+  else if (isIns) { Icon = FileText; subtitle = doc.number ? `Policy #${doc.number}` : 'Vehicle Insurance Policy'; }
+  else if (isPUC) { Icon = Cloud; subtitle = 'Emission Compliance Certificate'; }
+  else if (isLicense) { Icon = User; subtitle = 'Driver Identification'; }
+
+  // Use status to determine tags
+  let tagBg = 'bg-verified-green/15';
+  let tagText = 'text-verified-green';
+  let TagIcon = CheckCircle;
+  let tagLabel = 'VERIFIED';
+  let dateColor = 'text-on-surface';
+
+  if (doc.status === 'expired') {
+    tagBg = 'bg-alert-red/15';
+    tagText = 'text-alert-red';
+    TagIcon = AlertCircle;
+    tagLabel = 'EXPIRED';
+    dateColor = 'text-alert-red line-through';
+  } else if (doc.status === 'expiring') {
+    tagBg = 'bg-signal-amber/15';
+    tagText = 'text-signal-amber';
+    TagIcon = AlertTriangle;
+    tagLabel = 'EXPIRING SOON';
+    dateColor = 'text-signal-amber';
+  }
+
+  // Format date safely
+  const formattedExpiry = doc.expiry || 'LIFETIME';
 
   return (
-    <motion.div variants={fadeUp} className="relative" style={{ perspective: 800 }}>
-      <motion.div
-        className="relative rounded-2xl cursor-pointer"
-        animate={{ rotateY: flipped ? 180 : 0 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 120 }}
-        style={{ transformStyle: 'preserve-3d', minHeight: 120 }}
-        onClick={() => setFlipped(f => !f)}
-      >
-        {/* Front */}
-        <div
-          className="absolute inset-0 bg-white rounded-2xl border border-outline-light overflow-hidden p-4"
-          style={{ backfaceVisibility: 'hidden', borderTop: `4px solid ${meta.border}` }}
-        >
-          <div className="flex justify-between items-start mb-2">
-            <span className="font-body text-sm font-bold text-on-surface">{doc.type}</span>
-            <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ color: meta.color, background: meta.bg }}
-            >
-              {doc.expiry}
+    <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-outline-light overflow-hidden shadow-sm">
+      <div className="p-5 cursor-pointer hover:bg-surface-low transition-colors" onClick={onClick}>
+        {/* Top Header Row */}
+        <div className="flex justify-between items-start mb-4">
+          <div className="w-12 h-12 rounded-xl bg-surface-low border border-outline-light/50 flex items-center justify-center">
+            <Icon size={24} className="text-navy" />
+          </div>
+          <div className={`px-2.5 py-1 rounded-full flex items-center gap-1.5 ${tagBg}`}>
+            <TagIcon size={12} className={tagText} strokeWidth={3} />
+            <span className={`font-body text-[10px] font-extrabold tracking-wider uppercase ${tagText}`}>
+              {tagLabel}
             </span>
           </div>
-          {doc.number && (
-            <p className="font-mono text-xs text-on-surface-muted tracking-wider">{doc.number}</p>
-          )}
-          <p className="font-body text-[10px] text-outline mt-2">Tap to manage</p>
-
-          {/* Pulse animation for expired/expiring */}
-          {(doc.status === 'expired' || doc.status === 'expiring') && (
-            <motion.div
-              className="absolute inset-0 rounded-2xl"
-              style={{ background: meta.color }}
-              animate={{ opacity: [0, 0.06, 0] }}
-              transition={{ repeat: Infinity, duration: 2.5 }}
-            />
-          )}
         </div>
 
-        {/* Back */}
-        <div
-          className="absolute inset-0 bg-surface-low rounded-2xl border border-outline-light p-4 flex flex-col gap-3 justify-center"
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+        {/* Title Row */}
+        <div>
+          <h2 className="font-display text-[18px] font-bold text-on-surface mb-0.5">{doc.type || 'Unknown Document'}</h2>
+          <p className="font-body text-[13px] text-on-surface-muted">{subtitle}</p>
+        </div>
+
+        {/* Dotted Divider */}
+        <div className="border-t border-dashed border-outline-light my-4"></div>
+
+        {/* Date Row */}
+        <div className="flex justify-between items-end">
+          <p className="font-body text-[10px] font-extrabold text-on-surface-muted uppercase tracking-widest">
+            {doc.status === 'expired' ? 'EXPIRED ON' : (isRC ? 'VALID UNTIL' : 'EXPIRY DATE')}
+          </p>
+          <p className={`font-mono text-sm font-bold tracking-wider ${dateColor}`}>
+            {formattedExpiry}
+          </p>
+        </div>
+      </div>
+
+      {/* Footer Area */}
+      <div className="bg-[#fcfafa] px-5 py-3 border-t border-outline-light flex justify-between items-center min-h-[56px]">
+        {/* Left Action / Badge */}
+        {doc.status === 'expired' ? (
+          <button className="flex items-center gap-2 text-alert-red hover:bg-alert-red/5 px-2 py-1.5 rounded transition-colors font-body text-[11px] font-extrabold uppercase tracking-widest">
+             <RefreshCw size={14} /> Re-certify Immediately
+          </button>
+        ) : doc.status === 'expiring' ? (
+          <button className="bg-[#9B6D19] text-white px-4 py-2 rounded-lg font-body text-[11px] font-extrabold uppercase tracking-widest shadow-sm active:scale-95 transition-all">
+             Renew Now
+          </button>
+        ) : (
+          isRC && vehicle?.plate ? (
+            <div className="border-2 border-on-surface rounded flex font-mono text-[11px] font-bold overflow-hidden bg-white">
+               <div className="px-2 py-1 border-r-2 border-on-surface flex items-center justify-center">MH 12</div>
+               <div className="px-2 py-1 flex items-center justify-center">AB 1234</div>
+            </div>
+          ) : (
+             <div></div> // empty spacer
+          )
+        )}
+        
+        {/* Right Action */}
+        <button 
+          className="font-body text-[11px] font-extrabold text-navy hover:text-navy/70 uppercase tracking-widest px-2"
+          onClick={onClick}
         >
-          <button
-            className="flex items-center gap-2 w-full bg-navy text-white rounded-xl py-3 px-3 font-body text-sm font-semibold justify-center"
-            onClick={(e) => { e.stopPropagation(); onClick(); }}
-          >
-            <UploadCloud size={16} /> Update Document
-          </button>
-          <button
-            className="flex items-center gap-2 w-full border border-alert-red/30 text-alert-red rounded-xl py-2.5 px-3 font-body text-sm font-semibold justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Trash2 size={14} /> Remove
-          </button>
-        </div>
-      </motion.div>
+          {isRC ? 'View PDF' : 'Details'}
+        </button>
+      </div>
     </motion.div>
   );
 }
@@ -99,30 +140,30 @@ export default function DocumentVault() {
     <div className="min-h-screen bg-fog pb-24 relative">
       <AppHeader title="Document Vault" rightSlot={<Shield size={20} className="text-verified-green" />} />
 
-      <div className="px-5 pt-5 space-y-4">
+      <div className="px-5 pt-5 space-y-5">
         {/* Privacy banner */}
-        <div className="flex items-center gap-3 bg-verified-green/8 border border-verified-green/20 rounded-xl px-4 py-3">
-          <Shield size={16} className="text-verified-green flex-shrink-0" />
-          <p className="font-body text-xs text-on-surface-muted">
-            Documents are <strong>end-to-end encrypted.</strong> We cannot read them.
+        <div className="flex items-start gap-3 bg-white border border-outline-light rounded-2xl px-5 py-4 shadow-sm">
+          <Shield size={18} className="text-verified-green flex-shrink-0 mt-0.5" />
+          <p className="font-body text-[13px] text-on-surface-muted leading-relaxed">
+            Documents are <strong className="text-on-surface">end-to-end encrypted</strong>. We cannot read them.
           </p>
         </div>
 
         {/* Alerts */}
         {(expiredCount > 0 || expiringCount > 0) && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {expiredCount > 0 && (
-               <div className="bg-alert-red/8 border border-alert-red/20 rounded-xl px-4 py-2.5 flex items-center gap-2">
-                 <span className="w-2 h-2 bg-alert-red rounded-full animate-pulse" />
-                 <p className="font-body text-xs font-semibold text-alert-red">
+               <div className="bg-alert-red/10 border border-alert-red/20 rounded-2xl px-5 py-3.5 flex items-center gap-3">
+                 <span className="w-2 h-2 bg-alert-red rounded-full animate-pulse flex-shrink-0" />
+                 <p className="font-body text-[13px] font-semibold text-alert-red">
                    {expiredCount} document{expiredCount > 1 ? 's' : ''} expired — action required
                  </p>
                </div>
             )}
             {expiringCount > 0 && (
-               <div className="bg-signal-amber/8 border border-signal-amber/20 rounded-xl px-4 py-2.5 flex items-center gap-2">
-                 <span className="w-2 h-2 bg-signal-amber rounded-full" />
-                 <p className="font-body text-xs font-semibold text-signal-amber">
+               <div className="bg-signal-amber/10 border border-signal-amber/20 rounded-2xl px-5 py-3.5 flex items-center gap-3">
+                 <span className="w-2 h-2 bg-signal-amber rounded-full flex-shrink-0" />
+                 <p className="font-body text-[13px] font-semibold text-signal-amber">
                    {expiringCount} document{expiringCount > 1 ? 's' : ''} expiring soon
                  </p>
                </div>
@@ -130,55 +171,39 @@ export default function DocumentVault() {
           </div>
         )}
 
-        {/* Document grid */}
-        {vehicleDocs.length > 0 ? (
-          <motion.div
-            className="grid grid-cols-2 gap-3"
-            variants={stagger}
-            initial="hidden"
-            animate="show"
-          >
-            {vehicleDocs.map(doc => (
-              <DocCard 
-                key={doc._id || doc.type} 
-                doc={doc} 
-                onClick={() => navigate('/document-upload', { state: { type: doc.type, vehicleId } })} 
-              />
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div
+        {/* Vertical Document List */}
+        <motion.div
+          className="flex flex-col gap-4"
+          variants={stagger}
+          initial="hidden"
+          animate="show"
+        >
+          {vehicleDocs.map((doc, index) => (
+            <DocCard 
+              key={doc._id || doc.id || index} 
+              doc={doc} 
+              vehicle={activeVehicle}
+              onClick={() => navigate('/document-upload', { state: { type: doc.type || '', vehicleId } })} 
+            />
+          ))}
+
+          {/* Persistent "Add Document" Button at the bottom of the list */}
+          <motion.button
             variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            className="border-2 border-dashed border-outline-light rounded-2xl flex flex-col items-center justify-center gap-3 py-16 px-4 bg-white/50 text-center"
+            className="w-full border-2 border-dashed border-[#dcd9d9] bg-transparent rounded-[24px] py-8 flex flex-col items-center justify-center gap-3 hover:bg-surface-low hover:border-navy/30 transition-all group mt-2"
+            onClick={() => navigate('/document-upload', { state: { type: '', vehicleId } })}
+            whileTap={{ scale: 0.98 }}
           >
-            <div className="w-16 h-16 bg-navy/8 rounded-full flex items-center justify-center mb-2">
-              <Shield size={32} className="text-navy" />
+            <div className="w-14 h-14 rounded-full border-2 border-navy border-dashed flex items-center justify-center text-navy group-hover:bg-navy/5 transition-colors">
+              <Plus size={24} strokeWidth={2.5} />
             </div>
-            <h3 className="font-display text-lg font-semibold text-on-surface">No Documents Added</h3>
-            <p className="font-body text-sm text-on-surface-muted max-w-[200px]">
-              Tap the + button below to securely store your vehicle documents.
-            </p>
-          </motion.div>
-        )}
+            {vehicleDocs.length === 0 ? (
+              <p className="font-body text-sm font-semibold text-on-surface-muted mt-2">Tap to add your first document</p>
+            ) : null}
+          </motion.button>
+        </motion.div>
       </div>
       
-      {/* Floating Action Button (FAB) Wrapper */}
-      <div className="fixed bottom-[100px] left-0 right-0 w-full max-w-[420px] mx-auto pointer-events-none z-40">
-        <div className="absolute right-6 bottom-0 pointer-events-auto">
-          <motion.button
-            className="w-14 h-14 bg-navy text-white rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(27,75,143,0.3)] hover:bg-[#153a6f] active:scale-95 transition-all"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              navigate('/document-upload', { state: { type: '', vehicleId } });
-            }}
-          >
-            <Plus size={28} />
-          </motion.button>
-        </div>
-      </div>
     </div>
   );
 }
