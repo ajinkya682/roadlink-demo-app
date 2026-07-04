@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { QrCode, Shield, FileText, Phone, ChevronRight, Edit3, Check } from 'lucide-react';
+import { QrCode, Shield, FileText, Phone, ChevronRight, Edit3, Check, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
@@ -56,6 +56,34 @@ export default function VehicleDetail() {
     }
     loadVehicle();
   }, [id]);
+
+  if (vehicles.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FA] pb-24 flex flex-col">
+        <AppHeader title="My Vehicles" />
+        <div className="px-5 pt-6 flex-1">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0, transition: { type: 'spring', damping: 22, stiffness: 200 } }}
+            className="border-2 border-dashed border-outline-light rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-navy/40 hover:bg-navy/2 transition-colors cursor-pointer bg-white"
+            onClick={() => navigate('/add-vehicle')}
+            whileTap={{ scale: 0.97 }}
+          >
+            <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Plus size={22} className="text-navy" />
+            </div>
+            <div className="flex-1">
+              <span className="font-body font-semibold text-[14px] text-[#434751]">
+                Add vehicle
+              </span>
+              <p className="font-body text-[12px] text-[#737782]">Get a digital identity for your vehicle</p>
+            </div>
+            <ChevronRight size={18} className="text-[#c3c6d2]" />
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   if (!vehicle) {
     return (
