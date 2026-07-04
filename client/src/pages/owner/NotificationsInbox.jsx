@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, ChevronRight } from 'lucide-react';
+import { CheckCircle, ChevronRight, Bell } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import { useAppData } from '../../context/AppContext';
@@ -100,7 +100,7 @@ export default function NotificationsInbox() {
             <button 
               onClick={handleMarkAllResolved}
               disabled={isResolvingAll}
-              className="ml-3 px-3 py-2 bg-[#90f7ba]/20 text-[#005834] rounded-full font-body text-[12px] font-bold tracking-widest uppercase border border-[#005834]/30 hover:bg-[#90f7ba]/40 transition-colors whitespace-nowrap disabled:opacity-50"
+              className="ml-2 mb-2 font-body text-[12px] font-bold tracking-[0.08em] uppercase text-[#1b4b8f] hover:text-[#003470] transition-colors whitespace-nowrap disabled:opacity-50 flex-shrink-0"
             >
               {isResolvingAll ? 'Resolving...' : 'Resolve All'}
             </button>
