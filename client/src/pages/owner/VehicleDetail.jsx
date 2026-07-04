@@ -16,10 +16,10 @@ const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
 export default function VehicleDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { vehicles, notifications, documents, contacts, updateVehicleInContext } = useAppData();
+  const { vehicles, notifications, documents, contacts, medicalProfile, updateVehicleInContext } = useAppData();
 
   // Initial fallback to context, then update via API
-  const contextVehicle = vehicles.find(v => v.id === id) || vehicles[0];
+  const contextVehicle = vehicles.find(v => v.id === id);
   const [vehicle, setVehicle] = useState(contextVehicle);
   const [activeTab, setActiveTab] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -28,7 +28,10 @@ export default function VehicleDetail() {
 
   React.useEffect(() => {
     async function loadVehicle() {
-      if (!id) return;
+      if (!id) {
+        navigate('/vehicles');
+        return;
+      }
       try {
         const res = await api.get(`/vehicles/${id}`);
         if (res.data.success) {
@@ -57,32 +60,9 @@ export default function VehicleDetail() {
     loadVehicle();
   }, [id]);
 
-  if (vehicles.length === 0) {
-    return (
-      <div className="min-h-screen bg-[#F7F8FA] pb-24 flex flex-col">
-        <AppHeader title="My Vehicles" />
-        <div className="px-5 pt-6 flex-1">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0, transition: { type: 'spring', damping: 22, stiffness: 200 } }}
-            className="border-2 border-dashed border-outline-light rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-navy/40 hover:bg-navy/2 transition-colors cursor-pointer bg-white"
-            onClick={() => navigate('/add-vehicle')}
-            whileTap={{ scale: 0.97 }}
-          >
-            <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Plus size={22} className="text-navy" />
-            </div>
-            <div className="flex-1">
-              <span className="font-body font-semibold text-[14px] text-[#434751]">
-                Add vehicle
-              </span>
-              <p className="font-body text-[12px] text-[#737782]">Get a digital identity for your vehicle</p>
-            </div>
-            <ChevronRight size={18} className="text-[#c3c6d2]" />
-          </motion.div>
-        </div>
-      </div>
-    );
+  if (vehicles.length === 0 && !id) {
+    navigate('/vehicles');
+    return null;
   }
 
   if (!vehicle) {
@@ -345,28 +325,44 @@ export default function VehicleDetail() {
 
             {/* ── CONTACTS ── */}
             {activeTab === 2 && (
-              <div className="space-y-3">
-                {contacts.map(c => (
-                  <div key={c.id} className="bg-white rounded-xl border border-outline-light px-4 py-3 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center font-display font-semibold text-navy text-sm flex-shrink-0">
-                      {c.name.charAt(0)}
+              <div className="space-y-4">
+                {/* Medical ID Summary */}
+                <div className="bg-white rounded-2xl border border-outline-light p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-alert-red/10 rounded-xl flex items-center justify-center text-alert-red">
+                      <Shield size={20} />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-body text-sm font-semibold text-on-surface">{c.name}</p>
-                        {c.isPrimary && (
-                          <span className="bg-navy text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Primary</span>
-                        )}
-                      </div>
-                      <p className="font-body text-xs text-on-surface-muted">{c.relation} · {c.maskedPhone}</p>
+                    <div>
+                      <h4 className="font-body text-sm font-semibold text-on-surface">Medical ID</h4>
+                      <p className="font-body text-xs text-on-surface-muted">{medicalProfile.bloodType ? `Blood Type: ${medicalProfile.bloodType}` : 'Setup Medical Info'}</p>
                     </div>
                   </div>
-                ))}
+                  {medicalProfile.bloodType && <Check size={18} className="text-verified-green" />}
+                </div>
+
+                <div className="space-y-3">
+                  {contacts.map(c => (
+                    <div key={c.id} className="bg-white rounded-xl border border-outline-light px-4 py-3 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center font-display font-semibold text-navy text-sm flex-shrink-0">
+                        {c.name.charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-body text-sm font-semibold text-on-surface">{c.name}</p>
+                          {c.isPrimary && (
+                            <span className="bg-navy text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Primary</span>
+                          )}
+                        </div>
+                        <p className="font-body text-xs text-on-surface-muted">{c.relation} · {c.maskedPhone}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                 <button
-                  className="w-full border-2 border-dashed border-outline-light rounded-xl py-4 font-body text-sm font-semibold text-on-surface-muted flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-outline-light rounded-xl py-4 font-body text-sm font-semibold text-on-surface-muted flex items-center justify-center gap-2 hover:bg-surface-low transition-colors"
                   onClick={() => navigate('/emergency-contacts')}
                 >
-                  Manage Contacts
+                  Manage Medical ID & Contacts
                 </button>
               </div>
             )}

@@ -38,6 +38,17 @@ export function AppProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [documents, setDocuments]         = useState([]);
   const [contacts, setContacts]           = useState([]);
+  const [medicalProfile, setMedicalProfile] = useState({
+    dob: '',
+    address: '',
+    bloodType: '',
+    conditions: '',
+    allergies: '',
+    prescriptions: '',
+    devices: '',
+    doctorName: '',
+    doctorPhone: ''
+  });
 
   // TODO (Phase 3/4): Replace this local boolean with real JWT-backed session
   // check. Once the backend exists, isAuthenticated should derive from whether
@@ -49,6 +60,10 @@ export function AppProvider({ children }) {
   const [comingSoonFeature, setComingSoonFeature] = useState(null);
   const showComingSoon = (featureName) => setComingSoonFeature(featureName);
 
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const showUpgradeModal = () => setIsUpgradeModalOpen(true);
+  const hideUpgradeModal = () => setIsUpgradeModalOpen(false);
+
   // ── Hydrate from device storage on mount ──────────────────────────────────
   useEffect(() => {
     async function loadData() {
@@ -58,6 +73,7 @@ export function AppProvider({ children }) {
       const storedNotifications = await SecureStorage.get('roadlink_notifications');
       const storedDocuments     = await SecureStorage.get('roadlink_documents');
       const storedContacts      = await SecureStorage.get('roadlink_contacts');
+      const storedMedicalProfile = await SecureStorage.get('roadlink_medical_profile');
 
       if (storedAuth === true || storedAuth === 'true') {
         const accessToken = await SecureStorage.get('roadlink_access_token');
@@ -79,6 +95,7 @@ export function AppProvider({ children }) {
       if (storedNotifications) setNotifications(storedNotifications);
       if (storedDocuments)     setDocuments(storedDocuments);
       if (storedContacts)      setContacts(storedContacts);
+      if (storedMedicalProfile) setMedicalProfile(storedMedicalProfile);
 
       setIsInitialized(true);
     }
@@ -94,7 +111,8 @@ export function AppProvider({ children }) {
     SecureStorage.set('roadlink_notifications', notifications);
     SecureStorage.set('roadlink_documents',     documents);
     SecureStorage.set('roadlink_contacts',      contacts);
-  }, [user, vehicles, notifications, documents, contacts, isAuthenticated, isInitialized]);
+    SecureStorage.set('roadlink_medical_profile', medicalProfile);
+  }, [user, vehicles, notifications, documents, contacts, medicalProfile, isAuthenticated, isInitialized]);
 
   // ── Auth actions ──────────────────────────────────────────────────────────
   const signIn = async (userProfile, accessToken, refreshToken) => {
@@ -440,12 +458,15 @@ export function AppProvider({ children }) {
       signIn,
       signOut,
       showComingSoon,
+      showUpgradeModal,
+      hideUpgradeModal,
       // Data
       user,
       vehicles,
       notifications,
       documents,
       contacts,
+      medicalProfile,
       unreadCount,
       // Notification actions
       markResolved,
@@ -468,6 +489,7 @@ export function AppProvider({ children }) {
       updateContact,
       deleteContact,
       setPrimaryContact,
+      setMedicalProfile,
       // User actions
       refreshUser,
       updateProfile,
@@ -519,6 +541,54 @@ export function AppProvider({ children }) {
               >
                 <X size={18} />
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Upgrade Modal */}
+      <AnimatePresence>
+        {isUpgradeModalOpen && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center px-5 pb-safe">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={hideUpgradeModal}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden z-10"
+            >
+              <div className="bg-gradient-to-br from-road-navy to-[#1a386d] p-6 flex flex-col items-center text-center">
+                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mb-4">
+                  <Sparkles size={28} className="text-[#feae2c]" />
+                </div>
+                <h3 className="font-display text-2xl font-bold text-white mb-2">
+                  Upgrade Required
+                </h3>
+                <p className="font-body text-[14px] text-white/90 leading-relaxed max-w-[240px]">
+                  You have reached the maximum limit of <span className="font-bold">5 vehicles</span>. Please upgrade your account to add more.
+                </p>
+              </div>
+              <div className="p-4 bg-white space-y-3">
+                <button
+                  className="w-full py-3.5 bg-[#feae2c] text-[#291800] rounded-xl font-body font-bold text-[15px] hover:bg-[#feae2c]/90 transition-colors shadow-sm"
+                  onClick={hideUpgradeModal}
+                >
+                  View Upgrade Options
+                </button>
+                <button
+                  className="w-full py-3.5 bg-white text-on-surface border border-outline-light rounded-xl font-body font-semibold text-[15px] hover:bg-surface-low transition-colors"
+                  onClick={hideUpgradeModal}
+                >
+                  Not Now
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

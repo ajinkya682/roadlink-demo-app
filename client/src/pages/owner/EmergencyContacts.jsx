@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit2, ShieldCheck, User, UserPlus, Info, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Edit2, ShieldCheck, User, UserPlus, Info, AlertTriangle, Activity, Heart, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -10,13 +10,23 @@ import { useAppData } from "../../context/AppContext";
 const relations = ['Family', 'Friend', 'Colleague', 'Spouse', 'Brother', 'Other'];
 
 export default function EmergencyContacts() {
-  const { contacts, refreshContacts, addContact, updateContact, deleteContact } = useAppData();
+  const { contacts, medicalProfile, setMedicalProfile, refreshContacts, addContact, updateContact, deleteContact } = useAppData();
   
   useEffect(() => {
     refreshContacts();
   }, []);
   
-  // Modal states
+  // Section toggle states
+  const [openSection, setOpenSection] = useState('medical'); // 'medical' or 'contacts'
+  const [isEditingMedical, setIsEditingMedical] = useState(false);
+  const [medicalForm, setMedicalForm] = useState(medicalProfile);
+
+  // Sync when medicalProfile changes
+  useEffect(() => {
+    setMedicalForm(medicalProfile);
+  }, [medicalProfile]);
+
+  // Modal states for contacts
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -48,7 +58,7 @@ export default function EmergencyContacts() {
     setShowDeleteModal(true);
   };
 
-  const handleSave = () => {
+  const handleSaveContact = () => {
     if (form.name && form.phone.length >= 10) {
       if (showEditModal && selectedContact) {
         updateContact(selectedContact.id, form);
@@ -59,7 +69,7 @@ export default function EmergencyContacts() {
     }
   };
 
-  const handleDelete = () => {
+  const handleDeleteContact = () => {
     if (selectedContact) {
       deleteContact(selectedContact.id);
       closeModals();
@@ -71,6 +81,11 @@ export default function EmergencyContacts() {
     setShowEditModal(false);
     setShowDeleteModal(false);
     setSelectedContact(null);
+  };
+
+  const handleSaveMedical = () => {
+    setMedicalProfile(medicalForm);
+    setIsEditingMedical(false);
   };
 
   const modalAnimation = {
@@ -87,99 +102,244 @@ export default function EmergencyContacts() {
 
   return (
     <div className="min-h-screen bg-[#fcf9f8] text-[#1c1b1b] font-body pb-24">
-      <AppHeader title="Emergency Contacts" />
+      <AppHeader title="Emergency & Medical Profile" />
 
-      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-8">
-        {/* Action Section */}
-        <section className="flex flex-col gap-4">
+      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
+        {/* Reassurance Header */}
+        <div className="bg-[#f6f3f2] p-4 rounded-xl flex gap-3 items-start border border-[#e5e2e1]">
+          <ShieldCheck size={24} className="text-[#005834] shrink-0 mt-0.5" />
+          <p className="font-body text-[14px] text-[#434751] italic leading-snug">
+            This information is securely stored and globally available across all your vehicles. It is only accessed by authorized responders during critical emergencies.
+          </p>
+        </div>
+
+        {/* ── MEDICAL INFORMATION SECTION ── */}
+        <section className="bg-white rounded-2xl border border-[#e5e2e1] overflow-hidden shadow-sm">
           <button 
-            onClick={openAddModal}
-            disabled={contacts.length >= 5}
-            className="w-full bg-[#feae2c] text-[#291800] flex items-center justify-center gap-3 py-4 px-6 rounded-xl font-bold active:scale-[0.98] transition-all shadow-[0px_4px_12px_rgba(26,26,26,0.08)] border border-[#835500]/20 group disabled:opacity-50 disabled:active:scale-100"
+            className="w-full flex items-center justify-between p-5 hover:bg-[#fcf9f8] transition-colors"
+            onClick={() => setOpenSection(openSection === 'medical' ? null : 'medical')}
           >
-            <Plus size={20} className="font-bold group-hover:rotate-90 transition-transform" strokeWidth={2.5} />
-            <span className="font-body text-[12px] font-bold tracking-[0.08em] uppercase">Add Emergency Contact</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#ffdad6]/40 flex items-center justify-center text-[#ba1a1a]">
+                <Activity size={20} />
+              </div>
+              <div className="text-left">
+                <h2 className="font-display text-[18px] font-semibold text-[#1c1b1b]">Medical ID & Details</h2>
+                <p className="font-body text-[13px] text-[#737782]">Personal and critical health info</p>
+              </div>
+            </div>
+            {openSection === 'medical' ? <ChevronUp size={20} className="text-[#737782]" /> : <ChevronDown size={20} className="text-[#737782]" />}
           </button>
-        </section>
 
-        {/* Contacts List */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-center px-1">
-            <h2 className="font-display text-[20px] font-semibold text-[#1c1b1b]">Registered Contacts</h2>
-            <span className="font-body text-[12px] font-bold tracking-[0.08em] text-[#737782] uppercase">{contacts.length}/5 Slots</span>
-          </div>
-
-          <div className="space-y-4">
-            <AnimatePresence mode="popLayout">
-              {contacts.map((c) => (
-                <motion.div
-                  key={c.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                  className="bg-white p-5 rounded-xl border border-[#e5e2e1] flex items-start gap-4 hover:border-[#003470]/30 transition-colors group"
-                >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${c.isPrimary ? 'bg-[#003470]/10 text-[#003470]' : 'bg-[#eae7e7] text-[#434751]'}`}>
-                    {c.isPrimary ? <ShieldCheck size={24} className="fill-current/20" /> : <User size={24} />}
-                  </div>
-                  
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-display text-[20px] font-semibold text-[#1c1b1b]">{c.name}</h3>
-                      {c.isPrimary && (
-                        <span className="bg-[#003470] text-white px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-tighter">Primary Contact</span>
-                      )}
-                    </div>
-                    <p className="font-body text-[14px] text-[#434751]">{c.relation}</p>
-                    <p className="font-mono text-[14px] font-medium text-[#003470] mt-2 tracking-wider">{c.maskedPhone}</p>
-                  </div>
-                  
-                  <div className="flex flex-col gap-2">
-                    <button 
-                      onClick={() => openEditModal(c)}
-                      className="p-2 rounded-full hover:bg-[#eae7e7] transition-colors text-[#737782] hover:text-[#1c1b1b] active:scale-90"
-                    >
-                      <Edit2 size={20} strokeWidth={2} />
-                    </button>
-                    <button 
-                      onClick={() => openDeleteModal(c)}
-                      className="p-2 rounded-full hover:bg-[#ffdad6]/50 transition-colors text-[#ba1a1a] active:scale-90"
-                    >
-                      <Trash2 size={20} strokeWidth={2} />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {/* Empty Slot State */}
-            {contacts.length === 0 && (
-              <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                onClick={openAddModal}
-                className="border-2 border-dashed border-[#c3c6d2] rounded-xl p-8 flex flex-col items-center justify-center text-center gap-3 bg-white hover:bg-[#f6f3f2] active:scale-[0.98] transition-all cursor-pointer group"
+          <AnimatePresence>
+            {openSection === 'medical' && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden border-t border-[#e5e2e1]"
               >
-                <div className="w-10 h-10 rounded-full bg-[#f6f3f2] flex items-center justify-center border border-[#c3c6d2]/50 group-hover:bg-white transition-colors">
-                  <UserPlus size={20} className="text-[#737782] group-hover:text-[#003470] transition-colors" />
+                <div className="p-5 space-y-6 bg-[#fcf9f8]/50">
+                  {!isEditingMedical ? (
+                    <div className="space-y-6">
+                      {/* Personal Details */}
+                      <div>
+                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Personal Details</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Date of Birth</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.dob || 'Not provided'}</p>
+                          </div>
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Blood Type</p>
+                            <p className="font-body text-[14px] font-medium text-[#ba1a1a] font-bold">{medicalProfile.bloodType || 'Not provided'}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="font-body text-[11px] text-[#737782]">Home Address</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.address || 'Not provided'}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-[#e5e2e1]" />
+
+                      {/* Medical Information */}
+                      <div>
+                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Health Information</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Medical Conditions</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.conditions || 'None known'}</p>
+                          </div>
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Allergies</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.allergies || 'None known'}</p>
+                          </div>
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Prescriptions</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.prescriptions || 'None'}</p>
+                          </div>
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Medical Devices</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.devices || 'None'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="h-px bg-[#e5e2e1]" />
+
+                      {/* Primary Doctor */}
+                      <div>
+                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Primary Doctor</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Name</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.doctorName || 'Not provided'}</p>
+                          </div>
+                          <div>
+                            <p className="font-body text-[11px] text-[#737782]">Contact</p>
+                            <p className="font-body text-[14px] font-medium">{medicalProfile.doctorPhone || 'Not provided'}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button fullWidth variant="outline" onClick={() => setIsEditingMedical(true)}>
+                        <Edit2 size={18} className="mr-2" /> Edit Medical ID
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-5">
+                      <div className="space-y-4">
+                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider">Personal Details</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Input label="DOB (DD/MM/YYYY)" value={medicalForm.dob} onChange={e => setMedicalForm(f => ({ ...f, dob: e.target.value }))} />
+                          <Input label="Blood Type" value={medicalForm.bloodType} onChange={e => setMedicalForm(f => ({ ...f, bloodType: e.target.value }))} />
+                        </div>
+                        <Input label="Home Address" value={medicalForm.address} onChange={e => setMedicalForm(f => ({ ...f, address: e.target.value }))} />
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider">Health Information</h3>
+                        <Input label="Medical Conditions (e.g., Diabetes, Asthma)" value={medicalForm.conditions} onChange={e => setMedicalForm(f => ({ ...f, conditions: e.target.value }))} />
+                        <Input label="Allergies (Medications, Food, etc.)" value={medicalForm.allergies} onChange={e => setMedicalForm(f => ({ ...f, allergies: e.target.value }))} />
+                        <Input label="Current Prescriptions & Dosages" value={medicalForm.prescriptions} onChange={e => setMedicalForm(f => ({ ...f, prescriptions: e.target.value }))} />
+                        <Input label="Medical Devices (e.g., Pacemaker)" value={medicalForm.devices} onChange={e => setMedicalForm(f => ({ ...f, devices: e.target.value }))} />
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider">Primary Doctor</h3>
+                        <Input label="Doctor's Name" value={medicalForm.doctorName} onChange={e => setMedicalForm(f => ({ ...f, doctorName: e.target.value }))} />
+                        <Input label="Doctor's Contact Number" value={medicalForm.doctorPhone} onChange={e => setMedicalForm(f => ({ ...f, doctorPhone: e.target.value }))} />
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <Button fullWidth variant="outline" onClick={() => setIsEditingMedical(false)}>Cancel</Button>
+                        <Button fullWidth onClick={handleSaveMedical}>Save Medical ID</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <p className="font-body text-[14px] text-[#737782] italic max-w-[250px] group-hover:text-[#434751] transition-colors">
-                  Add at least one contact so we know who to notify in an emergency.
-                </p>
               </motion.div>
             )}
-          </div>
+          </AnimatePresence>
         </section>
 
-        {/* Reassurance Footer */}
-        <footer className="pt-4 border-t border-[#1c1b1b]/5">
-          <div className="bg-[#f6f3f2] p-4 rounded-lg flex gap-3 items-start">
-            <Info size={20} className="text-[#005834] shrink-0 mt-0.5" />
-            <p className="font-body text-[14px] text-[#434751] italic leading-snug">
-              Emergency contacts are only notified during critical theft or safety events. Your data remains encrypted and is only accessed by automated legal protocols.
-            </p>
-          </div>
-        </footer>
+        {/* ── EMERGENCY CONTACTS SECTION ── */}
+        <section className="bg-white rounded-2xl border border-[#e5e2e1] overflow-hidden shadow-sm">
+          <button 
+            className="w-full flex items-center justify-between p-5 hover:bg-[#fcf9f8] transition-colors"
+            onClick={() => setOpenSection(openSection === 'contacts' ? null : 'contacts')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#003470]/10 flex items-center justify-center text-[#003470]">
+                <Heart size={20} />
+              </div>
+              <div className="text-left">
+                <h2 className="font-display text-[18px] font-semibold text-[#1c1b1b]">Emergency Contacts</h2>
+                <p className="font-body text-[13px] text-[#737782]">{contacts.length}/5 Registered contacts</p>
+              </div>
+            </div>
+            {openSection === 'contacts' ? <ChevronUp size={20} className="text-[#737782]" /> : <ChevronDown size={20} className="text-[#737782]" />}
+          </button>
+
+          <AnimatePresence>
+            {openSection === 'contacts' && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden border-t border-[#e5e2e1]"
+              >
+                <div className="p-5 space-y-4 bg-[#fcf9f8]/50">
+                  <AnimatePresence mode="popLayout">
+                    {contacts.map((c) => (
+                      <motion.div
+                        key={c.id}
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                        className="bg-white p-4 rounded-xl border border-[#e5e2e1] flex items-start gap-4 hover:border-[#003470]/30 transition-colors group"
+                      >
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${c.isPrimary ? 'bg-[#003470]/10 text-[#003470]' : 'bg-[#eae7e7] text-[#434751]'}`}>
+                          {c.isPrimary ? <ShieldCheck size={20} className="fill-current/20" /> : <User size={20} />}
+                        </div>
+                        
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-display text-[16px] font-semibold text-[#1c1b1b]">{c.name}</h3>
+                            {c.isPrimary && (
+                              <span className="bg-[#003470] text-white px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-tighter">Primary</span>
+                            )}
+                          </div>
+                          <p className="font-body text-[12px] text-[#434751]">{c.relation}</p>
+                          <p className="font-mono text-[13px] font-medium text-[#003470] mt-1 tracking-wider">{c.maskedPhone}</p>
+                        </div>
+                        
+                        <div className="flex flex-col gap-1">
+                          <button 
+                            onClick={() => openEditModal(c)}
+                            className="p-1.5 rounded-full hover:bg-[#eae7e7] transition-colors text-[#737782] hover:text-[#1c1b1b]"
+                          >
+                            <Edit2 size={16} strokeWidth={2} />
+                          </button>
+                          <button 
+                            onClick={() => openDeleteModal(c)}
+                            className="p-1.5 rounded-full hover:bg-[#ffdad6]/50 transition-colors text-[#ba1a1a]"
+                          >
+                            <Trash2 size={16} strokeWidth={2} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {contacts.length < 5 && (
+                    <button 
+                      onClick={openAddModal}
+                      className="w-full bg-[#feae2c] text-[#291800] flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-bold active:scale-[0.98] transition-all shadow-sm border border-[#835500]/20 group mt-2"
+                    >
+                      <Plus size={18} className="font-bold group-hover:rotate-90 transition-transform" strokeWidth={2.5} />
+                      <span className="font-body text-[12px] font-bold tracking-[0.08em] uppercase">Add New Contact</span>
+                    </button>
+                  )}
+
+                  {contacts.length === 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      className="text-center p-6 border-2 border-dashed border-[#c3c6d2] rounded-xl mt-2"
+                    >
+                      <p className="font-body text-[13px] text-[#737782]">
+                        No emergency contacts added yet. Please add at least one close contact.
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
       </main>
 
       {/* MODALS */}
@@ -232,7 +392,7 @@ export default function EmergencyContacts() {
 
               <div className="flex gap-3 mt-6 pt-4 border-t border-[#e5e2e1]">
                 <Button variant="outline" className="flex-1" onClick={closeModals}>Cancel</Button>
-                <Button className="flex-1 bg-[#1B4B8F] text-white border-none" onClick={handleSave} disabled={!form.name || form.phone.length < 10}>
+                <Button className="flex-1 bg-[#1B4B8F] text-white border-none" onClick={handleSaveContact} disabled={!form.name || form.phone.length < 10}>
                   {showEditModal ? 'Save Changes' : 'Add Contact'}
                 </Button>
               </div>
@@ -254,7 +414,7 @@ export default function EmergencyContacts() {
               
               <div className="flex flex-col gap-3">
                 <button 
-                  onClick={handleDelete}
+                  onClick={handleDeleteContact}
                   className="w-full bg-[#ba1a1a] text-white font-body text-[14px] font-bold tracking-[0.08em] uppercase py-3.5 rounded-xl hover:bg-[#93000a] active:scale-[0.98] transition-all"
                 >
                   Yes, Delete Contact

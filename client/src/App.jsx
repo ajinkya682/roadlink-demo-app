@@ -27,6 +27,7 @@ import QRDetail from './pages/owner/QRDetail'
 import OrderSticker from './pages/owner/OrderSticker'
 import OrderConfirmation from './pages/owner/OrderConfirmation'
 import Dashboard from './pages/owner/Dashboard'
+import Vehicles from './pages/owner/Vehicles'
 import VehicleDetail from './pages/owner/VehicleDetail'
 import NotificationsInbox from './pages/owner/NotificationsInbox'
 import NotificationDetail from './pages/owner/NotificationDetail'
@@ -89,7 +90,7 @@ function App() {
   const showNavRoutes = [
     '/dashboard',       // Home
     '/document-vault',  // Docs
-    '/vehicle-detail',  // Vehicles (Root tab)
+    '/vehicles',        // Vehicles (Root tab)
     '/settings'         // Settings
   ];
 
@@ -122,8 +123,9 @@ function App() {
             <Route path="/order-sticker" element={<RequireAuth><PageWrapper><OrderSticker /></PageWrapper></RequireAuth>} />
             <Route path="/order-confirmation" element={<RequireAuth><PageWrapper><OrderConfirmation /></PageWrapper></RequireAuth>} />
             <Route path="/dashboard" element={<RequireAuth><PageWrapper><Dashboard /></PageWrapper></RequireAuth>} />
+            <Route path="/vehicles" element={<RequireAuth><PageWrapper><Vehicles /></PageWrapper></RequireAuth>} />
             <Route path="/vehicle-detail/:id" element={<RequireAuth><PageWrapper><VehicleDetail /></PageWrapper></RequireAuth>} />
-            <Route path="/vehicle-detail" element={<RequireAuth><PageWrapper><VehicleDetail /></PageWrapper></RequireAuth>} />
+            <Route path="/vehicle-detail" element={<Navigate to="/vehicles" replace />} />
             <Route path="/notifications" element={<RequireAuth><PageWrapper><NotificationsInbox /></PageWrapper></RequireAuth>} />
             <Route path="/notification-detail/:id" element={<RequireAuth><PageWrapper><NotificationDetail /></PageWrapper></RequireAuth>} />
             <Route path="/notification-detail" element={<RequireAuth><PageWrapper><NotificationDetail /></PageWrapper></RequireAuth>} />

@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Plus, QrCode, ChevronRight, UserCircle, Car, LayoutGrid, Share2 } from 'lucide-react';
+import { Plus, ChevronRight, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
+import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import { useAppData } from '../../context/AppContext';
 
@@ -14,106 +15,29 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 22, stiffness: 200 } },
 };
 
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
-// quickActions moved inside component to access state
-
-export default function Dashboard() {
+export default function Vehicles() {
   const navigate = useNavigate();
-  const { vehicles, user, unreadCount, refreshVehicles, refreshNotifications, showComingSoon, showUpgradeModal } = useAppData();
+  const { vehicles, refreshVehicles, showUpgradeModal } = useAppData();
 
   useEffect(() => {
     refreshVehicles();
-    refreshNotifications();
   }, []);
 
-  const quickActions = [
-    { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile') },
-    { label: 'Add Vehicle', Icon: Plus,       action: (nav) => vehicles.length >= 5 ? showUpgradeModal() : nav('/add-vehicle') },
-    { label: 'My Vehicles', Icon: LayoutGrid, action: (nav) => nav('/vehicles') },
-    { label: 'Invite',      Icon: Share2,     action: () => showComingSoon('Invites & Sharing') },
-  ];
+  const handleAddVehicle = () => {
+    if (vehicles.length >= 5) {
+      showUpgradeModal();
+    } else {
+      navigate('/add-vehicle');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] pb-28">
-
-      {/* ── HEADER ────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-b from-[#eef2ff] to-white sticky top-0 z-30 px-5 pt-6 pb-5 border-b border-[#e5e2e1] shadow-sm">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div className="w-16 h-16 rounded-full bg-[#1B4B8F] flex items-center justify-center text-white text-[24px] font-display font-bold shrink-0 shadow-md border-2 border-white overflow-hidden">
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                user.name.split(' ').map(n => n[0]).join('')
-              )}
-            </div>
-            
-            {/* User Info */}
-            <div className="flex flex-col">
-              <p className="font-body text-[13px] text-[#737782] font-medium mb-0.5">
-                {greeting()},
-              </p>
-              <h1 className="font-display text-[22px] font-bold text-[#1c1b1b] leading-tight">
-                {user.name.split(' ')[0]} 👋
-              </h1>
-              <p className="font-body text-[12px] text-on-surface-muted mt-1 tracking-wider">
-                {user.phone.slice(0, 6)} ••••• {user.phone.slice(-3)}
-              </p>
-            </div>
-          </div>
-
-          {/* Bell — only account-level notification entry */}
-          <motion.button
-            className="relative w-11 h-11 bg-road-navy/5 rounded-full flex items-center justify-center text-road-navy mt-1 shadow-sm border border-road-navy/10"
-            whileTap={{ scale: 0.88 }}
-            onClick={() => navigate('/notifications')}
-          >
-            <Bell size={22} strokeWidth={1.75} />
-            {unreadCount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute top-1.5 right-1.5 min-w-[16px] h-4 bg-alert-red rounded-full flex items-center justify-center text-white font-bold px-0.5"
-                style={{ fontSize: '9px' }}
-              >
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </motion.span>
-            )}
-          </motion.button>
-        </div>
-
-        {/* ── QUICK ACTIONS ROW ───────────────────────────────── */}
-        <div className="flex justify-center gap-4 mt-6 overflow-x-auto pb-1 scrollbar-hide">
-          {quickActions.map(({ label, Icon, action }) => (
-            <motion.button
-              key={label}
-              className="flex flex-col items-center gap-2 min-w-[64px] group"
-              whileTap={{ scale: 0.90 }}
-              onClick={() => action(navigate)}
-            >
-              <div
-                className="w-[52px] h-[52px] rounded-full flex items-center justify-center bg-road-navy/5 shadow-sm border border-road-navy/10 group-hover:bg-road-navy/10 transition-colors"
-              >
-                <Icon size={22} strokeWidth={1.75} className="text-road-navy" />
-              </div>
-              <span className="font-body text-[11px] font-semibold text-on-surface-muted text-center leading-tight whitespace-nowrap">
-                {label}
-              </span>
-            </motion.button>
-          ))}
-        </div>
-      </div>
+      <AppHeader title="My Vehicles" />
 
       {/* ── VEHICLE CARDS ─────────────────────────────────────── */}
       <motion.div
-        className="px-4 pt-5 space-y-4"
+        className="px-4 pt-6 space-y-4"
         variants={stagger}
         initial="hidden"
         animate="show"
@@ -121,7 +45,7 @@ export default function Dashboard() {
         {/* Section label */}
         <motion.div variants={fadeUp} className="flex items-center justify-between">
           <p className="font-body text-[11px] font-bold text-[#737782] uppercase tracking-[0.1em]">
-            My Vehicles
+            Registered Vehicles
           </p>
           <span className="font-body text-[11px] text-[#737782]">
             {vehicles.length}/5 slots
@@ -166,7 +90,7 @@ export default function Dashboard() {
               <PlateTag plateNumber={v.plate} isVerified={v.isVerified} size="md" />
             </div>
 
-            {/* Status banner — amber for alerts, green for privacy */}
+            {/* Status banner */}
             {v.unreadAlerts > 0 ? (
               <div className="bg-signal-amber/10 border-t border-signal-amber/20 px-4 py-2.5 flex items-center gap-2">
                 <span className="w-2 h-2 bg-signal-amber rounded-full animate-pulse flex-shrink-0" />
@@ -188,12 +112,12 @@ export default function Dashboard() {
           </motion.div>
         ))}
 
-        {/* Add vehicle card (Empty State) */}
+        {/* Add vehicle card */}
         {vehicles.length < 5 && (
           <motion.div
             variants={fadeUp}
-            className="border-2 border-dashed border-outline-light rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-road-navy/40 hover:bg-road-navy/2 transition-colors cursor-pointer bg-white mt-2"
-            onClick={() => navigate('/add-vehicle')}
+            className="border-2 border-dashed border-outline-light rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-road-navy/40 hover:bg-road-navy/2 transition-colors cursor-pointer bg-white mt-4"
+            onClick={handleAddVehicle}
             whileTap={{ scale: 0.97 }}
           >
             <div className="w-10 h-10 bg-road-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">

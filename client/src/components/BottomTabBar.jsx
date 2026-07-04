@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const TABS = [
   { label: "Home", Icon: Home, path: "/dashboard" },
-  { label: "Vehicles", Icon: Car, path: "/vehicle-detail" },
+  { label: "Vehicles", Icon: Car, path: "/vehicles" },
   null,
   { label: "Docs", Icon: FileText, path: "/document-vault" },
   { label: "Profile", Icon: UserCircle, path: "/settings" },
@@ -78,8 +78,8 @@ export default function BottomTabBar() {
 
           const isActive =
             location.pathname === tab.path ||
-            (tab.path === "/vehicle-detail" &&
-              location.pathname.startsWith("/vehicle-detail"));
+            (tab.path === "/vehicles" &&
+              (location.pathname.startsWith("/vehicles") || location.pathname.startsWith("/vehicle-detail")));
 
           const { Icon } = tab;
 
