@@ -191,15 +191,25 @@ export default function DocumentVault() {
           <motion.button
             variants={fadeUp}
             className="w-full border-2 border-dashed border-[#dcd9d9] bg-transparent rounded-[24px] py-8 flex flex-col items-center justify-center gap-3 hover:bg-surface-low hover:border-navy/30 transition-all group mt-2"
-            onClick={() => navigate('/document-upload', { state: { type: '', vehicleId } })}
+            onClick={() => {
+              if (vehicles.length === 0) {
+                navigate('/add-vehicle');
+              } else {
+                navigate('/document-upload', { state: { type: '', vehicleId } });
+              }
+            }}
             whileTap={{ scale: 0.98 }}
           >
             <div className="w-14 h-14 rounded-full border-2 border-navy border-dashed flex items-center justify-center text-navy group-hover:bg-navy/5 transition-colors">
               <Plus size={24} strokeWidth={2.5} />
             </div>
-            {vehicleDocs.length === 0 ? (
-              <p className="font-body text-sm font-semibold text-on-surface-muted mt-2">Tap to add your first document</p>
-            ) : null}
+            <p className="font-body text-sm font-semibold text-on-surface-muted mt-2">
+              {vehicles.length === 0 
+                ? "Tap to add a vehicle first" 
+                : vehicleDocs.length === 0 
+                  ? "Tap to add your first document" 
+                  : ""}
+            </p>
           </motion.button>
         </motion.div>
       </div>
