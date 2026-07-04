@@ -5,9 +5,18 @@ const { sendSuccess, sendError } = require('../../utils/response');
 const notificationService = require('./notificationService');
 const { logger } = require('../../middleware/logger');
 
+const { uploadBuffer, getSignedUrl, extractPublicId } = require('../../services/cloudinary');
+
 exports.createReport = async (req, res) => {
   try {
-    const { qrToken: token, category, notes, reporterLocation, mediaUrls } = req.body;
+    const { qrToken: token, category, notes, mediaUrls } = req.body;
+    let reporterLocation = req.body.reporterLocation;
+    
+    if (typeof reporterLocation === 'string') {
+      try {
+        reporterLocation = JSON.parse(reporterLocation);
+      } catch(e) {}
+    }
 
     if (!token || !category) {
       return sendError(res, 'qrToken and category are required');
@@ -22,6 +31,17 @@ exports.createReport = async (req, res) => {
     if (!vehicle || vehicle.status === 'deleted') {
       return sendError(res, 'Vehicle not found', 404);
     }
+    
+    let uploadedMediaUrls = mediaUrls ? (Array.isArray(mediaUrls) ? mediaUrls : [mediaUrls]) : [];
+    
+    if (req.file) {
+      try {
+        const result = await uploadBuffer(req.file.buffer, 'roadlink/reports', 'image');
+        uploadedMediaUrls.push(result.secure_url || result.url || result.public_id);
+      } catch (uploadError) {
+        logger.error('Failed to upload report image', uploadError);
+      }
+    }
 
     // Rate limits (Emergency/Theft exempt handled via middleware or application logic)
     // Create the report
@@ -31,7 +51,7 @@ exports.createReport = async (req, res) => {
       reporterDeviceId: req.ip, // Basic anonymized fingerprinting
       reporterLocation,
       notes,
-      mediaUrls
+      mediaUrls: uploadedMediaUrls
     });
 
     await report.save();
@@ -68,9 +88,21 @@ exports.getReports = async (req, res) => {
       }
     }
 
-    const reports = await Report.find(query).sort({ createdAt: -1 });
+    const reports = await Report.find(query).populate('vehicleId').sort({ createdAt: -1 });
 
-    return sendSuccess(res, { reports });
+    const signedReports = reports.map(r => {
+      const rObj = r.toObject();
+      if (rObj.mediaUrls && rObj.mediaUrls.length > 0) {
+        rObj.mediaUrls = rObj.mediaUrls.map(url => {
+           const publicId = extractPublicId(url);
+           if (publicId) return getSignedUrl(publicId) || url;
+           return url;
+        });
+      }
+      return rObj;
+    });
+
+    return sendSuccess(res, { reports: signedReports });
   } catch (error) {
     return sendError(res, 'Failed to fetch reports', 500);
   }

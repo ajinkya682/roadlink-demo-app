@@ -380,31 +380,52 @@ export default function VehicleDetail() {
 
                 {/* Recent alerts */}
                 {recentNotifs.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest">Recent Alerts</p>
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-display text-[20px] font-bold text-[#1c1b1b]">Recent Notifications</h3>
                       <button
-                        className="font-body text-xs font-semibold text-navy"
+                        className="font-body text-[12px] font-bold tracking-[0.08em] uppercase text-[#1b4b8f] hover:text-[#003470] transition-colors"
                         onClick={() => navigate('/notifications')}
                       >
-                        View all
+                        VIEW ALL
                       </button>
                     </div>
-                    <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
-                      {recentNotifs.map(n => (
-                        <div
-                          key={n.id}
-                          className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-surface-low transition-colors"
-                          onClick={() => navigate(`/notification-detail/${n.id}`)}
-                        >
-                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.color }} />
-                          <div className="flex-1">
-                            <p className="font-body text-sm font-semibold text-on-surface">{n.type}</p>
-                            <p className="font-body text-xs text-on-surface-muted">{n.time}</p>
+                    <div className="space-y-3">
+                      {recentNotifs.map(n => {
+                        let iconBg = 'bg-[#d7e2ff]/50';
+                        let iconColor = 'text-[#003470]';
+                        
+                        const t = (n.type || '').toLowerCase();
+                        if (t.includes('parking') || n.category === 'wrong_parking') {
+                          iconBg = 'bg-[#feae2c]/30';
+                          iconColor = 'text-[#835500]';
+                        } else if (t.includes('emergency') || t.includes('theft') || n.category === 'theft') {
+                          iconBg = 'bg-[#ffdad6]/50';
+                          iconColor = 'text-[#ba1a1a]';
+                        } else if (n.resolved || t.includes('verified')) {
+                          iconBg = 'bg-[#90f7ba]/40';
+                          iconColor = 'text-[#005834]';
+                        }
+
+                        return (
+                          <div
+                            key={n.id}
+                            className="bg-white rounded-2xl border border-[#1c1b1b]/10 shadow-sm p-4 flex items-center gap-4 cursor-pointer hover:border-[#1c1b1b]/20 hover:-translate-y-0.5 transition-all"
+                            onClick={() => navigate(`/notification-detail/${n.id}`)}
+                          >
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+                               <span className={`font-display text-[22px] font-bold ${iconColor}`}>
+                                 {n.type ? n.type.charAt(0).toUpperCase() : 'N'}
+                               </span>
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-display text-[16px] font-bold text-[#1c1b1b]">{n.type}</h4>
+                              <p className="font-body text-[14px] text-[#434751] mt-0.5 line-clamp-1">{n.message || n.notes || "Report processed."}</p>
+                            </div>
+                            <p className="font-body text-[13px] text-[#737782] whitespace-nowrap self-start mt-1">{n.time}</p>
                           </div>
-                          {n.resolved && <Check size={14} className="text-verified-green" />}
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 )}

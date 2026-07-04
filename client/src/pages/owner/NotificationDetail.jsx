@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { MapPin, Navigation, Check, AlertTriangle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import AppHeader from '../../components/AppHeader';
+import { MapPin, Navigation, Check, AlertTriangle, ShieldAlert, ArrowLeft, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PlateTag from '../../components/PlateTag';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
@@ -14,6 +13,7 @@ export default function NotificationDetail() {
 
   const notif = notifications.find(n => n.id === id) || notifications[0];
   const [resolved, setResolved] = useState(notif?.resolved || false);
+  const [isImageOpen, setIsImageOpen] = useState(false);
 
   const handleResolve = () => {
     setResolved(true);
@@ -21,130 +21,186 @@ export default function NotificationDetail() {
     setTimeout(() => navigate(-1), 1000);
   };
 
-  // Mock map grid pattern as background
-  const mapPattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23c3c6d2' stroke-width='0.5'%3E%3Cpath d='M0 0h40v40H0z'/%3E%3C/g%3E%3C/svg%3E")`;
+  if (!notif) return null;
 
   return (
-    <div className="min-h-screen bg-fog flex flex-col relative overflow-hidden">
-      <AppHeader title="Alert Detail" transparent />
+    <>
+      <div className="min-h-screen bg-[#F7F8FA] font-body text-[#1c1b1b] pb-10">
+        <header className="px-4 py-4 flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-black/5 active:scale-95 transition-all">
+            <ArrowLeft size={24} />
+          </button>
+        </header>
 
-      {/* Mock map background */}
-      <motion.div
-        className="h-60 relative overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, #e8f0f7 0%, #dde8f3 50%, #ccd9eb 100%)`,
-          backgroundImage: mapPattern,
-        }}
-        initial={{ filter: 'blur(8px)', scale: 1.05 }}
-        animate={{ filter: 'blur(0px)', scale: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        {/* Road lines for map feel */}
-        <div className="absolute inset-0 flex flex-col justify-center pointer-events-none opacity-30">
-          <div className="h-8 bg-gray-400/40 w-full" />
-          <div className="h-16" />
-          <div className="h-6 bg-gray-400/40 w-full" />
-        </div>
+        <main className="max-w-2xl mx-auto px-4 space-y-6">
+          
+          {/* Header Block */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5 ${
+                notif.isAlert ? 'bg-[#ba1a1a] text-white' : 'bg-[#1b4b8f] text-white'
+              }`}>
+                {notif.isAlert ? <AlertTriangle size={14} /> : null}
+                {notif.isAlert ? 'EMERGENCY: THEFT' : 'ALERT'}
+              </div>
+              <span className="text-[14px] text-[#737782] font-medium flex items-center gap-1">
+                🕒 {notif.time}
+              </span>
+            </div>
 
-        {/* Location pin */}
-        {notif?.locationShared && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative">
-              <motion.div
-                className="absolute -inset-6 rounded-full bg-alert-red/20"
-                animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
-                transition={{ repeat: Infinity, duration: 2 }}
+            <h1 className="font-display text-[26px] font-bold text-[#1c1b1b] leading-tight mb-4">
+              {notif.isAlert ? 'Attempted Unauthorized Access' : notif.type}
+            </h1>
+
+            <div className="mb-6">
+              <PlateTag plateNumber={notif.plate} size="lg" />
+            </div>
+          </div>
+
+          {/* Media / CCTV Image */}
+          {notif.mediaUrls && notif.mediaUrls.length > 0 ? (
+            <div 
+              className="rounded-2xl overflow-hidden border border-[#1c1b1b]/10 shadow-sm relative bg-black cursor-pointer"
+              onClick={() => setIsImageOpen(true)}
+            >
+              {/* Fake Camera Overlay */}
+              <div className="absolute top-3 left-3 z-10 flex gap-2">
+                <span className="bg-[#ba1a1a] text-white text-[10px] font-mono px-2 py-0.5 rounded flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                  SEC-CAM-09 // BREACH_DETECTED
+                </span>
+              </div>
+              <div className="absolute top-3 right-3 z-10">
+                <span className="text-white/80 text-[10px] font-mono">CAM 7</span>
+              </div>
+              <img 
+                src={notif.mediaUrls[0]} 
+                alt="Security Feed" 
+                className="w-full h-[220px] object-cover opacity-90"
               />
-              <div className="w-10 h-10 bg-alert-red rounded-full flex items-center justify-center shadow-float">
-                <MapPin size={20} color="#fff" fill="#fff" />
-              </div>
             </div>
-          </div>
-        )}
-      </motion.div>
-
-      {/* Bottom sheet */}
-      <motion.div
-        className="flex-1 bg-fog rounded-t-3xl -mt-4 relative z-10 shadow-sheet"
-        initial={{ y: '60%' }}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-5">
-          <div className="w-10 h-1.5 bg-outline-light rounded-full" />
-        </div>
-
-        <div className="px-5 space-y-4 pb-10">
-          {/* Header row */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl">{notif?.emoji}</span>
-                <h2 className="font-display text-headline-sm text-on-surface">{notif?.type}</h2>
-              </div>
-              <p className="font-body text-xs text-on-surface-muted">{notif?.time}</p>
+          ) : notif.isAlert ? (
+            <div className="rounded-2xl overflow-hidden border border-[#1c1b1b]/10 shadow-sm relative bg-[#1c1b1b] h-[220px] flex flex-col items-center justify-center">
+              <ShieldAlert size={48} className="text-[#ba1a1a] mb-2 opacity-80" />
+              <p className="text-white/60 font-mono text-[12px]">NO CAMERA FEED AVAILABLE</p>
             </div>
-            <PlateTag plateNumber={notif?.plate} size="sm" />
-          </div>
+          ) : null}
 
-          {/* Notes */}
-          {notif?.notes && (
-            <div className="bg-white border border-outline-light rounded-xl px-4 py-3">
-              <p className="font-body text-sm text-on-surface italic">"{notif.notes}"</p>
-            </div>
-          )}
-
-          {/* Location row */}
-          {notif?.locationShared && notif?.location && (
-            <div className="bg-white border border-outline-light rounded-xl px-4 py-3 flex items-center gap-3">
-              <div className="w-9 h-9 bg-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
-                <MapPin size={18} className="text-navy" />
-              </div>
-              <div className="flex-1">
-                <p className="font-body text-sm font-semibold text-on-surface">{notif.location}</p>
-                <p className="font-body text-xs text-on-surface-muted">Location shared by reporter</p>
+          {/* Location Block */}
+          {notif.reporterLocation ? (
+            <div className="bg-white rounded-2xl border border-[#1c1b1b]/10 shadow-sm p-5 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-1">Last Known Location</p>
+                <h3 className="font-display text-[18px] font-semibold text-[#1c1b1b] flex items-center gap-2">
+                  User Shared Location <MapPin size={18} className="text-[#1b4b8f]" />
+                </h3>
               </div>
               <a
-                href={`https://maps.google.com/?q=${notif.lat},${notif.lng}`}
+                href={`https://maps.google.com/?q=${notif.reporterLocation.lat},${notif.reporterLocation.lng}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                className="w-9 h-9 bg-navy text-white rounded-xl flex items-center justify-center"
+                className="w-12 h-12 rounded-full bg-[#f0eded] flex items-center justify-center text-[#1b4b8f] hover:bg-[#eae7e7] transition-colors"
               >
-                <Navigation size={16} />
+                <Navigation size={20} />
               </a>
             </div>
-          )}
-
-          {/* Escalate for theft/emergency */}
-          {notif?.isAlert && (
-            <div className="bg-alert-red/5 border border-alert-red/20 rounded-xl px-4 py-3 flex items-start gap-3">
-              <AlertTriangle size={18} className="text-alert-red flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-body text-sm font-semibold text-alert-red">Escalation available</p>
-                <p className="font-body text-xs text-on-surface-muted mt-0.5">File a police report or contact emergency services.</p>
-                <a href="tel:100" className="font-body text-xs font-bold text-alert-red mt-1 block">Call 100 — Police</a>
+          ) : (
+            <div className="bg-white rounded-2xl border border-[#1c1b1b]/10 shadow-sm p-5 flex items-center justify-between">
+               <div>
+                <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-1">Location Data</p>
+                <h3 className="font-display text-[16px] font-semibold text-[#737782]">
+                  Location not provided
+                </h3>
               </div>
             </div>
           )}
 
-          {/* Resolve action */}
-          <motion.div animate={resolved ? { scale: 0.98, opacity: 0.9 } : {}}>
+          {/* Notes / Security Event Log */}
+          <div className="bg-white rounded-2xl border border-[#1c1b1b]/10 shadow-sm p-5">
+             <p className="text-[11px] font-bold text-[#737782] tracking-widest uppercase mb-4 border-b border-[#1c1b1b]/10 pb-3">
+               {notif.isAlert ? 'Security Event Log' : 'Report Details'}
+             </p>
+             
+             {notif.isAlert ? (
+               <div className="space-y-4">
+                 <div className="flex gap-4">
+                   <span className="font-mono text-[12px] text-[#737782] w-16 pt-0.5">Alert</span>
+                   <div>
+                     <p className="font-semibold text-[#ba1a1a] text-[14px]">System Triggered</p>
+                     <p className="text-[#434751] text-[14px]">User submitted emergency report.</p>
+                   </div>
+                 </div>
+                 {notif.notes && (
+                   <div className="flex gap-4">
+                     <span className="font-mono text-[12px] text-[#737782] w-16 pt-0.5">Notes</span>
+                     <div>
+                       <p className="font-semibold text-[#1c1b1b] text-[14px]">Reporter Notes</p>
+                       <p className="text-[#434751] text-[14px] italic">"{notif.notes}"</p>
+                     </div>
+                   </div>
+                 )}
+               </div>
+             ) : (
+               <p className="text-[#434751] text-[15px] leading-relaxed">
+                 {notif.notes ? `"${notif.notes}"` : 'No additional notes provided by the reporter.'}
+               </p>
+             )}
+          </div>
+
+          {/* Actions */}
+          <div className="pt-4 space-y-3">
+            {notif.isAlert && (
+              <a href="tel:100" className="w-full py-4 bg-[#ba1a1a] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#93000a] transition-colors">
+                 Call Police (100)
+              </a>
+            )}
+            
             <Button
               fullWidth
               onClick={handleResolve}
               variant={resolved ? 'ghost' : 'outline'}
               className={resolved
-                ? 'border-2 border-verified-green text-verified-green bg-verified-green/5'
-                : 'border-2 border-outline-light text-on-surface'
+                ? 'border-2 border-[#005834] text-[#005834] bg-[#90f7ba]/10'
+                : 'border-2 border-[#1c1b1b]/20 text-[#1c1b1b]'
               }
             >
               {resolved ? <><Check size={18} /> Marked as Resolved</> : 'Mark as Resolved'}
             </Button>
+          </div>
+
+        </main>
+      </div>
+
+      {/* Full Screen Image Modal */}
+      <AnimatePresence>
+        {isImageOpen && notif.mediaUrls && notif.mediaUrls.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          >
+            <div className="p-4 flex justify-end">
+              <button 
+                onClick={() => setIsImageOpen(false)}
+                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-center p-4">
+              <motion.img
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.95 }}
+                src={notif.mediaUrls[0]}
+                alt="Security Feed Full"
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
           </motion.div>
-        </div>
-      </motion.div>
-    </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

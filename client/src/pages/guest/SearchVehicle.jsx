@@ -44,21 +44,30 @@ export default function SearchVehicle() {
         </div>
 
         {/* Plate-styled input */}
-        <div className="bg-white border-2 border-asphalt rounded-xl overflow-hidden shadow-plate">
-          {/* Plate header */}
-          <div className="flex items-center justify-between px-4 py-2 border-b border-asphalt/15">
-            <span className="font-mono text-[10px] font-medium text-on-surface-muted tracking-[0.2em] uppercase">IND</span>
-            <div className="w-2 h-2 rounded-full bg-outline-light" />
+        <div className="bg-white border-2 border-asphalt rounded-xl overflow-hidden shadow-plate flex h-[72px]">
+          {/* Blue IND Strip */}
+          <div className="bg-[#003399] w-[40px] flex flex-col items-center justify-between py-2 flex-shrink-0 relative">
+            {/* Ind chakra mock */}
+            <div className="w-4 h-4 rounded-full border border-white/40 flex items-center justify-center mt-1">
+              <div className="w-1 h-1 bg-white/60 rounded-full" />
+            </div>
+            <span className="font-mono text-[10px] font-bold text-white tracking-[0.1em]">IND</span>
+            {/* Rivet */}
+            <div className="absolute top-1.5 right-1 w-1.5 h-1.5 bg-black/20 rounded-full" />
+            <div className="absolute bottom-1.5 right-1 w-1.5 h-1.5 bg-black/20 rounded-full" />
           </div>
-          {/* Input */}
-          <input
-            className="w-full px-4 py-4 font-mono font-medium text-xl text-asphalt tracking-widest bg-transparent focus:outline-none placeholder:text-outline-light text-center uppercase"
-            value={plate}
-            onChange={handleChange}
-            placeholder="MH 14 AB 1234"
-            autoFocus
-            onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          />
+          
+          {/* Input Area */}
+          <div className="flex-1 relative bg-[linear-gradient(to_bottom,#ffffff,#f0f0f0)]">
+             <input
+              className="w-full h-full px-4 font-mono font-bold text-[28px] text-asphalt tracking-widest bg-transparent focus:outline-none placeholder:text-outline-light/50 text-center uppercase"
+              value={plate}
+              onChange={handleChange}
+              placeholder="MH 12 AB 1234"
+              autoFocus
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            />
+          </div>
         </div>
 
         <Button fullWidth onClick={handleSearch} disabled={!isValid}>

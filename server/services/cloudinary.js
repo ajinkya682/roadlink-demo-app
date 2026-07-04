@@ -12,6 +12,7 @@ const uploadBuffer = (buffer, folder = 'roadlink', resourceType = 'auto') => {
       { 
         folder, 
         resource_type: resourceType,
+        type: 'private', // Enforce private access
         // Automatically compress and resize large images/documents on upload
         transformation: [
           { width: 1600, crop: "limit" },
@@ -53,16 +54,22 @@ const extractPublicId = (url) => {
 
 const deleteResource = (publicId, resourceType = 'image') => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.destroy(publicId, { resource_type: resourceType }, (error, result) => {
+    cloudinary.uploader.destroy(publicId, { resource_type: resourceType, type: 'private' }, (error, result) => {
       if (error) return reject(error);
       resolve(result);
     });
   });
 };
 
+const getSignedUrl = (publicId) => {
+  if (!publicId) return null;
+  return cloudinary.url(publicId, { type: 'private', secure: true, sign_url: true });
+};
+
 module.exports = {
   cloudinary,
   uploadBuffer,
   extractPublicId,
-  deleteResource
+  deleteResource,
+  getSignedUrl
 };

@@ -201,9 +201,14 @@ export function AppProvider({ children }) {
   };
 
   // ── Notification actions ──────────────────────────────────────────────────
-  const markResolved = (id) => {
+  const markResolved = async (id) => {
+    try {
+      await api.patch(`/reports/${id}`, { status: 'resolved' });
+    } catch (err) {
+      console.error('Failed to mark resolved on backend:', err);
+    }
     setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, resolved: true, read: true } : n)
+      prev.map(n => n.id === id ? { ...n, resolved: true, read: true, status: 'resolved' } : n)
     );
   };
 
@@ -223,17 +228,32 @@ export function AppProvider({ children }) {
     try {
       const res = await api.get('/reports');
       if (res.data.success) {
-        // Map reports to notification format
-        const fetchedReports = res.data.data.reports.map(r => ({
-          id: r._id,
-          type: 'alert',
-          title: `Report on ${r.vehicleId.registrationNumber || 'Vehicle'}`,
-          message: r.message,
-          timestamp: new Date(r.createdAt).toLocaleString('en-IN', { hour: 'numeric', minute: 'numeric', hour12: true }),
-          read: r.status === 'resolved',
-          resolved: r.status === 'resolved',
-          vehicleId: r.vehicleId._id || r.vehicleId
-        }));
+        const fetchedReports = res.data.data.reports.map(r => {
+          let categoryLabel = 'Alert';
+          let emoji = '🔔';
+          if (r.category === 'wrong_parking') { categoryLabel = 'Wrong Parking'; emoji = '🅿️'; }
+          else if (r.category === 'theft') { categoryLabel = 'Vehicle Theft'; emoji = '🚨'; }
+          else if (r.category === 'emergency') { categoryLabel = 'Emergency'; emoji = '⚠️'; }
+
+          return {
+            id: r._id,
+            type: categoryLabel,
+            emoji: emoji,
+            category: r.category,
+            title: `Report on ${r.vehicleId?.registrationNumber || 'Vehicle'}`,
+            plate: r.vehicleId?.registrationNumber || 'UNKNOWN',
+            message: r.message,
+            notes: r.notes || '',
+            timestamp: new Date(r.createdAt).toLocaleString('en-IN', { hour: 'numeric', minute: 'numeric', hour12: true }),
+            time: new Date(r.createdAt).toLocaleString('en-IN', { hour: 'numeric', minute: 'numeric', hour12: true }),
+            read: r.status === 'resolved',
+            resolved: r.status === 'resolved',
+            vehicleId: r.vehicleId?._id || r.vehicleId,
+            mediaUrls: r.mediaUrls || [],
+            reporterLocation: r.reporterLocation || null,
+            isAlert: r.category === 'theft' || r.category === 'emergency'
+          };
+        });
         setNotifications(fetchedReports);
       }
     } catch (err) {
