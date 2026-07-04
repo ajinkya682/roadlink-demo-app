@@ -36,6 +36,89 @@ export default function VehicleDetail() {
   const [showAddContact, setShowAddContact] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', phone: '', relation: 'Family', isPrimary: false });
 
+  // Image upload state
+  const fileInputRef = React.useRef(null);
+  const [showImageOptions, setShowImageOptions] = useState(false);
+
+  const handleImageClick = () => {
+    const currentImageUrl = isEditing && editForm.imageUrl !== undefined ? editForm.imageUrl : vehicle.imageUrl;
+    if (currentImageUrl) {
+      setShowImageOptions(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 400; // Compress to avoid 413 payload too large
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const base64String = canvas.toDataURL('image/jpeg', 0.8);
+          
+          if (!isEditing) {
+            setEditForm({
+              make: vehicle.make || '',
+              model: vehicle.model || '',
+              year: vehicle.year || '',
+              color: vehicle.color || '',
+              nickname: vehicle.nickname || '',
+              privacyMode: vehicle.privacyMode,
+              imageUrl: base64String
+            });
+            setIsEditing(true);
+          } else {
+            setEditForm(prev => ({ ...prev, imageUrl: base64String }));
+          }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    // reset input
+    e.target.value = '';
+  };
+
+  const handleRemoveImage = async () => {
+    setShowImageOptions(false);
+    if (!isEditing) {
+      setEditForm({
+        make: vehicle.make || '',
+        model: vehicle.model || '',
+        year: vehicle.year || '',
+        color: vehicle.color || '',
+        nickname: vehicle.nickname || '',
+        privacyMode: vehicle.privacyMode,
+        imageUrl: null
+      });
+      setIsEditing(true);
+    } else {
+      setEditForm(prev => ({ ...prev, imageUrl: null }));
+    }
+  };
+
   React.useEffect(() => {
     async function loadVehicle() {
       if (!id) {
@@ -147,6 +230,11 @@ export default function VehicleDetail() {
         nickname: editForm.nickname,
         showOwnerName: !editForm.privacyMode
       };
+      
+      if (editForm.imageUrl !== undefined) {
+        payload.imageUrl = editForm.imageUrl;
+      }
+
       const res = await api.patch(`/vehicles/${vehicle.id}`, payload);
       if (res.data.success) {
         const v = res.data.data.vehicle;
@@ -157,7 +245,8 @@ export default function VehicleDetail() {
           color: v.color || editForm.color,
           nickname: v.nickname,
           privacyMode: v.showOwnerName === false,
-          displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE'
+          displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
+          ...(editForm.imageUrl !== undefined && { imageUrl: editForm.imageUrl })
         };
         setVehicle(prev => ({ ...prev, ...updatedFields }));
         updateVehicleInContext(vehicle.id, updatedFields);
@@ -230,15 +319,28 @@ export default function VehicleDetail() {
 
       {/* Plate hero */}
       <div className="bg-white border-b border-outline-light px-5 py-5 flex flex-col items-center gap-3 relative">
-        {vehicle.imageUrl ? (
-          <div className="w-20 h-20 rounded-full border-4 border-white shadow-sm overflow-hidden mb-2 bg-surface-low">
-            <img src={vehicle.imageUrl} alt="Vehicle" className="w-full h-full object-cover" />
+        <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+        <button 
+          onClick={handleImageClick}
+          className="relative group w-20 h-20 rounded-full border-4 border-white shadow-sm overflow-hidden mb-2 bg-surface-low flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-navy/50 transition-all active:scale-95"
+        >
+          {(() => {
+            const currentImageUrl = isEditing && editForm.imageUrl !== undefined ? editForm.imageUrl : vehicle.imageUrl;
+            return currentImageUrl ? (
+              <img src={currentImageUrl} alt="Vehicle" className="w-full h-full object-cover" />
+            ) : (
+              <VehicleIcon type={vehicle.type} size={32} className="text-navy" />
+            );
+          })()}
+          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Edit3 size={20} className="text-white" />
           </div>
-        ) : (
-          <div className="w-20 h-20 rounded-full border-4 border-white shadow-sm overflow-hidden mb-2 bg-surface-low flex items-center justify-center">
-            <VehicleIcon type={vehicle.type} size={32} className="text-navy" />
-          </div>
-        )}
+          {!(isEditing && editForm.imageUrl !== undefined ? editForm.imageUrl : vehicle.imageUrl) && (
+            <div className="absolute bottom-1 right-1 w-5 h-5 bg-navy rounded-full flex items-center justify-center border-2 border-white">
+              <Plus size={12} className="text-white" />
+            </div>
+          )}
+        </button>
         <PlateTag plateNumber={vehicle.plate} displayName={vehicle.displayName} isVerified={vehicle.isVerified} size="lg" />
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 bg-verified-green rounded-full" />
@@ -631,6 +733,48 @@ export default function VehicleDetail() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Options Modal */}
+      <AnimatePresence>
+        {showImageOptions && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pb-0">
+             <motion.div 
+               initial={{opacity:0}} 
+               animate={{opacity:1}} 
+               exit={{opacity:0}} 
+               className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+               onClick={() => setShowImageOptions(false)} 
+             />
+             <motion.div 
+               initial={{y:"100%"}} 
+               animate={{y:0}} 
+               exit={{y:"100%"}} 
+               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+               className="w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-2xl p-6 relative z-10 shadow-xl space-y-3 pb-8 sm:pb-6"
+             >
+                <h3 className="font-display text-xl font-bold text-on-surface text-center mb-4">Vehicle Photo</h3>
+                <button 
+                  onClick={() => { setShowImageOptions(false); fileInputRef.current?.click(); }}
+                  className="w-full py-4 bg-navy/5 hover:bg-navy/10 text-navy font-semibold rounded-xl transition-colors text-center"
+                >
+                  Change Photo
+                </button>
+                <button 
+                  onClick={handleRemoveImage}
+                  className="w-full py-4 bg-alert-red/5 hover:bg-alert-red/10 text-alert-red font-semibold rounded-xl transition-colors text-center"
+                >
+                  Remove Photo
+                </button>
+                <button 
+                  onClick={() => setShowImageOptions(false)}
+                  className="w-full py-4 text-on-surface-muted font-semibold hover:bg-surface-low rounded-xl transition-colors text-center mt-2"
+                >
+                  Cancel
+                </button>
+             </motion.div>
           </div>
         )}
       </AnimatePresence>
