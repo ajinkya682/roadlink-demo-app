@@ -24,7 +24,14 @@ import OTPVerification from './pages/auth/OTPVerification'
 // Owner
 import AddVehicle from './pages/owner/AddVehicle'
 import QRDetail from './pages/owner/QRDetail'
-import OrderSticker from './pages/owner/OrderSticker'
+import PlanSelection from './pages/owner/order-sticker/PlanSelection'
+import StandardPicker from './pages/owner/order-sticker/StandardPicker'
+import ReflectivePicker from './pages/owner/order-sticker/ReflectivePicker'
+import PremiumCustomizer from './pages/owner/order-sticker/PremiumCustomizer'
+import CartAddress from './pages/owner/order-sticker/CartAddress'
+import Payment from './pages/owner/order-sticker/Payment'
+import OrderHistory from './pages/owner/OrderHistory'
+import OrderDetail from './pages/owner/OrderDetail'
 import OrderConfirmation from './pages/owner/OrderConfirmation'
 import Dashboard from './pages/owner/Dashboard'
 import Vehicles from './pages/owner/Vehicles'
@@ -120,7 +127,14 @@ function App() {
             {/* Owner (Protected) */}
             <Route path="/add-vehicle" element={<RequireAuth><PageWrapper><AddVehicle /></PageWrapper></RequireAuth>} />
             <Route path="/qr-detail" element={<RequireAuth><PageWrapper><QRDetail /></PageWrapper></RequireAuth>} />
-            <Route path="/order-sticker" element={<RequireAuth><PageWrapper><OrderSticker /></PageWrapper></RequireAuth>} />
+            <Route path="/order-sticker" element={<RequireAuth><PageWrapper><PlanSelection /></PageWrapper></RequireAuth>} />
+            <Route path="/order-sticker/standard" element={<RequireAuth><PageWrapper><StandardPicker /></PageWrapper></RequireAuth>} />
+            <Route path="/order-sticker/reflective" element={<RequireAuth><PageWrapper><ReflectivePicker /></PageWrapper></RequireAuth>} />
+            <Route path="/order-sticker/premium" element={<RequireAuth><PageWrapper><PremiumCustomizer /></PageWrapper></RequireAuth>} />
+            <Route path="/order-sticker/cart" element={<RequireAuth><PageWrapper><CartAddress /></PageWrapper></RequireAuth>} />
+            <Route path="/order-sticker/payment" element={<RequireAuth><PageWrapper><Payment /></PageWrapper></RequireAuth>} />
+            <Route path="/order-history" element={<RequireAuth><PageWrapper><OrderHistory /></PageWrapper></RequireAuth>} />
+            <Route path="/order-history/:id" element={<RequireAuth><PageWrapper><OrderDetail /></PageWrapper></RequireAuth>} />
             <Route path="/order-confirmation" element={<RequireAuth><PageWrapper><OrderConfirmation /></PageWrapper></RequireAuth>} />
             <Route path="/dashboard" element={<RequireAuth><PageWrapper><Dashboard /></PageWrapper></RequireAuth>} />
             <Route path="/vehicles" element={<RequireAuth><PageWrapper><Vehicles /></PageWrapper></RequireAuth>} />

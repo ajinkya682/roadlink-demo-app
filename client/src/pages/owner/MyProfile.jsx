@@ -1,12 +1,14 @@
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Camera, Mail, MapPin, Loader2 } from "lucide-react";
+import { Camera, Mail, MapPin, Loader2, Package } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import AppHeader from "../../components/AppHeader";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { useAppData } from "../../context/AppContext";
 
 export default function MyProfile() {
+  const navigate = useNavigate();
   const { user, updateProfile } = useAppData();
   const [form, setForm] = useState({
     name: user.name || "",
@@ -168,6 +170,26 @@ export default function MyProfile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="bg-white rounded-2xl border border-[#e5e2e1] p-4 shadow-[0px_4px_12px_rgba(26,26,26,0.02)]"
+        >
+          <button 
+            onClick={() => navigate('/order-history')}
+            className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition-colors"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-[#1E3A8A]">
+                <Package size={20} />
+              </div>
+              <span className="font-display font-semibold text-[#1c1b1b]">Sticker Order History</span>
+            </div>
+            <span className="text-slate-400">→</span>
+          </button>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
         >
           <button 
             className="w-full flex items-center justify-center bg-[#1B4B8F] text-white font-body text-[14px] font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:bg-[#153a6f] active:scale-[0.98] transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed"

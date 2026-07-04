@@ -1,10 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Truck, CheckCircle } from 'lucide-react';
+import { Truck, CheckCircle, Download } from 'lucide-react';
 
 export default function OrderConfirmation() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { orderId } = location.state || { orderId: 'RL-9823-XQ' };
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#1c1b1b] flex flex-col font-body relative z-0">
@@ -72,12 +74,23 @@ export default function OrderConfirmation() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.5 }}
-            className="mb-10 inline-block w-full"
+            className="mb-8 flex flex-col items-center w-full"
           >
             <div className="font-body text-[12px] font-bold tracking-[0.08em] text-[#434751] uppercase mb-3 text-center">ORDER REFERENCE</div>
-            <div className="border-[2px] border-[#1A1A1A] bg-white px-8 py-3 rounded-lg inline-flex items-center justify-center hover:bg-black/5 transition-colors cursor-default">
-              <span className="font-mono text-[22px] font-semibold text-[#1A1A1A] tracking-[0.1em]">RL-9823-XQ</span>
+            <div className="border-[2px] border-[#1A1A1A] bg-white px-8 py-3 rounded-lg inline-flex items-center justify-center hover:bg-black/5 transition-colors cursor-default mb-4">
+              <span className="font-mono text-[22px] font-semibold text-[#1A1A1A] tracking-[0.1em]">{orderId}</span>
             </div>
+            
+            <button 
+              onClick={() => {
+                // In a real app, fetch receipt URL from /v1/orders/${orderId}/receipt and open it
+                alert('Downloading receipt...');
+              }}
+              className="flex items-center justify-center space-x-2 border-2 border-[#1E3A8A] text-[#1E3A8A] font-body text-[14px] font-bold tracking-[0.08em] uppercase py-2 px-6 rounded-lg hover:bg-slate-50 active:scale-[0.98] transition-all"
+            >
+              <Download size={18} />
+              <span>Download Receipt (PDF)</span>
+            </button>
           </motion.div>
 
           {/* Meta Information Bento-ish Layout */}
@@ -107,8 +120,11 @@ export default function OrderConfirmation() {
             >
               BACK TO DASHBOARD
             </button>
-            <button className="w-full bg-transparent text-[#003470] font-body text-[14px] font-bold tracking-[0.08em] uppercase py-2 hover:underline active:scale-[0.98] transition-all">
-              VIEW ORDER DETAILS
+            <button 
+              onClick={() => navigate('/order-history')}
+              className="w-full bg-transparent text-[#003470] font-body text-[14px] font-bold tracking-[0.08em] uppercase py-2 hover:underline active:scale-[0.98] transition-all"
+            >
+              VIEW ORDER HISTORY
             </button>
           </motion.div>
         </motion.div>
