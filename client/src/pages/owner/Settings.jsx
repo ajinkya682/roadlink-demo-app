@@ -17,7 +17,7 @@ import { useAppData } from "../../context/AppContext";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, updateNotifPref, signOut, refreshUser } = useAppData();
+  const { user, updateNotifPref, signOut, refreshUser, deleteAccount } = useAppData();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -237,8 +237,7 @@ export default function Settings() {
                 <button
                   className="flex-1 bg-alert-red text-white rounded-xl py-3 font-body text-sm font-semibold"
                   onClick={async () => {
-                    await signOut();
-                    navigate("/");
+                    await deleteAccount();
                   }}
                 >
                   Delete

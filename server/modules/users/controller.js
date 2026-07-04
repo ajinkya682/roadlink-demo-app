@@ -41,3 +41,19 @@ exports.getUserProfile = async (req, res) => {
     return sendError(res, 'Failed to fetch user profile', 500);
   }
 };
+
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // In a real app, you might want to also delete associated vehicles, documents, etc.
+    // For MVP, deleting the user is the primary step.
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) return sendError(res, 'User not found', 404);
+    
+    return sendSuccess(res, { message: 'Account deleted successfully' });
+  } catch (error) {
+    logger.error('Error deleting account:', error);
+    return sendError(res, 'Failed to delete account', 500);
+  }
+};

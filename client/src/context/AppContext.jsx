@@ -137,6 +137,30 @@ export function AppProvider({ children }) {
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      // Best effort API call to delete from DB
+      await api.delete('/users/me');
+    } catch (err) {
+      console.error('Failed to delete user account on backend:', err);
+    }
+    
+    // Fully wipe browser storage and cache
+    await SecureStorage.clear();
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
+    // Hard reload the window to reset all JS state and memory
+    window.location.href = '/';
+  };
+
   // ── Notification actions ──────────────────────────────────────────────────
   const markResolved = (id) => {
     setNotifications(prev =>
@@ -408,6 +432,7 @@ export function AppProvider({ children }) {
       // User actions
       refreshUser,
       updateNotifPref,
+      deleteAccount,
     }}>
       {children}
       
