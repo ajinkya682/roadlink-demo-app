@@ -43,7 +43,11 @@ export default function LoginRegister() {
         setLoading(false);
       }
     } catch (err) {
-      setError(err.response?.data?.error?.message || "Network error occurred");
+      const apiErr = err.response?.data;
+      const msg = typeof apiErr === 'string' 
+        ? apiErr 
+        : apiErr?.error?.message || "Network error occurred";
+      setError(msg);
       setLoading(false);
     }
   };

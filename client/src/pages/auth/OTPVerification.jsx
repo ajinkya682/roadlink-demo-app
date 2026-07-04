@@ -91,7 +91,11 @@ export default function OTPVerification() {
         throw new Error(res.data.error?.message || 'Invalid OTP');
       }
     } catch (err) {
-      setError(err.response?.data?.error?.message || err.message || 'Verification failed');
+      const apiErr = err.response?.data;
+      const msg = typeof apiErr === 'string' 
+        ? apiErr 
+        : apiErr?.error?.message || err.message || 'Verification failed';
+      setError(msg);
       setLoading(false);
       setShake(true);
       setDigits(['', '', '', '', '', '']);
