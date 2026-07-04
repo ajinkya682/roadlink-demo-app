@@ -9,8 +9,9 @@ import { documentStatusMeta } from '../../demo-data/documents';
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } } };
 
-function DocCard({ doc, vehicle, onClick }) {
+function DocCard({ doc, vehicles, onClick }) {
   const docType = doc.type || '';
+  const vehicle = vehicles.find(v => v.id === doc.vehicleId) || vehicles[0];
   const isRC = docType.toLowerCase().includes('rc') || docType.toLowerCase().includes('registration');
   const isIns = docType.toLowerCase().includes('insur');
   const isPUC = docType.toLowerCase().includes('puc') || docType.toLowerCase().includes('pollution');
@@ -98,8 +99,12 @@ function DocCard({ doc, vehicle, onClick }) {
         ) : (
           isRC && vehicle?.plate ? (
             <div className="border-2 border-on-surface rounded flex font-mono text-[11px] font-bold overflow-hidden bg-white">
-               <div className="px-2 py-1 border-r-2 border-on-surface flex items-center justify-center">MH 12</div>
-               <div className="px-2 py-1 flex items-center justify-center">AB 1234</div>
+               <div className="px-2 py-1 border-r-2 border-on-surface flex items-center justify-center">
+                 {vehicle.plate.substring(0, 4)}
+               </div>
+               <div className="px-2 py-1 flex items-center justify-center">
+                 {vehicle.plate.substring(4)}
+               </div>
             </div>
           ) : (
              <div></div> // empty spacer
@@ -182,7 +187,7 @@ export default function DocumentVault() {
             <DocCard 
               key={doc._id || doc.id || index} 
               doc={doc} 
-              vehicle={activeVehicle}
+              vehicles={vehicles}
               onClick={() => navigate(`/document-detail/${doc.id}`)} 
             />
           ))}

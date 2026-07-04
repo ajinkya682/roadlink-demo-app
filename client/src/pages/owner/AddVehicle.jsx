@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, HelpCircle } from "lucide-react";
+import { Shield, HelpCircle, Image as ImageIcon, Camera } from "lucide-react";
 import AppHeader from "../../components/AppHeader";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
@@ -41,7 +41,9 @@ export default function AddVehicle() {
   const [model, setModel] = useState("");
   const [nickname, setNickname] = useState("");
   const [showName, setShowName] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = React.useRef(null);
 
   const handlePlate = (e) =>
     setPlate(formatPlate(e.target.value.toUpperCase()));
@@ -58,12 +60,18 @@ export default function AddVehicle() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post("/vehicles", {
-        registrationNumber: plate,
-        make: make || undefined,
-        model: model || undefined,
-        nickname: nickname || undefined,
-        showOwnerName: showName,
+      const formData = new FormData();
+      formData.append("registrationNumber", plate);
+      if (make) formData.append("make", make);
+      if (model) formData.append("model", model);
+      if (nickname) formData.append("nickname", nickname);
+      formData.append("showOwnerName", showName);
+      if (imageFile) formData.append("image", imageFile);
+
+      const res = await api.post("/vehicles", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       if (res.data.success) {
@@ -142,6 +150,43 @@ export default function AddVehicle() {
           <p className="font-body text-[11px] font-bold tracking-[0.08em] uppercase text-on-surface-muted mt-4 opacity-70">
             Live Plate Preview
           </p>
+        </div>
+
+        {/* Photo Upload */}
+        <div className="flex flex-col items-center mb-8">
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setImageFile(e.target.files[0]);
+              }
+            }}
+          />
+          {!imageFile ? (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 border-2 border-dashed border-outline-light rounded-xl px-5 py-3 hover:bg-surface-low transition-colors"
+            >
+              <Camera size={18} className="text-navy" />
+              <span className="font-body text-sm font-semibold text-on-surface-muted">
+                Upload Vehicle Photo (Optional)
+              </span>
+            </button>
+          ) : (
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt="Vehicle Preview"
+                className="w-32 h-32 object-cover rounded-full border-4 border-white shadow-md"
+              />
+              <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera size={24} className="text-white" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Form */}

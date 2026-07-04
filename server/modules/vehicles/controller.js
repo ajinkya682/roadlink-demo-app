@@ -3,6 +3,7 @@ const QrToken = require('../../models/QrToken');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { generateQRToken } = require('../../utils/hmac');
 const { logger } = require('../../middleware/logger');
+const { uploadBuffer } = require('../../services/cloudinary');
 
 exports.createVehicle = async (req, res) => {
   try {
@@ -22,6 +23,15 @@ exports.createVehicle = async (req, res) => {
       publicDisplayName: publicDisplayName || nickname || make || 'Vehicle',
       showOwnerName: !!showOwnerName
     });
+
+    if (req.file) {
+      try {
+        const result = await uploadBuffer(req.file.buffer, 'roadlink/vehicles', 'image');
+        vehicle.imageUrl = result.secure_url;
+      } catch (uploadError) {
+        logger.error('Failed to upload vehicle image', uploadError);
+      }
+    }
 
     await vehicle.save();
 

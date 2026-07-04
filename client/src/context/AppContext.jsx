@@ -38,7 +38,7 @@ export function AppProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [documents, setDocuments]         = useState([]);
   const [contacts, setContacts]           = useState([]);
-  const [medicalProfile, setMedicalProfile] = useState({
+  const [medicalProfile, setMedicalProfileState] = useState({
     dob: '',
     address: '',
     bloodType: '',
@@ -149,6 +149,9 @@ export function AppProvider({ children }) {
             ...(res.data.data.user.notificationPrefs || {})
           }
         }));
+        if (res.data.data.user.medicalProfile) {
+          setMedicalProfileState(prev => ({ ...prev, ...res.data.data.user.medicalProfile }));
+        }
       }
     } catch (err) {
       console.error('Failed to fetch user', err);
@@ -430,6 +433,21 @@ export function AppProvider({ children }) {
       }
     } catch (err) {
       console.error('Failed to set primary', err);
+      throw err;
+    }
+  };
+
+  const setMedicalProfile = async (profile) => {
+    try {
+      // Optimistic update
+      setMedicalProfileState(prev => ({ ...prev, ...profile }));
+      const res = await api.patch('/users/me', { medicalProfile: profile });
+      if (res.data.success && res.data.data.user.medicalProfile) {
+        setMedicalProfileState(res.data.data.user.medicalProfile);
+      }
+    } catch (err) {
+      console.error('Failed to update medical profile', err);
+      // It will revert on next refreshUser or we could manually revert here
       throw err;
     }
   };

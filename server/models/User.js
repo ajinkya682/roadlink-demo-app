@@ -11,6 +11,17 @@ const userSchema = new mongoose.Schema({
     expiresAt: Date,
     deviceInfo: String
   }],
+  medicalProfile: {
+    dob: String,
+    address: String,
+    bloodType: String,
+    conditions: String,
+    allergies: String,
+    prescriptions: String,
+    devices: String,
+    doctorName: String,
+    doctorPhone: String
+  },
   subscriptionTier: { type: String, default: 'free' },
   notificationPrefs: {
     push: { type: Boolean, default: true },

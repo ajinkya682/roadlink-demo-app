@@ -139,13 +139,22 @@ export default function Dashboard() {
           >
             {/* Card top row */}
             <div className="flex items-start justify-between px-4 pt-4 pb-3">
-              <div>
-                <h2 className="font-display text-[20px] font-semibold text-[#1c1b1b]">
-                  {v.displayName}
-                </h2>
-                <p className="font-body text-[12px] text-[#737782] mt-0.5">
-                  Added {v.addedDate}
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-surface-low border border-outline-light/50 flex items-center justify-center overflow-hidden shrink-0">
+                  {v.imageUrl ? (
+                    <img src={v.imageUrl} alt="Vehicle" className="w-full h-full object-cover" />
+                  ) : (
+                    <Car size={24} className="text-navy" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="font-display text-[20px] font-semibold text-[#1c1b1b]">
+                    {v.displayName}
+                  </h2>
+                  <p className="font-body text-[12px] text-[#737782] mt-0.5">
+                    Added {v.addedDate}
+                  </p>
+                </div>
               </div>
 
               {/* QR button with per-vehicle alert dot */}

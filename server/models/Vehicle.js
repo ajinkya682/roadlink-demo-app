@@ -9,6 +9,7 @@ const vehicleSchema = new mongoose.Schema({
   color: { type: String },
   nickname: { type: String },
   publicDisplayName: { type: String },
+  imageUrl: { type: String },
   showOwnerName: { type: Boolean, default: false },
   status: { type: String, default: 'active', enum: ['active', 'stolen', 'transferred', 'deleted'] },
   sharedWith: [{

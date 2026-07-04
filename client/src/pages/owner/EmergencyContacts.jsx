@@ -20,6 +20,7 @@ export default function EmergencyContacts() {
   const [openSection, setOpenSection] = useState('medical'); // 'medical' or 'contacts'
   const [isEditingMedical, setIsEditingMedical] = useState(false);
   const [medicalForm, setMedicalForm] = useState(medicalProfile);
+  const isProfileEmpty = !medicalProfile.dob && !medicalProfile.bloodType && !medicalProfile.conditions;
 
   // Sync when medicalProfile changes
   useEffect(() => {
@@ -142,6 +143,19 @@ export default function EmergencyContacts() {
                 <div className="p-5 space-y-6 bg-[#fcf9f8]/50">
                   {!isEditingMedical ? (
                     <div className="space-y-6">
+                      {isProfileEmpty && (
+                        <div 
+                          className="bg-signal-amber/10 border border-signal-amber/20 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-signal-amber/20 transition-colors" 
+                          onClick={() => setIsEditingMedical(true)}
+                        >
+                          <AlertTriangle size={20} className="text-signal-amber shrink-0" />
+                          <div>
+                            <h4 className="font-body text-[14px] font-semibold text-signal-amber">Medical ID Incomplete</h4>
+                            <p className="font-body text-[12px] text-signal-amber/80 mt-0.5">Tap here to add your medical details for emergencies.</p>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Personal Details */}
                       <div>
                         <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Personal Details</h3>

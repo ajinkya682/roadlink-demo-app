@@ -10,8 +10,9 @@ import api from '../../lib/api';
 
 export default function DocumentUpload() {
   const navigate = useNavigate();
+  const { vehicles } = useAppData();
   const location = useLocation();
-  const vehicleId = location.state?.vehicleId;
+  const [selectedVehicleId, setSelectedVehicleId] = useState(location.state?.vehicleId || (vehicles.length > 0 ? vehicles[0].id : ''));
   const [docType, setDocType] = useState(location.state?.type || '');
   const [file, setFile] = useState(null);
   const [expiryDate, setExpiryDate] = useState('');
@@ -48,7 +49,7 @@ export default function DocumentUpload() {
 
     try {
       const formData = new FormData();
-      if (vehicleId) formData.append('vehicleId', vehicleId);
+      if (selectedVehicleId) formData.append('vehicleId', selectedVehicleId);
       formData.append('type', docType);
       if (expiryDate) formData.append('expiryDate', expiryDate);
       
@@ -103,6 +104,35 @@ export default function DocumentUpload() {
             <option value="Service Record" />
           </datalist>
         </div>
+
+        {/* Vehicle selector */}
+        {vehicles.length > 0 && (
+          <div>
+            <label className="block font-body text-[11px] font-bold tracking-[0.08em] uppercase text-on-surface-muted mb-2 ml-1">
+              Select Vehicle
+            </label>
+            <div className="relative">
+              <select
+                value={selectedVehicleId}
+                onChange={(e) => setSelectedVehicleId(e.target.value)}
+                disabled={uploading || done}
+                className="w-full bg-white border-2 border-outline-light rounded-xl px-4 py-3.5 font-body text-sm font-semibold text-on-surface focus:border-navy focus:outline-none transition-colors appearance-none"
+              >
+                <option value="" disabled>Choose a vehicle</option>
+                {vehicles.map(v => (
+                  <option key={v.id} value={v.id}>
+                    {v.registrationNumber || v.plate} - {v.make} {v.model}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.41 0.589844L6 5.16984L10.59 0.589844L12 1.99984L6 7.99984L0 1.99984L1.41 0.589844Z" fill="#737782"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Upload zone */}
         <AnimatePresence mode="wait">

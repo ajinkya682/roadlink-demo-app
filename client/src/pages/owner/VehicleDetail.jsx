@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { QrCode, Shield, FileText, Phone, ChevronRight, Edit3, Check, Plus } from 'lucide-react';
+import { QrCode, Shield, FileText, Phone, ChevronRight, Edit3, Check, Plus, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
@@ -51,6 +51,7 @@ export default function VehicleDetail() {
             nickname: v.nickname,
             color: v.color || 'Unknown',
             year: v.year || new Date(v.createdAt).getFullYear(),
+            imageUrl: v.imageUrl,
           });
         }
       } catch (err) {
@@ -153,7 +154,12 @@ export default function VehicleDetail() {
       />
 
       {/* Plate hero */}
-      <div className="bg-white border-b border-outline-light px-5 py-5 flex flex-col items-center gap-3">
+      <div className="bg-white border-b border-outline-light px-5 py-5 flex flex-col items-center gap-3 relative">
+        {vehicle.imageUrl && (
+          <div className="w-20 h-20 rounded-full border-4 border-white shadow-sm overflow-hidden mb-2 bg-surface-low">
+            <img src={vehicle.imageUrl} alt="Vehicle" className="w-full h-full object-cover" />
+          </div>
+        )}
         <PlateTag plateNumber={vehicle.plate} displayName={vehicle.displayName} isVerified={vehicle.isVerified} size="lg" />
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 bg-verified-green rounded-full" />
@@ -324,20 +330,27 @@ export default function VehicleDetail() {
             )}
 
             {/* ── CONTACTS ── */}
-            {activeTab === 2 && (
+            {activeTab === 2 && (() => {
+              const isProfileEmpty = !medicalProfile.dob && !medicalProfile.bloodType && !medicalProfile.conditions;
+              return (
               <div className="space-y-4">
                 {/* Medical ID Summary */}
-                <div className="bg-white rounded-2xl border border-outline-light p-4 flex items-center justify-between">
+                <div 
+                  className="bg-white rounded-2xl border border-outline-light p-4 flex items-center justify-between cursor-pointer hover:bg-surface-low transition-colors"
+                  onClick={() => navigate('/emergency-contacts')}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-alert-red/10 rounded-xl flex items-center justify-center text-alert-red">
-                      <Shield size={20} />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isProfileEmpty ? 'bg-signal-amber/10 text-signal-amber' : 'bg-alert-red/10 text-alert-red'}`}>
+                      {isProfileEmpty ? <AlertTriangle size={20} /> : <Shield size={20} />}
                     </div>
                     <div>
                       <h4 className="font-body text-sm font-semibold text-on-surface">Medical ID</h4>
-                      <p className="font-body text-xs text-on-surface-muted">{medicalProfile.bloodType ? `Blood Type: ${medicalProfile.bloodType}` : 'Setup Medical Info'}</p>
+                      <p className="font-body text-xs text-on-surface-muted">
+                        {isProfileEmpty ? 'Setup Medical Info (Required)' : `Blood Type: ${medicalProfile.bloodType || 'Not set'}`}
+                      </p>
                     </div>
                   </div>
-                  {medicalProfile.bloodType && <Check size={18} className="text-verified-green" />}
+                  {!isProfileEmpty && medicalProfile.bloodType && <Check size={18} className="text-verified-green" />}
                 </div>
 
                 <div className="space-y-3">
@@ -365,7 +378,8 @@ export default function VehicleDetail() {
                   Manage Medical ID & Contacts
                 </button>
               </div>
-            )}
+              );
+            })()}
 
             {/* ── QR ── */}
             {activeTab === 3 && (

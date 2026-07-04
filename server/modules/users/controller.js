@@ -38,7 +38,8 @@ exports.getUserProfile = async (req, res) => {
         phone: user.phone,
         avatarUrl: user.avatarUrl,
         role: user.role,
-        notificationPrefs: user.notificationPrefs
+        notificationPrefs: user.notificationPrefs,
+        medicalProfile: user.medicalProfile
       }
     });
   } catch (error) {
@@ -93,13 +94,16 @@ exports.deleteAccount = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { name, email, address } = req.body;
+    const { name, email, address, medicalProfile } = req.body;
     
     const user = await User.findById(userId);
     if (!user) return sendError(res, 'User not found', 404);
     
     if (name) user.name = name;
     if (email) user.email = email;
+    if (medicalProfile) {
+      user.medicalProfile = { ...user.medicalProfile, ...medicalProfile };
+    }
     // address is not in schema yet, but we'll accept it
     
     if (req.file) {
@@ -118,7 +122,8 @@ exports.updateProfile = async (req, res) => {
         phone: user.phone,
         avatarUrl: user.avatarUrl,
         role: user.role,
-        notificationPrefs: user.notificationPrefs
+        notificationPrefs: user.notificationPrefs,
+        medicalProfile: user.medicalProfile
       }
     });
   } catch (error) {
