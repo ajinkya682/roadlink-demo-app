@@ -11,8 +11,8 @@ import api from '../../lib/api';
 export default function DocumentUpload() {
   const navigate = useNavigate();
   const location = useLocation();
-  const docType = location.state?.type || 'RC Book';
   const vehicleId = location.state?.vehicleId;
+  const [docType, setDocType] = useState(location.state?.type || '');
   const [file, setFile] = useState(null);
   const [expiryDate, setExpiryDate] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -25,12 +25,21 @@ export default function DocumentUpload() {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
+      // Validate absolute maximum size (10MB) to prevent browser/network crashes
+      const sizeMB = selected.size / (1024 * 1024);
+      if (sizeMB > 10) {
+        setError('File size must be less than 10MB');
+        e.target.value = '';
+        return;
+      }
+      
+      setError(null);
       setFile(selected);
     }
   };
 
   const handleUpload = async () => {
-    if (!vehicleId) return setError('Missing vehicle ID');
+    if (!docType.trim()) return setError('Please enter a document name');
     if (!file) return setError('Please select a file to upload');
     
     setUploading(true);
@@ -39,8 +48,8 @@ export default function DocumentUpload() {
 
     try {
       const formData = new FormData();
-      formData.append('vehicleId', vehicleId);
-      formData.append('documentType', docType);
+      if (vehicleId) formData.append('vehicleId', vehicleId);
+      formData.append('type', docType);
       if (expiryDate) formData.append('expiryDate', expiryDate);
       
       formData.append('file', file);
@@ -78,10 +87,21 @@ export default function DocumentUpload() {
       <div className="flex-1 px-5 py-5 space-y-5">
         {/* Document type selector */}
         <div>
-          <p className="font-body text-label-caps text-on-surface-muted uppercase tracking-widest mb-2">Document Type</p>
-          <div className="bg-white px-4 py-3 border border-outline-light rounded-xl font-body text-sm font-semibold text-on-surface">
-            {docType}
-          </div>
+          <Input 
+            label="Document Name" 
+            value={docType} 
+            onChange={e => setDocType(e.target.value)} 
+            list="docTypes" 
+            placeholder="e.g. Aadhar Card"
+            disabled={uploading || done}
+          />
+          <datalist id="docTypes">
+            <option value="RC Book" />
+            <option value="Insurance" />
+            <option value="PUC" />
+            <option value="Driving License" />
+            <option value="Service Record" />
+          </datalist>
         </div>
 
         {/* Upload zone */}
@@ -107,7 +127,7 @@ export default function DocumentUpload() {
               </div>
               <div className="text-center">
                 <p className="font-body text-sm font-semibold text-on-surface">Tap to select file or photo</p>
-                <p className="font-body text-xs text-on-surface-muted mt-1">PDF, JPG, PNG — up to 10MB</p>
+                <p className="font-body text-xs text-on-surface-muted mt-1">PDF, JPG, PNG — up to 10MB (Auto-compressed)</p>
               </div>
             </motion.button>
           ) : (

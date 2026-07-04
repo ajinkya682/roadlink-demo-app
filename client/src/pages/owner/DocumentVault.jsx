@@ -89,13 +89,14 @@ export default function DocumentVault() {
   const activeVehicle = vehicles[0];
   const vehicleId = activeVehicle?.id || null;
 
-  const vehicleDocs = documents.filter(d => d.vehicleId === vehicleId);
+  // Show all documents for the user's vehicles
+  const vehicleDocs = vehicleId ? documents.filter(d => d.vehicleId === vehicleId) : documents;
 
   const expiredCount = vehicleDocs.filter(d => d.status === 'expired').length;
   const expiringCount = vehicleDocs.filter(d => d.status === 'expiring').length;
 
   return (
-    <div className="min-h-screen bg-fog pb-24">
+    <div className="min-h-screen bg-fog pb-24 relative">
       <AppHeader title="Document Vault" rightSlot={<Shield size={20} className="text-verified-green" />} />
 
       <div className="px-5 pt-5 space-y-4">
@@ -111,57 +112,72 @@ export default function DocumentVault() {
         {(expiredCount > 0 || expiringCount > 0) && (
           <div className="space-y-2">
             {expiredCount > 0 && (
-              <div className="bg-alert-red/8 border border-alert-red/20 rounded-xl px-4 py-2.5 flex items-center gap-2">
-                <span className="w-2 h-2 bg-alert-red rounded-full animate-pulse" />
-                <p className="font-body text-xs font-semibold text-alert-red">
-                  {expiredCount} document{expiredCount > 1 ? 's' : ''} expired — action required
-                </p>
-              </div>
+               <div className="bg-alert-red/8 border border-alert-red/20 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                 <span className="w-2 h-2 bg-alert-red rounded-full animate-pulse" />
+                 <p className="font-body text-xs font-semibold text-alert-red">
+                   {expiredCount} document{expiredCount > 1 ? 's' : ''} expired — action required
+                 </p>
+               </div>
             )}
             {expiringCount > 0 && (
-              <div className="bg-signal-amber/8 border border-signal-amber/20 rounded-xl px-4 py-2.5 flex items-center gap-2">
-                <span className="w-2 h-2 bg-signal-amber rounded-full" />
-                <p className="font-body text-xs font-semibold text-signal-amber">
-                  {expiringCount} document{expiringCount > 1 ? 's' : ''} expiring soon
-                </p>
-              </div>
+               <div className="bg-signal-amber/8 border border-signal-amber/20 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                 <span className="w-2 h-2 bg-signal-amber rounded-full" />
+                 <p className="font-body text-xs font-semibold text-signal-amber">
+                   {expiringCount} document{expiringCount > 1 ? 's' : ''} expiring soon
+                 </p>
+               </div>
             )}
           </div>
         )}
 
         {/* Document grid */}
-        <motion.div
-          className="grid grid-cols-2 gap-3"
-          variants={stagger}
-          initial="hidden"
-          animate="show"
-        >
-          {REQUIRED_DOCS.map(type => {
-            const uploadedDoc = vehicleDocs.find(d => d.type === type);
-            if (uploadedDoc) {
-              return <DocCard key={type} doc={uploadedDoc} onClick={() => navigate('/document-upload', { state: { type, vehicleId } })} />;
-            }
-            
-            // Empty state card
-            return (
-              <motion.div
-                key={type}
-                variants={fadeUp}
-                className="border-2 border-dashed border-outline-light rounded-2xl flex flex-col items-center justify-center gap-2 py-8 cursor-pointer hover:border-navy/40 transition-colors bg-white/50"
-                onClick={() => {
-                  if (!vehicleId) return alert('Please add a vehicle first');
-                  navigate('/document-upload', { state: { type, vehicleId } });
-                }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <div className="w-9 h-9 bg-navy/8 rounded-xl flex items-center justify-center">
-                  <Plus size={20} className="text-navy" />
-                </div>
-                <span className="font-body text-xs font-semibold text-on-surface-muted text-center leading-tight">Add<br/>{type}</span>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        {vehicleDocs.length > 0 ? (
+          <motion.div
+            className="grid grid-cols-2 gap-3"
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+          >
+            {vehicleDocs.map(doc => (
+              <DocCard 
+                key={doc._id || doc.type} 
+                doc={doc} 
+                onClick={() => navigate('/document-upload', { state: { type: doc.type, vehicleId } })} 
+              />
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            className="border-2 border-dashed border-outline-light rounded-2xl flex flex-col items-center justify-center gap-3 py-16 px-4 bg-white/50 text-center"
+          >
+            <div className="w-16 h-16 bg-navy/8 rounded-full flex items-center justify-center mb-2">
+              <Shield size={32} className="text-navy" />
+            </div>
+            <h3 className="font-display text-lg font-semibold text-on-surface">No Documents Added</h3>
+            <p className="font-body text-sm text-on-surface-muted max-w-[200px]">
+              Tap the + button below to securely store your vehicle documents.
+            </p>
+          </motion.div>
+        )}
+      </div>
+      
+      {/* Floating Action Button (FAB) Wrapper */}
+      <div className="fixed bottom-[100px] left-0 right-0 w-full max-w-[420px] mx-auto pointer-events-none z-40">
+        <div className="absolute right-6 bottom-0 pointer-events-auto">
+          <motion.button
+            className="w-14 h-14 bg-navy text-white rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(27,75,143,0.3)] hover:bg-[#153a6f] active:scale-95 transition-all"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              navigate('/document-upload', { state: { type: '', vehicleId } });
+            }}
+          >
+            <Plus size={28} />
+          </motion.button>
+        </div>
       </div>
     </div>
   );

@@ -6,14 +6,15 @@ const { uploadBuffer } = require('../../services/cloudinary');
 
 exports.uploadDocument = async (req, res) => {
   try {
-    const { vehicleId, type, expiryDate } = req.body;
+    let { vehicleId, type, expiryDate } = req.body;
 
     if (!req.file) return sendError(res, 'File is required');
-    if (!vehicleId || !type) return sendError(res, 'vehicleId and type are required');
+    if (!type) return sendError(res, 'Document type is required');
 
-    const validTypes = ['RC Book', 'Insurance', 'PUC', 'Driving License'];
-    if (!validTypes.includes(type)) {
-      return sendError(res, 'Invalid document type for MVP');
+    if (!vehicleId) {
+      const firstVehicle = await Vehicle.findOne({ ownerId: req.user.userId, status: { $ne: 'deleted' } });
+      if (!firstVehicle) return sendError(res, 'No vehicle found to assign document to', 404);
+      vehicleId = firstVehicle._id;
     }
 
     const vehicle = await Vehicle.findOne({ _id: vehicleId, ownerId: req.user.userId, status: { $ne: 'deleted' } });

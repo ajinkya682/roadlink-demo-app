@@ -9,7 +9,16 @@ cloudinary.config({
 const uploadBuffer = (buffer, folder = 'roadlink', resourceType = 'auto') => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: resourceType },
+      { 
+        folder, 
+        resource_type: resourceType,
+        // Automatically compress and resize large images/documents on upload
+        transformation: [
+          { width: 1600, crop: "limit" },
+          { quality: "auto" },
+          { fetch_format: "auto" }
+        ]
+      },
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
