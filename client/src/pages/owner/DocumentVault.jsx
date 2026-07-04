@@ -183,7 +183,7 @@ export default function DocumentVault() {
               key={doc._id || doc.id || index} 
               doc={doc} 
               vehicle={activeVehicle}
-              onClick={() => navigate('/document-upload', { state: { type: doc.type || '', vehicleId } })} 
+              onClick={() => navigate(`/document-detail/${doc.id}`)} 
             />
           ))}
 

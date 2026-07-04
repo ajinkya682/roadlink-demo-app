@@ -294,8 +294,26 @@ export function AppProvider({ children }) {
     });
   };
 
-  const removeDocument = (id) => {
-    setDocuments(prev => prev.filter(d => d.id !== id));
+  const removeDocument = async (id) => {
+    try {
+      await api.delete(`/documents/${id}`);
+      setDocuments(prev => prev.filter(d => d.id !== id));
+    } catch (err) {
+      console.error('Failed to delete document', err);
+      throw err;
+    }
+  };
+
+  const updateDocument = async (id, updates) => {
+    try {
+      const res = await api.patch(`/documents/${id}`, updates);
+      if (res.data.success) {
+        await refreshDocuments();
+      }
+    } catch (err) {
+      console.error('Failed to update document', err);
+      throw err;
+    }
   };
 
   const refreshDocuments = async () => {
@@ -306,10 +324,12 @@ export function AppProvider({ children }) {
         const fetchedDocs = res.data.data.documents.map(d => ({
           id: d._id,
           vehicleId: d.vehicleId,
-          type: d.documentType,
+          type: d.type,
+          fileUrl: d.fileUrl,
           number: d.documentNumber,
-          expiry: new Date(d.expiryDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
-          status: new Date(d.expiryDate) < new Date() ? 'expired' : 'valid'
+          expiry: d.expiryDate ? new Date(d.expiryDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : null,
+          expiryDateValue: d.expiryDate, // store raw for editing
+          status: d.expiryDate && new Date(d.expiryDate) < new Date() ? 'expired' : 'valid'
         }));
         setDocuments(fetchedDocs);
       }
@@ -439,6 +459,7 @@ export function AppProvider({ children }) {
       refreshVehicles,
       // Document actions
       addDocument,
+      updateDocument,
       removeDocument,
       refreshDocuments,
       // Contact actions

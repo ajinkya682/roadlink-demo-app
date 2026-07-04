@@ -32,6 +32,7 @@ import NotificationsInbox from './pages/owner/NotificationsInbox'
 import NotificationDetail from './pages/owner/NotificationDetail'
 import DocumentVault from './pages/owner/DocumentVault'
 import DocumentUpload from './pages/owner/DocumentUpload'
+import DocumentDetail from './pages/owner/DocumentDetail'
 import Settings from './pages/owner/Settings'
 import EmergencyContacts from './pages/owner/EmergencyContacts'
 import MyProfile from './pages/owner/MyProfile'
@@ -128,6 +129,7 @@ function App() {
             <Route path="/notification-detail" element={<RequireAuth><PageWrapper><NotificationDetail /></PageWrapper></RequireAuth>} />
             <Route path="/document-vault" element={<RequireAuth><PageWrapper><DocumentVault /></PageWrapper></RequireAuth>} />
             <Route path="/document-upload" element={<RequireAuth><PageWrapper><DocumentUpload /></PageWrapper></RequireAuth>} />
+            <Route path="/document-detail/:id" element={<RequireAuth><PageWrapper><DocumentDetail /></PageWrapper></RequireAuth>} />
             <Route path="/settings" element={<RequireAuth><PageWrapper><Settings /></PageWrapper></RequireAuth>} />
             <Route path="/emergency-contacts" element={<RequireAuth><PageWrapper><EmergencyContacts /></PageWrapper></RequireAuth>} />
             <Route path="/profile" element={<RequireAuth><PageWrapper><MyProfile /></PageWrapper></RequireAuth>} />

@@ -84,3 +84,24 @@ exports.deleteDocument = async (req, res) => {
     return sendError(res, 'Failed to delete document', 500);
   }
 };
+
+exports.updateDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type, expiryDate } = req.body;
+
+    const document = await Document.findOne({ _id: id, ownerId: req.user.userId });
+    if (!document) return sendError(res, 'Document not found', 404);
+
+    if (type) document.type = type;
+    if (expiryDate !== undefined) {
+      document.expiryDate = expiryDate ? new Date(expiryDate) : null;
+    }
+
+    await document.save();
+    return sendSuccess(res, { document });
+  } catch (error) {
+    logger.error('Error updating document:', error);
+    return sendError(res, 'Failed to update document', 500);
+  }
+};

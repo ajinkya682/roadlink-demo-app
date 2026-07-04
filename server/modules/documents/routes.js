@@ -26,6 +26,7 @@ router.use(requireAuth, requireOwner);
 // The 'file' field matches the form-data key
 router.post('/', upload.single('file'), controller.uploadDocument);
 router.get('/', controller.getDocuments);
+router.patch('/:id', controller.updateDocument);
 router.delete('/:id', controller.deleteDocument);
 
 module.exports = router;
