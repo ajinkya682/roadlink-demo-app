@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,9 +17,13 @@ import { useAppData } from "../../context/AppContext";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, updateNotifPref, signOut } = useAppData();
+  const { user, updateNotifPref, signOut, refreshUser } = useAppData();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+    refreshUser();
+  }, []);
 
   return (
     <div className="min-h-screen bg-fog pb-24">

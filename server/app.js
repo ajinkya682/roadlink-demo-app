@@ -25,6 +25,7 @@ app.use(globalLimiter);
 
 // Module routes will be mounted here
 app.use('/v1/auth', require('./modules/auth/routes'));
+app.use('/v1/users', require('./modules/users/routes'));
 app.use('/v1/vehicles', require('./modules/vehicles/routes'));
 app.use('/v1/reports', require('./modules/reports/routes'));
 app.use('/v1/documents', require('./modules/documents/routes'));

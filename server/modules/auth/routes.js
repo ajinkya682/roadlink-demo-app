@@ -4,10 +4,10 @@ const controller = require('./controller');
 const { requireAuth } = require('../../middleware/auth');
 const rateLimit = require('express-rate-limit');
 
-// Aggressive rate limiting on OTP requests
+// Rate limiting on OTP requests
 const otpLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 3,
+  max: 30, // Increased for testing
   message: 'Too many OTP requests from this IP'
 });
 

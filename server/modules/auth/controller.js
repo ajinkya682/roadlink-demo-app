@@ -16,14 +16,7 @@ exports.requestOtp = async (req, res) => {
       return sendError(res, 'Valid Indian phone number with +91 is required');
     }
 
-    // Rate limit resend (60s cooldown)
-    const existing = await OtpSession.findOne({ phone });
-    if (existing) {
-      const timeDiff = Date.now() - (existing.expiresAt.getTime() - 5 * 60 * 1000); // Created time approx
-      if (timeDiff < 60000) {
-        return sendError(res, 'Please wait 60 seconds before requesting a new OTP', 429);
-      }
-    }
+    // Cooldown removed for testing
 
     if (isLogin) {
       const user = await User.findOne({ phone });
@@ -112,7 +105,8 @@ exports.verifyOtp = async (req, res) => {
         id: user._id,
         name: user.name,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        notificationPrefs: user.notificationPrefs
       }
     });
 

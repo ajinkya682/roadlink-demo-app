@@ -65,7 +65,16 @@ export function AppProvider({ children }) {
           setIsAuthenticated(true);
         }
       }
-      if (storedUser)          setUser(storedUser);
+      if (storedUser) {
+        setUser({
+          ...EMPTY_USER,
+          ...storedUser,
+          notificationPrefs: {
+            ...EMPTY_USER.notificationPrefs,
+            ...(storedUser.notificationPrefs || {})
+          }
+        });
+      }
       if (storedVehicles)      setVehicles(storedVehicles);
       if (storedNotifications) setNotifications(storedNotifications);
       if (storedDocuments)     setDocuments(storedDocuments);
@@ -107,6 +116,25 @@ export function AppProvider({ children }) {
     await SecureStorage.remove('roadlink_access_token');
     await SecureStorage.remove('roadlink_refresh_token');
     await SecureStorage.clear();
+  };
+
+  // ── User actions ──────────────────────────────────────────────────────────
+  const refreshUser = async () => {
+    try {
+      const res = await api.get('/users/me');
+      if (res.data.success) {
+        setUser(prev => ({
+          ...prev,
+          ...res.data.data.user,
+          notificationPrefs: {
+            ...EMPTY_USER.notificationPrefs,
+            ...(res.data.data.user.notificationPrefs || {})
+          }
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch user', err);
+    }
   };
 
   // ── Notification actions ──────────────────────────────────────────────────
@@ -327,8 +355,20 @@ export function AppProvider({ children }) {
   };
 
   // ── User preference actions ───────────────────────────────────────────────
-  const updateNotifPref = (key, value) => {
-    setUser(prev => ({ ...prev, notificationPrefs: { ...prev.notificationPrefs, [key]: value } }));
+  const updateNotifPref = async (key, value) => {
+    const previousPrefs = user.notificationPrefs;
+    const newPrefs = { ...previousPrefs, [key]: value };
+    
+    // Optimistic UI update
+    setUser(prev => ({ ...prev, notificationPrefs: newPrefs }));
+    
+    try {
+      await api.patch('/users/settings', { notificationPrefs: newPrefs });
+    } catch (err) {
+      console.error('Failed to update notification preferences', err);
+      // Revert on error
+      setUser(prev => ({ ...prev, notificationPrefs: previousPrefs }));
+    }
   };
 
   return (
@@ -366,6 +406,7 @@ export function AppProvider({ children }) {
       deleteContact,
       setPrimaryContact,
       // User actions
+      refreshUser,
       updateNotifPref,
     }}>
       {children}
