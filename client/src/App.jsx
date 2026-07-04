@@ -89,8 +89,7 @@ function App() {
     '/dashboard',       // Home
     '/document-vault',  // Docs
     '/vehicle-detail',  // Vehicles (Root tab)
-    '/settings',        // Profile
-    '/profile'
+    '/settings'         // Settings
   ];
 
   // Only show nav on exact matches of the root tab routes
