@@ -60,8 +60,17 @@ exports.createVehicle = async (req, res) => {
 exports.getVehicles = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const vehicles = await Vehicle.find({ ownerId: userId, status: { $ne: 'deleted' } });
-    return sendSuccess(res, { vehicles });
+    const vehicles = await Vehicle.find({ ownerId: userId, status: { $ne: 'deleted' } }).lean();
+    
+    const vehicleIds = vehicles.map(v => v._id);
+    const qrTokens = await QrToken.find({ vehicleId: { $in: vehicleIds }, active: true });
+    
+    const vehiclesWithTokens = vehicles.map(v => {
+      const tokenDoc = qrTokens.find(qt => qt.vehicleId.toString() === v._id.toString());
+      return { ...v, qrToken: tokenDoc ? tokenDoc.token : null };
+    });
+
+    return sendSuccess(res, { vehicles: vehiclesWithTokens });
   } catch (error) {
     logger.error('Error fetching vehicles:', error);
     return sendError(res, 'Failed to fetch vehicles', 500);
