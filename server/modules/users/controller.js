@@ -7,7 +7,7 @@ const { uploadBuffer, extractPublicId, deleteResource } = require('../../service
 
 exports.updateSettings = async (req, res) => {
   try {
-    const { notificationPrefs } = req.body;
+    const { notificationPrefs, privacyPrefs } = req.body;
     
     const user = await User.findById(req.user.userId);
     if (!user) return sendError(res, 'User not found', 404);
@@ -15,10 +15,16 @@ exports.updateSettings = async (req, res) => {
     if (notificationPrefs) {
       user.notificationPrefs = { ...user.notificationPrefs, ...notificationPrefs };
     }
+    if (privacyPrefs) {
+      user.privacyPrefs = { ...user.privacyPrefs, ...privacyPrefs };
+    }
     
     await user.save();
     
-    return sendSuccess(res, { notificationPrefs: user.notificationPrefs });
+    return sendSuccess(res, { 
+      notificationPrefs: user.notificationPrefs,
+      privacyPrefs: user.privacyPrefs
+    });
   } catch (error) {
     logger.error('Error updating settings:', error);
     return sendError(res, 'Failed to update settings', 500);
@@ -39,6 +45,7 @@ exports.getUserProfile = async (req, res) => {
         avatarUrl: user.avatarUrl,
         role: user.role,
         notificationPrefs: user.notificationPrefs,
+        privacyPrefs: user.privacyPrefs,
         medicalProfile: user.medicalProfile
       }
     });
@@ -123,6 +130,7 @@ exports.updateProfile = async (req, res) => {
         avatarUrl: user.avatarUrl,
         role: user.role,
         notificationPrefs: user.notificationPrefs,
+        privacyPrefs: user.privacyPrefs,
         medicalProfile: user.medicalProfile
       }
     });

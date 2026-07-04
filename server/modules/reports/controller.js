@@ -2,7 +2,6 @@ const Report = require('../../models/Report');
 const QrToken = require('../../models/QrToken');
 const Vehicle = require('../../models/Vehicle');
 const { sendSuccess, sendError } = require('../../utils/response');
-const { verifyQRToken } = require('../../utils/hmac');
 const notificationService = require('./notificationService');
 const { logger } = require('../../middleware/logger');
 
@@ -17,10 +16,7 @@ exports.createReport = async (req, res) => {
     const qrTokenDoc = await QrToken.findOne({ token, active: true });
     if (!qrTokenDoc) return sendError(res, 'Invalid or inactive QR token', 404);
 
-    const vehicleId = verifyQRToken(token);
-    if (!vehicleId || vehicleId !== qrTokenDoc.vehicleId.toString()) {
-      return sendError(res, 'Tampered QR token', 400);
-    }
+    const vehicleId = qrTokenDoc.vehicleId.toString();
 
     const vehicle = await Vehicle.findById(vehicleId);
     if (!vehicle || vehicle.status === 'deleted') {

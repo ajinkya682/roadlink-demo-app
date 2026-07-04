@@ -167,7 +167,7 @@ export default function Dashboard() {
               <motion.button
                 className="relative w-10 h-10 bg-road-navy/8 rounded-xl flex items-center justify-center text-road-navy"
                 whileTap={{ scale: 0.88 }}
-                onClick={(e) => { e.stopPropagation(); navigate('/qr-detail'); }}
+                onClick={(e) => { e.stopPropagation(); navigate('/qr-detail', { state: { vehicle: v } }); }}
               >
                 <QrCode size={20} strokeWidth={1.75} />
                 {v.unreadAlerts > 0 && (

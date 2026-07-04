@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema({
       start: { type: String },
       end: { type: String }
     }
+  },
+  privacyPrefs: {
+    publicVehicleProfile: { type: Boolean, default: true },
+    displayPhoneNumber: { type: Boolean, default: false },
+    plateSearchable: { type: Boolean, default: true }
   }
 }, { timestamps: true });
 

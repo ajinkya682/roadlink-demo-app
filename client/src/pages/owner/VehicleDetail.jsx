@@ -530,7 +530,7 @@ export default function VehicleDetail() {
                 <div className="flex w-full">
                   <button
                     className="flex-1 border-2 border-navy text-navy rounded-xl py-3 font-body text-sm font-semibold flex items-center justify-center gap-2 hover:bg-navy/5 transition-colors"
-                    onClick={() => navigate('/qr-detail')}
+                    onClick={() => navigate('/qr-detail', { state: { vehicle } })}
                   >
                     <QrCode size={16} /> Full QR Page
                   </button>

@@ -134,10 +134,12 @@ exports.resolveQR = async (req, res) => {
 
     const vehicleId = qrToken.vehicleId;
 
-    const vehicle = await Vehicle.findById(vehicleId).populate('ownerId', 'name');
+    const vehicle = await Vehicle.findById(vehicleId).populate('ownerId', 'name phone privacyPrefs');
     if (!vehicle || vehicle.status === 'deleted') {
       return sendError(res, 'Vehicle not found', 404);
     }
+
+    const privacy = vehicle.ownerId?.privacyPrefs || { publicVehicleProfile: true, displayPhoneNumber: false };
 
     // STRICT PRIVACY: Return only masked public profile
     const publicProfile = {
@@ -147,6 +149,21 @@ exports.resolveQR = async (req, res) => {
       ownerName: vehicle.showOwnerName && vehicle.ownerId ? vehicle.ownerId.name : null,
       status: vehicle.status
     };
+
+    if (privacy.publicVehicleProfile !== false) {
+      Object.assign(publicProfile, {
+        type: vehicle.type,
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        color: vehicle.color,
+        nickname: vehicle.nickname
+      });
+    }
+
+    if (privacy.displayPhoneNumber === true && vehicle.ownerId) {
+      publicProfile.ownerPhone = vehicle.ownerId.phone;
+    }
 
     return sendSuccess(res, { profile: publicProfile });
   } catch (error) {
@@ -162,10 +179,10 @@ exports.searchVehicle = async (req, res) => {
     if (!number) return sendError(res, 'Registration number is required');
 
     const normalized = number.replace(/\s+/g, '').toUpperCase();
-    const vehicle = await Vehicle.findOne({ registrationNumber: normalized, status: { $ne: 'deleted' } }).populate('ownerId', 'name');
+    const vehicle = await Vehicle.findOne({ registrationNumber: normalized, status: { $ne: 'deleted' } }).populate('ownerId', 'name privacyPrefs');
 
-    if (!vehicle) {
-      // Return 200 with null data so we don't leak existence easily, or 404.
+    if (!vehicle || (vehicle.ownerId?.privacyPrefs && vehicle.ownerId.privacyPrefs.plateSearchable === false)) {
+      // Return 404 so we don't leak existence if plateSearchable is false
       return sendError(res, 'Vehicle not found', 404);
     }
 
