@@ -178,44 +178,62 @@ export default function EmergencyContacts() {
                       <div className="h-px bg-[#e5e2e1]" />
 
                       {/* Medical Information */}
-                      <div>
-                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Health Information</h3>
-                        <div className="space-y-4">
+                      {(medicalProfile.conditions || medicalProfile.allergies || medicalProfile.prescriptions || medicalProfile.devices) && (
+                        <>
                           <div>
-                            <p className="font-body text-[11px] text-[#737782]">Medical Conditions</p>
-                            <p className="font-body text-[14px] font-medium">{medicalProfile.conditions || 'None known'}</p>
+                            <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Health Information</h3>
+                            <div className="space-y-4">
+                              {medicalProfile.conditions && (
+                                <div>
+                                  <p className="font-body text-[11px] text-[#737782]">Medical Conditions</p>
+                                  <p className="font-body text-[14px] font-medium">{medicalProfile.conditions}</p>
+                                </div>
+                              )}
+                              {medicalProfile.allergies && (
+                                <div>
+                                  <p className="font-body text-[11px] text-[#737782]">Allergies</p>
+                                  <p className="font-body text-[14px] font-medium">{medicalProfile.allergies}</p>
+                                </div>
+                              )}
+                              {medicalProfile.prescriptions && (
+                                <div>
+                                  <p className="font-body text-[11px] text-[#737782]">Prescriptions</p>
+                                  <p className="font-body text-[14px] font-medium">{medicalProfile.prescriptions}</p>
+                                </div>
+                              )}
+                              {medicalProfile.devices && (
+                                <div>
+                                  <p className="font-body text-[11px] text-[#737782]">Medical Devices</p>
+                                  <p className="font-body text-[14px] font-medium">{medicalProfile.devices}</p>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-body text-[11px] text-[#737782]">Allergies</p>
-                            <p className="font-body text-[14px] font-medium">{medicalProfile.allergies || 'None known'}</p>
-                          </div>
-                          <div>
-                            <p className="font-body text-[11px] text-[#737782]">Prescriptions</p>
-                            <p className="font-body text-[14px] font-medium">{medicalProfile.prescriptions || 'None'}</p>
-                          </div>
-                          <div>
-                            <p className="font-body text-[11px] text-[#737782]">Medical Devices</p>
-                            <p className="font-body text-[14px] font-medium">{medicalProfile.devices || 'None'}</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="h-px bg-[#e5e2e1]" />
+                          
+                          <div className="h-px bg-[#e5e2e1] my-5" />
+                        </>
+                      )}
 
                       {/* Primary Doctor */}
-                      <div>
-                        <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Primary Doctor</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="font-body text-[11px] text-[#737782]">Name</p>
-                            <p className="font-body text-[14px] font-medium">{medicalProfile.doctorName || 'Not provided'}</p>
-                          </div>
-                          <div>
-                            <p className="font-body text-[11px] text-[#737782]">Contact</p>
-                            <p className="font-body text-[14px] font-medium">{medicalProfile.doctorPhone || 'Not provided'}</p>
+                      {(medicalProfile.doctorName || medicalProfile.doctorPhone) && (
+                        <div className="mb-5">
+                          <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider mb-3">Primary Doctor</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            {medicalProfile.doctorName && (
+                              <div>
+                                <p className="font-body text-[11px] text-[#737782]">Name</p>
+                                <p className="font-body text-[14px] font-medium">{medicalProfile.doctorName}</p>
+                              </div>
+                            )}
+                            {medicalProfile.doctorPhone && (
+                              <div>
+                                <p className="font-body text-[11px] text-[#737782]">Contact</p>
+                                <p className="font-body text-[14px] font-medium">{medicalProfile.doctorPhone}</p>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
+                      )}
 
                       <Button fullWidth variant="outline" onClick={() => setIsEditingMedical(true)}>
                         <Edit2 size={18} className="mr-2" /> Edit Medical ID
@@ -226,10 +244,32 @@ export default function EmergencyContacts() {
                       <div className="space-y-4">
                         <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider">Personal Details</h3>
                         <div className="grid grid-cols-2 gap-3">
-                          <Input label="DOB (DD/MM/YYYY)" value={medicalForm.dob} onChange={e => setMedicalForm(f => ({ ...f, dob: e.target.value }))} />
-                          <Input label="Blood Type" value={medicalForm.bloodType} onChange={e => setMedicalForm(f => ({ ...f, bloodType: e.target.value }))} />
+                          <Input label="DOB" type="date" value={medicalForm.dob || ''} onChange={e => setMedicalForm(f => ({ ...f, dob: e.target.value }))} />
+                          <div className="flex flex-col gap-1.5">
+                            <label className="font-body text-[12px] font-bold text-on-surface-muted uppercase tracking-[0.08em]">
+                              Blood Type
+                            </label>
+                            <div className="flex items-center gap-2 rounded-lg border bg-white border-outline-light focus-within:border-navy focus-within:ring-2 focus-within:ring-navy/15 transition-all duration-150">
+                              <select 
+                                value={medicalForm.bloodType || ''} 
+                                onChange={e => setMedicalForm(f => ({ ...f, bloodType: e.target.value }))}
+                                className="flex-1 min-w-0 py-[15px] px-4 bg-transparent font-body text-body-md text-on-surface focus:outline-none"
+                              >
+                                <option value="">Select</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="Unknown">Unknown</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
-                        <Input label="Home Address" value={medicalForm.address} onChange={e => setMedicalForm(f => ({ ...f, address: e.target.value }))} />
+                        <Input label="Home Address" value={medicalForm.address || ''} onChange={e => setMedicalForm(f => ({ ...f, address: e.target.value }))} />
                       </div>
 
                       <div className="space-y-4">
