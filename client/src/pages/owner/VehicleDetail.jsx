@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { QrCode, Shield, FileText, Phone, ChevronRight, Edit3, Check, Plus, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { QrCode, Shield, FileText, Phone, ChevronRight, Edit3, Check, Plus, AlertTriangle, Trash2, X } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import PlateTag from '../../components/PlateTag';
 import Toggle from '../../components/Toggle';
+import DocCard from '../../components/DocCard';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
@@ -12,6 +13,7 @@ import api from '../../lib/api';
 import { QRCodeSVG } from 'qrcode.react';
 
 const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
+const relations = ['Family', 'Friend', 'Colleague', 'Spouse', 'Brother', 'Other'];
 
 export default function VehicleDetail() {
   const navigate = useNavigate();
@@ -25,6 +27,11 @@ export default function VehicleDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Vehicle-specific contacts state
+  const [vehicleContacts, setVehicleContacts] = useState([]);
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', phone: '', relation: 'Family', isPrimary: false });
 
   React.useEffect(() => {
     async function loadVehicle() {
@@ -59,6 +66,27 @@ export default function VehicleDetail() {
       }
     }
     loadVehicle();
+  }, [id]);
+
+  React.useEffect(() => {
+    async function loadContacts() {
+      try {
+        const res = await api.get(`/emergency-contacts?vehicleId=${id}`);
+        if (res.data.success) {
+          setVehicleContacts(res.data.data.contacts.map(c => ({
+            id: c._id,
+            name: c.name,
+            phone: c.phone,
+            maskedPhone: c.phone.replace(/.(?=.{4})/g, 'x'),
+            relation: c.relation,
+            isPrimary: c.priority === 1
+          })));
+        }
+      } catch (err) {
+        console.error('Failed to load vehicle contacts', err);
+      }
+    }
+    if (id) loadContacts();
   }, [id]);
 
   if (vehicles.length === 0 && !id) {
@@ -137,6 +165,49 @@ export default function VehicleDetail() {
       alert('Failed to save vehicle details');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleAddContact = async () => {
+    if (!contactForm.name || !contactForm.phone) return;
+    try {
+      const res = await api.post('/emergency-contacts', {
+        vehicleId: vehicle.id,
+        name: contactForm.name,
+        phone: contactForm.phone,
+        relation: contactForm.relation,
+        priority: contactForm.isPrimary ? 1 : 2
+      });
+      if (res.data.success) {
+        setShowAddContact(false);
+        setContactForm({ name: '', phone: '', relation: 'Family', isPrimary: false });
+        
+        const res2 = await api.get(`/emergency-contacts?vehicleId=${id}`);
+        if (res2.data.success) {
+          setVehicleContacts(res2.data.data.contacts.map(c => ({
+            id: c._id,
+            name: c.name,
+            phone: c.phone,
+            maskedPhone: c.phone.replace(/.(?=.{4})/g, 'x'),
+            relation: c.relation,
+            isPrimary: c.priority === 1
+          })));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to add contact');
+    }
+  };
+
+  const handleDeleteContact = async (contactId) => {
+    if (window.confirm('Delete this contact?')) {
+      try {
+        await api.delete(`/emergency-contacts/${contactId}`);
+        setVehicleContacts(prev => prev.filter(c => c.id !== contactId));
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -312,20 +383,22 @@ export default function VehicleDetail() {
 
             {/* ── DOCUMENTS ── */}
             {activeTab === 1 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-4">
                 {vehicleDocs.map(doc => (
-                  <div
-                    key={doc.id}
-                    className="bg-white rounded-xl border border-outline-light p-4 cursor-pointer hover:border-navy/30 transition-colors"
-                    onClick={() => navigate('/document-upload')}
-                  >
-                    <div className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold mb-2 ${statusColor(doc.status)}`}>
-                      {doc.expiry}
-                    </div>
-                    <p className="font-body text-sm font-semibold text-on-surface">{doc.type}</p>
-                    {doc.number && <p className="font-mono text-xs text-on-surface-muted mt-0.5">{doc.number}</p>}
-                  </div>
+                  <DocCard 
+                    key={doc.id || doc._id} 
+                    doc={doc} 
+                    vehicles={vehicles}
+                    onClick={() => navigate(`/document-detail/${doc.id}`)} 
+                  />
                 ))}
+                {vehicleDocs.length === 0 && (
+                  <div className="text-center p-6 border-2 border-dashed border-outline-light rounded-xl mt-2">
+                    <p className="font-body text-[13px] text-on-surface-muted">
+                      No documents added yet.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -354,28 +427,51 @@ export default function VehicleDetail() {
                 </div>
 
                 <div className="space-y-3">
-                  {contacts.map(c => (
-                    <div key={c.id} className="bg-white rounded-xl border border-outline-light px-4 py-3 flex items-center gap-3">
-                      <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center font-display font-semibold text-navy text-sm flex-shrink-0">
-                        {c.name.charAt(0)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-body text-sm font-semibold text-on-surface">{c.name}</p>
-                          {c.isPrimary && (
-                            <span className="bg-navy text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Primary</span>
-                          )}
+                  {vehicleContacts.map(c => (
+                    <div key={c.id} className="bg-white rounded-xl border border-outline-light px-4 py-3 flex items-center justify-between group">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center font-display font-semibold text-navy text-sm flex-shrink-0">
+                          {c.name.charAt(0)}
                         </div>
-                        <p className="font-body text-xs text-on-surface-muted">{c.relation} · {c.maskedPhone}</p>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-body text-sm font-semibold text-on-surface">{c.name}</p>
+                            {c.isPrimary && (
+                              <span className="bg-navy text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Primary</span>
+                            )}
+                          </div>
+                          <p className="font-body text-xs text-on-surface-muted">{c.relation} · {c.maskedPhone}</p>
+                        </div>
                       </div>
+                      <button onClick={() => handleDeleteContact(c.id)} className="p-2 text-alert-red hover:bg-alert-red/10 rounded-full transition-colors opacity-0 group-hover:opacity-100">
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   ))}
+                  
+                  {vehicleContacts.length === 0 && (
+                    <div className="text-center p-6 border-2 border-dashed border-outline-light rounded-xl">
+                      <p className="font-body text-[13px] text-on-surface-muted">
+                        No vehicle-specific emergency contacts.
+                      </p>
+                    </div>
+                  )}
                 </div>
+
+                {vehicleContacts.length < 2 && (
+                  <button 
+                    onClick={() => setShowAddContact(true)}
+                    className="w-full bg-white text-navy border-2 border-dashed border-navy/30 hover:border-navy/50 hover:bg-navy/5 rounded-xl py-3.5 font-body text-sm font-semibold flex items-center justify-center gap-2 transition-colors mt-2"
+                  >
+                    <Plus size={18} /> Add Contact for this Vehicle
+                  </button>
+                )}
+                
                 <button
-                  className="w-full border-2 border-dashed border-outline-light rounded-xl py-4 font-body text-sm font-semibold text-on-surface-muted flex items-center justify-center gap-2 hover:bg-surface-low transition-colors"
+                  className="w-full bg-surface-low text-on-surface-muted rounded-xl py-3.5 font-body text-sm font-semibold flex items-center justify-center gap-2 hover:bg-outline-light/50 transition-colors mt-2"
                   onClick={() => navigate('/emergency-contacts')}
                 >
-                  Manage Medical ID & Contacts
+                  Manage Global Medical ID & Contacts
                 </button>
               </div>
               );
@@ -414,6 +510,79 @@ export default function VehicleDetail() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Add Contact Modal */}
+      <AnimatePresence>
+        {showAddContact && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pb-0">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+              onClick={() => setShowAddContact(false)} 
+            />
+            <motion.div 
+              initial={{ y: "100%" }} 
+              animate={{ y: 0 }} 
+              exit={{ y: "100%" }} 
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-2xl p-6 relative z-10 shadow-xl max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-display text-xl font-bold text-on-surface">Add Vehicle Contact</h3>
+                <button onClick={() => setShowAddContact(false)} className="p-2 text-on-surface-muted hover:text-navy hover:bg-surface-low rounded-full transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                <Input label="Full Name" value={contactForm.name}
+                  onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="e.g. Rahul Sharma" />
+
+                <Input label="Phone Number" prefix="+91" type="tel" inputMode="numeric"
+                  value={contactForm.phone}
+                  onChange={e => setContactForm(f => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                  placeholder="98765 43210" />
+
+                <div>
+                  <p className="font-body text-[12px] font-bold tracking-[0.08em] text-on-surface-muted uppercase mb-3">Relation</p>
+                  <div className="flex flex-wrap gap-2">
+                    {relations.map(r => (
+                      <button
+                        key={r}
+                        onClick={() => setContactForm(f => ({ ...f, relation: r }))}
+                        className={`px-4 py-2 rounded-xl font-body text-sm font-semibold border-2 transition-colors ${
+                          contactForm.relation === r
+                            ? 'border-navy text-navy bg-navy/5'
+                            : 'border-outline-light text-on-surface hover:bg-surface-low'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-2 border-t border-outline-light mt-2 pt-4">
+                  <div>
+                    <p className="font-body text-base font-semibold text-on-surface">Make Primary</p>
+                    <p className="font-body text-xs text-on-surface-muted">This contact will be notified first</p>
+                  </div>
+                  <Toggle on={contactForm.isPrimary} onChange={v => setContactForm(f => ({ ...f, isPrimary: v }))} />
+                </div>
+
+                <div className="pt-2">
+                  <Button fullWidth onClick={handleAddContact} disabled={!contactForm.name || contactForm.phone.length < 10}>
+                    Save Contact
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
