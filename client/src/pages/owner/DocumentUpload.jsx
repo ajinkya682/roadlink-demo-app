@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, FileText, CheckCircle, Lock } from 'lucide-react';
@@ -19,9 +19,19 @@ export default function DocumentUpload() {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [error, setError] = useState(null);
+  
+  const fileInputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    if (selected) {
+      setFile(selected);
+    }
+  };
 
   const handleUpload = async () => {
     if (!vehicleId) return setError('Missing vehicle ID');
+    if (!file) return setError('Please select a file to upload');
     
     setUploading(true);
     setError(null);
@@ -33,9 +43,7 @@ export default function DocumentUpload() {
       formData.append('documentType', docType);
       if (expiryDate) formData.append('expiryDate', expiryDate);
       
-      // Since UI mocks the file picker, we create a mock blob for the upload
-      const mockBlob = new Blob(['Mock PDF Content'], { type: 'application/pdf' });
-      formData.append('file', mockBlob, 'document.pdf');
+      formData.append('file', file);
 
       const res = await api.post('/documents', formData, {
         headers: {
@@ -82,10 +90,18 @@ export default function DocumentUpload() {
             <motion.button
               key="empty"
               type="button"
-              className="w-full border-2 border-dashed border-outline-light rounded-2xl py-10 flex flex-col items-center gap-3 bg-white hover:border-navy/40 hover:bg-navy/2 transition-colors"
-              onClick={() => setFile('mock-file.pdf')}
+              className="w-full border-2 border-dashed border-outline-light rounded-2xl py-10 flex flex-col items-center gap-3 bg-white hover:border-navy/40 hover:bg-navy/2 transition-colors relative"
+              onClick={() => fileInputRef.current?.click()}
               whileTap={{ scale: 0.98 }}
             >
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="application/pdf, image/png, image/jpeg, image/jpg" 
+                capture="environment"
+                onChange={handleFileChange} 
+              />
               <div className="w-14 h-14 bg-navy/8 rounded-2xl flex items-center justify-center">
                 <UploadCloud size={28} className="text-navy" />
               </div>
@@ -101,12 +117,16 @@ export default function DocumentUpload() {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-white border border-outline-light rounded-2xl px-4 py-3 flex items-center gap-3"
             >
-              <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center flex-shrink-0">
-                <FileText size={20} className="text-navy" />
+              <div className="w-10 h-10 bg-navy/8 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                 {file.type.startsWith('image/') ? (
+                   <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                 ) : (
+                   <FileText size={20} className="text-navy" />
+                 )}
               </div>
-              <div className="flex-1">
-                <p className="font-body text-sm font-semibold text-on-surface">{docType.replace(' ', '_')}_Document.pdf</p>
-                <p className="font-body text-xs text-on-surface-muted">1.2 MB</p>
+              <div className="flex-1 overflow-hidden">
+                <p className="font-body text-sm font-semibold text-on-surface truncate">{file.name}</p>
+                <p className="font-body text-xs text-on-surface-muted">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
               {!uploading && !done && (
                 <button

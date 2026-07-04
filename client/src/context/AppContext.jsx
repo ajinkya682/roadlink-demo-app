@@ -449,6 +449,7 @@ export function AppProvider({ children }) {
       setPrimaryContact,
       // User actions
       refreshUser,
+      updateProfile,
       updateNotifPref,
       deleteAccount,
     }}>
