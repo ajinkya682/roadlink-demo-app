@@ -228,6 +228,7 @@ export default function VehicleDetail() {
         year: editForm.year,
         color: editForm.color,
         nickname: editForm.nickname,
+        type: editForm.type,
         showOwnerName: !editForm.privacyMode
       };
       
@@ -244,6 +245,7 @@ export default function VehicleDetail() {
           year: v.year || editForm.year,
           color: v.color || editForm.color,
           nickname: v.nickname,
+          type: v.type || editForm.type,
           privacyMode: v.showOwnerName === false,
           displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
           ...(editForm.imageUrl !== undefined && { imageUrl: editForm.imageUrl })
@@ -415,13 +417,14 @@ export default function VehicleDetail() {
                             <button
                               key={t}
                               onClick={() => setEditForm({ ...editForm, type: t })}
-                              className={`py-3 rounded-xl border-2 font-body text-xs font-semibold capitalize transition-colors ${
+                              className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-colors ${
                                 editForm.type === t
                                   ? 'border-navy bg-navy/5 text-navy' 
-                                  : 'border-outline-light bg-white text-on-surface hover:bg-surface-low'
+                                  : 'border-outline-light bg-white text-[#737782] hover:bg-surface-low'
                               }`}
                             >
-                              {t.replace('-', ' ')}
+                              <VehicleIcon type={t} size={32} />
+                              <span className="font-body text-[11px] font-bold mt-2 uppercase tracking-widest">{t.replace('-', ' ')}</span>
                             </button>
                           ))}
                         </div>

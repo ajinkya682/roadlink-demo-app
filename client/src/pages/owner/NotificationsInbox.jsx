@@ -49,8 +49,9 @@ const getNotificationStyle = (type, resolved, categoryId) => {
 
 export default function NotificationsInbox() {
   const navigate = useNavigate();
-  const { notifications, markRead } = useAppData();
+  const { notifications, markRead, markResolved } = useAppData();
   const [filter, setFilter] = useState('All');
+  const [isResolvingAll, setIsResolvingAll] = useState(false);
 
   const filtered = notifications.filter(n => {
     if (filter === 'Unresolved') return !n.resolved;
@@ -63,27 +64,48 @@ export default function NotificationsInbox() {
     navigate(`/notification-detail/${n.id}`);
   };
 
+  const handleMarkAllResolved = async () => {
+    setIsResolvingAll(true);
+    const unresolved = notifications.filter(n => !n.resolved);
+    for (const n of unresolved) {
+      await markResolved(n.id);
+    }
+    setIsResolvingAll(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#1c1b1b] font-body pb-24">
       <AppHeader title="Notifications" />
 
       <main className="max-w-2xl mx-auto px-4 pt-4 w-full space-y-6">
-        {/* Filter Bar */}
-        <section className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {filters.map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-5 py-2 rounded-full font-body text-[13px] font-bold transition-all active:scale-95 whitespace-nowrap ${
-                filter === f 
-                  ? 'bg-[#1b4b8f] text-[#ffffff]' 
-                  : 'bg-[#f0eded] text-[#434751] hover:bg-[#eae7e7]'
-              }`}
+        {/* Filter Bar & Resolve All */}
+        <div className="flex items-center justify-between">
+          <section className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide flex-1">
+            {filters.map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-5 py-2 rounded-full font-body text-[13px] font-bold transition-all active:scale-95 whitespace-nowrap ${
+                  filter === f 
+                    ? 'bg-[#1b4b8f] text-[#ffffff]' 
+                    : 'bg-[#f0eded] text-[#434751] hover:bg-[#eae7e7]'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </section>
+          
+          {notifications.some(n => !n.resolved) && (
+            <button 
+              onClick={handleMarkAllResolved}
+              disabled={isResolvingAll}
+              className="ml-3 px-3 py-2 bg-[#90f7ba]/20 text-[#005834] rounded-full font-body text-[12px] font-bold tracking-widest uppercase border border-[#005834]/30 hover:bg-[#90f7ba]/40 transition-colors whitespace-nowrap disabled:opacity-50"
             >
-              {f}
+              {isResolvingAll ? 'Resolving...' : 'Resolve All'}
             </button>
-          ))}
-        </section>
+          )}
+        </div>
 
         {/* Notification Feed */}
         <div className="pb-10 space-y-4">
@@ -97,7 +119,7 @@ export default function NotificationsInbox() {
             </div>
           ) : (
             filtered.map((n) => {
-              const style = getNotificationStyle(n.type, n.resolved);
+              const style = getNotificationStyle(n.type, n.resolved, n.category);
               return (
                 <article
                   key={n.id}
