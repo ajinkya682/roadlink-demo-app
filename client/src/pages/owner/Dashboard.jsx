@@ -47,8 +47,12 @@ export default function Dashboard() {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             {/* Avatar */}
-            <div className="w-16 h-16 rounded-full bg-[#1B4B8F] flex items-center justify-center text-white text-[24px] font-display font-bold shrink-0 shadow-md border-2 border-white">
-              {user.name.split(' ').map(n => n[0]).join('')}
+            <div className="w-16 h-16 rounded-full bg-[#1B4B8F] flex items-center justify-center text-white text-[24px] font-display font-bold shrink-0 shadow-md border-2 border-white overflow-hidden">
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user.name.split(' ').map(n => n[0]).join('')
+              )}
             </div>
             
             {/* User Info */}

@@ -32,8 +32,12 @@ export default function Settings() {
       <div className="px-5 pt-5 space-y-6">
         {/* Profile card */}
         <div className="bg-white rounded-2xl border border-outline-light px-5 py-4 flex items-center gap-4">
-          <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center font-display text-xl font-semibold text-white flex-shrink-0">
-            {user.avatar}
+          <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center font-display text-xl font-semibold text-white flex-shrink-0 overflow-hidden">
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              user.avatar
+            )}
           </div>
           <div className="flex-1">
             <p className="font-display text-headline-sm text-on-surface">

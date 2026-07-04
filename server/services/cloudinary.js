@@ -19,7 +19,41 @@ const uploadBuffer = (buffer, folder = 'roadlink', resourceType = 'auto') => {
   });
 };
 
+const extractPublicId = (url) => {
+  if (!url || !url.includes('cloudinary.com')) return null;
+  try {
+    const parts = url.split('/upload/');
+    if (parts.length < 2) return null;
+    
+    let path = parts[1];
+    const pathParts = path.split('/');
+    if (pathParts[0].match(/^v\d+$/)) {
+      pathParts.shift();
+    }
+    path = pathParts.join('/');
+    
+    const lastDot = path.lastIndexOf('.');
+    if (lastDot !== -1) {
+      path = path.substring(0, lastDot);
+    }
+    return path;
+  } catch (e) {
+    return null;
+  }
+};
+
+const deleteResource = (publicId, resourceType = 'image') => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicId, { resource_type: resourceType }, (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    });
+  });
+};
+
 module.exports = {
   cloudinary,
-  uploadBuffer
+  uploadBuffer,
+  extractPublicId,
+  deleteResource
 };

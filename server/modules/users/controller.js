@@ -1,6 +1,9 @@
 const User = require('../../models/User');
+const Document = require('../../models/Document');
+const Vehicle = require('../../models/Vehicle');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { logger } = require('../../middleware/logger');
+const { uploadBuffer, extractPublicId, deleteResource } = require('../../services/cloudinary');
 
 exports.updateSettings = async (req, res) => {
   try {
@@ -48,19 +51,44 @@ exports.deleteAccount = async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // In a real app, you might want to also delete associated vehicles, documents, etc.
-    // For MVP, deleting the user is the primary step.
-    const user = await User.findByIdAndDelete(userId);
+    const user = await User.findById(userId);
     if (!user) return sendError(res, 'User not found', 404);
+
+    // 1. Delete profile image from Cloudinary
+    if (user.avatarUrl) {
+      const publicId = extractPublicId(user.avatarUrl);
+      if (publicId) {
+        await deleteResource(publicId).catch(err => logger.error('Failed to delete avatar from Cloudinary', err));
+      }
+    }
+
+    // 2. Delete all document files from Cloudinary
+    const documents = await Document.find({ ownerId: userId });
+    for (const doc of documents) {
+      if (doc.fileUrl) {
+         const publicId = extractPublicId(doc.fileUrl);
+         if (publicId) {
+            await deleteResource(publicId).catch(err => logger.error('Failed to delete doc from Cloudinary', err));
+         }
+      }
+    }
     
-    return sendSuccess(res, { message: 'Account deleted successfully' });
+    // 3. Delete documents from DB
+    await Document.deleteMany({ ownerId: userId });
+
+    // 4. Delete vehicles from DB
+    await Vehicle.deleteMany({ ownerId: userId });
+    
+    // 5. Delete User from DB
+    await User.findByIdAndDelete(userId);
+    
+    return sendSuccess(res, { message: 'Account deleted successfully, including all data and files' });
   } catch (error) {
     logger.error('Error deleting account:', error);
     return sendError(res, 'Failed to delete account', 500);
   }
 };
 
-const { uploadBuffer } = require('../../services/cloudinary');
 
 exports.updateProfile = async (req, res) => {
   try {
