@@ -44,24 +44,24 @@ export default function BottomTabBar() {
         <path d={SCALLOP_PATH} fill="white" />
       </svg>
 
-      {/* ── Amber scan button (floats above the notch) ────────── */}
+      {/* ── Brand Gradient scan button (floats above the notch) ────────── */}
       <div
         className="absolute left-1/2 -translate-x-1/2 z-10"
         style={{ bottom: "34px" }} // sits ~2/3 above bar, 1/3 inside notch
       >
         <motion.button
           aria-label="Scan QR Code"
-          className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
+          className="w-[64px] h-[64px] rounded-full flex items-center justify-center"
           style={{
-            background: "#F5A623",
+            background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
             boxShadow:
-              "0 6px 24px rgba(245,166,35,0.45), 0 2px 8px rgba(0,0,0,0.12)",
-            border: "3px solid white", // clean ring where button meets notch
+              "0 6px 24px rgba(99,102,241,0.45), 0 2px 8px rgba(0,0,0,0.12)",
+            border: "4px solid white", // clean ring where button meets notch
           }}
           whileTap={{ scale: 0.9 }}
           onClick={handleScan}
         >
-          <QrCode size={26} color="white" strokeWidth={2} />
+          <QrCode size={28} color="white" strokeWidth={2} />
         </motion.button>
       </div>
 
@@ -72,8 +72,17 @@ export default function BottomTabBar() {
       >
         {TABS.map((tab, i) => {
           if (!tab) {
-            /* Empty space for scan button center slot */
-            return <div key="scan-slot" className="flex-1" />;
+            /* Empty space for scan button center slot with "Scan" label aligned with other tabs */
+            return (
+              <div key="scan-slot" className="flex-1 flex flex-col items-center justify-end pb-[2px]">
+                <span
+                  className="text-[10px] font-semibold leading-none"
+                  style={{ color: "rgba(28,27,27,0.50)" }}
+                >
+                  Scan
+                </span>
+              </div>
+            );
           }
 
           const isActive =
