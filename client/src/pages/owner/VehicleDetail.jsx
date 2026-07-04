@@ -509,6 +509,24 @@ export default function VehicleDetail() {
                           iconColor = 'text-[#005834]';
                         }
 
+                        const tLower = (n.type || '').toLowerCase();
+                        const cLower = (n.category || '').toLowerCase();
+                        
+                        let iconName = 'info';
+                        if (tLower.includes('wrong parking') || cLower.includes('wrong_parking')) iconName = 'local_parking';
+                        else if (tLower.includes('blocking')) iconName = 'block';
+                        else if (tLower.includes('hit') || cLower.includes('hit_and_run')) iconName = 'car_crash';
+                        else if (tLower.includes('damage')) iconName = 'build';
+                        else if (tLower.includes('fire')) iconName = 'fire_truck';
+                        else if (tLower.includes('theft') || cLower.includes('theft')) iconName = 'lock_reset';
+                        else if (tLower.includes('tow')) iconName = 'minor_crash';
+                        else if (tLower.includes('headlight')) iconName = 'light_mode';
+                        else if (tLower.includes('window')) iconName = 'sensor_window';
+                        else if (tLower.includes('accident') || tLower.includes('emergency share')) iconName = 'emergency_share';
+                        else if (tLower.includes('emergency')) iconName = 'e911_emergency';
+                        else if (tLower.includes('lost')) iconName = 'location_searching';
+                        else if (tLower.includes('abandoned')) iconName = 'delete_forever';
+
                         return (
                           <div
                             key={n.id}
@@ -516,8 +534,8 @@ export default function VehicleDetail() {
                             onClick={() => navigate(`/notification-detail/${n.id}`)}
                           >
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-                               <span className={`font-display text-[22px] font-bold ${iconColor}`}>
-                                 {n.type ? n.type.charAt(0).toUpperCase() : 'N'}
+                               <span className={`material-symbols-outlined text-[24px] ${iconColor}`}>
+                                 {iconName}
                                </span>
                             </div>
                             <div className="flex-1">

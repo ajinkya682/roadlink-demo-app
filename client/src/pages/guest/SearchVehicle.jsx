@@ -21,7 +21,8 @@ export default function SearchVehicle() {
 
   const handleSearch = () => {
     if (plate.replace(/\s/g, '').length >= 6) {
-      navigate('/search-result', { state: { plate } });
+      const number = plate.replace(/\s/g, '');
+      navigate(`/scan-landing?number=${number}`);
     }
   };
 

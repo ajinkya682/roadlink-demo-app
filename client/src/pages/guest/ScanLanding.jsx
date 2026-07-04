@@ -20,13 +20,15 @@ export default function ScanLanding() {
   const [searchParams] = useSearchParams();
 
   const initialToken = location.state?.qrId || searchParams.get('qr');
+  const initialNumber = searchParams.get('number');
   const [token, setToken] = useState(initialToken);
+  const [number, setNumber] = useState(initialNumber);
   const [profile, setProfile] = useState(location.state?.profile || null);
   const [loading, setLoading] = useState(!location.state?.profile);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!profile && token) {
+    if (!profile && (token || number)) {
       const fetchProfile = async () => {
         try {
           if (token === 'ROADLINK-SIMULATED123') {
@@ -35,7 +37,8 @@ export default function ScanLanding() {
             return;
           }
 
-          const res = await api.get(`/vehicles/resolve?token=${token}`);
+          const url = token ? `/vehicles/resolve?token=${token}` : `/vehicles/resolve?number=${number}`;
+          const res = await api.get(url);
           if (res.data.success) {
             setProfile(res.data.data.profile);
           } else {
@@ -48,13 +51,13 @@ export default function ScanLanding() {
         }
       };
       fetchProfile();
-    } else if (!profile && !token) {
+    } else if (!profile && !token && !number) {
       navigate('/', { replace: true });
     }
-  }, [token, profile]);
+  }, [token, number, profile]);
 
   const handleCategory = (cat) => {
-    navigate('/report-detail', { state: { category: cat, token, profile } });
+    navigate('/report-detail', { state: { category: cat, token, number, profile } });
   };
 
   if (loading) {

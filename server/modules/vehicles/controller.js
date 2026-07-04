@@ -135,15 +135,20 @@ exports.deleteVehicle = async (req, res) => {
 // GUEST FACING - No auth
 exports.resolveQR = async (req, res) => {
   try {
-    const { token } = req.query;
-    if (!token) return sendError(res, 'Token is required');
+    const { token, number } = req.query;
+    if (!token && !number) return sendError(res, 'Token or registration number is required');
 
-    const qrToken = await QrToken.findOne({ token, active: true });
-    if (!qrToken) return sendError(res, 'Invalid or inactive QR token', 404);
+    let vehicle;
 
-    const vehicleId = qrToken.vehicleId;
+    if (token) {
+      const qrToken = await QrToken.findOne({ token, active: true });
+      if (!qrToken) return sendError(res, 'Invalid or inactive QR token', 404);
+      vehicle = await Vehicle.findById(qrToken.vehicleId).populate('ownerId', 'name phone privacyPrefs');
+    } else if (number) {
+      const cleanNumber = number.replace(/\s+/g, '').toUpperCase();
+      vehicle = await Vehicle.findOne({ registrationNumber: cleanNumber }).populate('ownerId', 'name phone privacyPrefs');
+    }
 
-    const vehicle = await Vehicle.findById(vehicleId).populate('ownerId', 'name phone privacyPrefs');
     if (!vehicle || vehicle.status === 'deleted') {
       return sendError(res, 'Vehicle not found', 404);
     }
