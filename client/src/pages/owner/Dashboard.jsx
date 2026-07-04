@@ -48,7 +48,10 @@ export default function Dashboard() {
       {/* ── HEADER ────────────────────────────────────────────── */}
       <div className="bg-gradient-to-b from-[#eef2ff] to-white sticky top-0 z-30 px-5 pt-6 pb-5 border-b border-[#e5e2e1] shadow-sm">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
+          <div 
+            onClick={() => navigate('/profile')}
+            className="flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform rounded-2xl"
+          >
             {/* Avatar */}
             <div className="w-16 h-16 rounded-full bg-[#1B4B8F] flex items-center justify-center text-white text-[24px] font-display font-bold shrink-0 shadow-md border-2 border-white overflow-hidden">
               {user.avatarUrl ? (

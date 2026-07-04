@@ -40,13 +40,14 @@ exports.createReport = async (req, res) => {
 
     await report.save();
 
-    // Trigger notification
-    await notificationService.dispatchReportNotification(report, vehicle.ownerId);
+    // Trigger notification asynchronously (fire-and-forget)
+    notificationService.orchestrate(report).catch(err => 
+      logger.error('Unhandled error in notification orchestrator:', err)
+    );
 
     return sendSuccess(res, {
       reportId: report._id,
-      status: report.status,
-      deliveredChannels: ['push'] // Stub response based on 17.3
+      status: report.status
     }, 201);
   } catch (error) {
     logger.error('Error creating report:', error);
