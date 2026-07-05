@@ -36,17 +36,9 @@ exports.createVehicle = async (req, res) => {
 
     await vehicle.save();
 
-    // Generate QR token immediately
-    const tokenStr = generateQRToken(vehicle._id.toString());
-    const qrToken = new QrToken({
-      vehicleId: vehicle._id,
-      token: tokenStr
-    });
-    await qrToken.save();
-
+    // Do NOT generate QR token here. Wait for payment.
     return sendSuccess(res, {
-      vehicle,
-      qrToken: qrToken.token
+      vehicle
     }, 201);
   } catch (error) {
     if (error.code === 11000) {
@@ -151,6 +143,18 @@ exports.resolveQR = async (req, res) => {
 
     if (!vehicle || vehicle.status === 'deleted') {
       return sendError(res, 'Vehicle not found', 404);
+    }
+
+    if (vehicle.protectionStatus === 'lapsed') {
+      return sendSuccess(res, { 
+        profile: { 
+          vehicleId: vehicle._id, 
+          status: vehicle.status, 
+          protectionStatus: 'lapsed',
+          publicDisplayName: vehicle.publicDisplayName,
+          ownerName: vehicle.showOwnerName && vehicle.ownerId ? vehicle.ownerId.name : null
+        } 
+      });
     }
 
     const privacy = vehicle.ownerId?.privacyPrefs || { publicVehicleProfile: true, displayPhoneNumber: false };

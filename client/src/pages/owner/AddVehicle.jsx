@@ -77,12 +77,12 @@ export default function AddVehicle() {
       });
 
       if (res.data.success) {
-        const { vehicle, qrToken } = res.data.data;
+        const { vehicle } = res.data.data;
         // Prepend to local AppContext cache to immediately show in dashboard
-        const newVehicle = addVehicle ? addVehicle(vehicle, qrToken) : vehicle;
+        const newVehicle = addVehicle ? addVehicle(vehicle, null) : vehicle;
 
-        // Navigate to QR Detail, passing the raw QR token string
-        navigate("/qr-detail", { state: { qrToken, vehicle: newVehicle } });
+        // Navigate to Subscription Payment directly
+        navigate("/subscription-payment", { state: { vehicle: newVehicle } });
       } else {
         throw new Error(res.data.error?.message || "Failed to add vehicle");
       }

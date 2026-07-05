@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import api from '../../../lib/api';
 
 export default function CartAddress() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tier, selections } = location.state || { tier: 'standard', selections: [] };
+  const { tier, selections, vehicle, customization } = location.state || { tier: 'standard', selections: [] };
 
   const [formData, setFormData] = useState({
     name: '', line1: '', line2: '', city: '', state: '', pincode: '', phone: ''
@@ -15,11 +16,11 @@ export default function CartAddress() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImgUrl, setPreviewImgUrl] = useState('');
 
-  // Compute pricing for display (MVP hardcoded, normally fetch from API or wait for draft order)
+  const isFree = vehicle && !vehicle.hasUsedFreeStickerOrder;
   const basePrices = { standard: 199, reflective: 299, premium: 399 };
-  const basePrice = basePrices[tier] || 199;
-  const shipping = 50;
-  const gst = Math.round((basePrice + shipping) * 0.18);
+  const basePrice = isFree ? 0 : (basePrices[tier] || 199);
+  const shipping = isFree ? 0 : 50;
+  const gst = isFree ? 0 : Math.round((basePrice + shipping) * 0.18);
   const total = basePrice + shipping + gst;
   const qty = tier === 'reflective' ? 2 : 1;
 
@@ -37,31 +38,40 @@ export default function CartAddress() {
     setIsSubmitting(true);
     
     try {
-      const mockOrderId = `RL-${Math.floor(1000 + Math.random() * 9000)}-XQ`;
-      const mockOrderResponse = {
-        _id: mockOrderId,
+      // 1. Create Draft Order
+      const createRes = await api.post('/orders', {
+        vehicleId: vehicle.id,
         tier,
-        pricing: { basePrice, shippingFee: shipping, gst, total },
-        date: new Date().toISOString().split('T')[0],
-        status: 'processing',
-        vehicleName: 'My Vehicle - MH12XX9999',
-        selections: selections
-      };
-
-      const existingOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
-      localStorage.setItem('mockOrders', JSON.stringify([mockOrderResponse, ...existingOrders]));
-
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      navigate('/order-sticker/payment', { 
-        state: { 
-          orderId: mockOrderId, 
-          amount: total,
-          tier: tier
-        } 
+        templateSelections: selections,
+        customization: customization || {}
       });
+      
+      const order = createRes.data;
+
+      // 2. Update Address
+      await api.patch(`/orders/${order._id}/address`, formData);
+
+      // 3. Checkout
+      const checkoutRes = await api.post(`/orders/${order._id}/checkout`);
+      const checkoutData = checkoutRes.data;
+
+      if (checkoutData.isFree) {
+        // Free order complete, go straight to confirmation
+        navigate('/order-confirmation', { state: { orderInfo: checkoutData.orderInfo } });
+      } else {
+        // Proceed to Razorpay payment screen
+        navigate('/order-sticker/payment', { 
+          state: { 
+            orderId: order._id, 
+            amount: checkoutData.amount / 100,
+            tier: tier,
+            checkoutData
+          } 
+        });
+      }
     } catch (error) {
       console.error(error);
+      alert('Failed to process order. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -188,6 +198,8 @@ export default function CartAddress() {
               </svg>
               Processing...
             </span>
+          ) : isFree ? (
+            'Place Order (Free)'
           ) : (
             'Proceed to Payment'
           )}

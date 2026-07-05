@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const Order = require('../models/Order');
 const StickerTemplate = require('../models/StickerTemplate');
+const Vehicle = require('../../../models/Vehicle');
 const Razorpay = require('razorpay');
 const { generateReceiptPDF } = require('../../../services/pdfService');
 
@@ -44,7 +45,15 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ error: 'Invalid tier' });
     }
 
-    const pricing = computePricing(tier);
+    let pricing = computePricing(tier);
+    
+    const vehicle = await Vehicle.findById(vehicleId);
+    let isFree = false;
+    
+    if (vehicle && !vehicle.hasUsedFreeStickerOrder) {
+      isFree = true;
+      pricing = { basePrice: 0, shippingFee: 0, gst: 0, total: 0 };
+    }
 
     const order = new Order({
       userId,
@@ -53,6 +62,7 @@ exports.createOrder = async (req, res) => {
       templateSelections: templateSelections || [],
       customization: customization || {},
       pricing,
+      paymentStatus: 'pending',
       fulfillmentStatus: 'draft'
     });
 
@@ -106,6 +116,23 @@ exports.checkout = async (req, res) => {
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
+
+    if (order.pricing.total === 0) {
+      order.paymentStatus = 'paid';
+      order.fulfillmentStatus = 'processing';
+      await order.save();
+      
+      await Vehicle.findByIdAndUpdate(order.vehicleId, { hasUsedFreeStickerOrder: true });
+      
+      return res.json({
+        id: `free_${order._id}`,
+        amount: 0,
+        currency: 'INR',
+        keyId: 'dummy_key',
+        isFree: true,
+        orderInfo: order
+      });
+    }
 
     const options = {
       amount: order.pricing.total * 100,  // amount in the smallest currency unit (paise)

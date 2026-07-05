@@ -1,14 +1,19 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
+import standardImg from '../../../assets/images/stickers/standard-minimal-card.png';
+import reflectiveImg from '../../../assets/images/stickers/reflective-split.png';
+import premiumImg from '../../../assets/images/stickers/sticker-template1.png';
 
 export default function PlanSelection() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const vehicle = location.state?.vehicle;
 
   const handleSelect = (tier) => {
-    if (tier === 'standard') navigate('/order-sticker/standard');
-    else if (tier === 'reflective') navigate('/order-sticker/reflective');
-    else if (tier === 'premium') navigate('/order-sticker/premium');
+    if (tier === 'standard') navigate('/order-sticker/standard', { state: { vehicle } });
+    else if (tier === 'reflective') navigate('/order-sticker/reflective', { state: { vehicle } });
+    else if (tier === 'premium') navigate('/order-sticker/premium', { state: { vehicle } });
   };
 
   return (
@@ -33,7 +38,7 @@ export default function PlanSelection() {
             className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex items-center cursor-pointer active:scale-95 transition-transform"
           >
             <div className="w-16 h-16 bg-slate-100 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-slate-200">
-               <img src="/src/assets/images/stickers/standard-minimal-card.png" alt="Standard Preview" className="w-full h-full object-cover" />
+               <img src={standardImg} alt="Standard Preview" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex justify-between items-start mb-1">
@@ -54,7 +59,7 @@ export default function PlanSelection() {
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-transparent via-white to-transparent opacity-20 pointer-events-none"></div>
             
             <div className="w-16 h-16 bg-slate-100 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-slate-300 relative">
-               <img src="/src/assets/images/stickers/reflective-split.png" alt="Reflective Preview" className="w-full h-full object-cover" />
+               <img src={reflectiveImg} alt="Reflective Preview" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white to-transparent opacity-40"></div>
             </div>
             <div className="flex-1">
@@ -73,7 +78,7 @@ export default function PlanSelection() {
             className="bg-white rounded-xl shadow-md border-2 border-[#F59E0B] p-4 flex items-center cursor-pointer active:scale-95 transition-transform"
           >
             <div className="w-16 h-16 bg-amber-50 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-amber-200">
-               <img src="/src/assets/images/stickers/sticker-template1.png" alt="Premium Preview" className="w-full h-full object-cover" />
+               <img src={premiumImg} alt="Premium Preview" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex justify-between items-start mb-1">

@@ -181,8 +181,31 @@ export default function Dashboard() {
               <PlateTag plateNumber={v.plate} isVerified={v.isVerified} size="md" />
             </div>
 
-            {/* Status banner — amber for alerts, green for privacy */}
-            {v.unreadAlerts > 0 ? (
+            {/* Status banner */}
+            {v.protectionStatus === 'pending_payment' ? (
+              <div className="bg-signal-amber/10 border-t border-signal-amber/20 px-4 py-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                   <span className="w-2 h-2 bg-signal-amber rounded-full flex-shrink-0" />
+                   <span className="font-body text-[12px] font-semibold text-signal-amber">Pending Payment</span>
+                </div>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); navigate('/subscription-payment', { state: { vehicle: v } }); }}
+                  className="font-body text-[10px] uppercase font-bold text-navy tracking-wider"
+                >
+                  Activate
+                </button>
+              </div>
+            ) : v.protectionStatus === 'lapsed' ? (
+              <div className="bg-alert-red/10 border-t border-alert-red/20 px-4 py-2.5 flex items-center gap-2">
+                <span className="w-2 h-2 bg-alert-red rounded-full flex-shrink-0" />
+                <span className="font-body text-[12px] font-semibold text-alert-red">Protection Lapsed</span>
+              </div>
+            ) : v.protectionStatus === 'grace_period' ? (
+              <div className="bg-signal-amber/10 border-t border-signal-amber/20 px-4 py-2.5 flex items-center gap-2">
+                <span className="w-2 h-2 bg-signal-amber rounded-full flex-shrink-0" />
+                <span className="font-body text-[12px] font-semibold text-signal-amber">Grace Period - Update Payment</span>
+              </div>
+            ) : v.unreadAlerts > 0 ? (
               <div className="bg-signal-amber/10 border-t border-signal-amber/20 px-4 py-2.5 flex items-center gap-2">
                 <span className="w-2 h-2 bg-signal-amber rounded-full animate-pulse flex-shrink-0" />
                 <span className="font-body text-[12px] font-semibold text-signal-amber">

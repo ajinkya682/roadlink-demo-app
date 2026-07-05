@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Type, Image as ImageIcon, Palette, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function PremiumCustomizer() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const vehicle = location.state?.vehicle;
   const [elements, setElements] = useState([]);
   const [bgColor, setBgColor] = useState('#ffffff');
   const [previewMode, setPreviewMode] = useState(false);
@@ -49,6 +51,7 @@ export default function PremiumCustomizer() {
     navigate('/order-sticker/cart', { 
       state: { 
         tier: 'premium', 
+        vehicle,
         selections: [], 
         customization: { layoutJson: elements, bgColor } 
       } 

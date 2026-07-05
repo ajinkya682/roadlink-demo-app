@@ -31,6 +31,7 @@ app.use('/v1/reports', require('./modules/reports/routes'));
 app.use('/v1/documents', require('./modules/documents/routes'));
 app.use('/v1/emergency-contacts', require('./modules/contacts/routes'));
 app.use('/v1', require('./modules/orders/routes'));
+app.use('/v1/subscriptions', require('./modules/subscriptions/routes/subscriptionRoutes'));
 
 // Health check
 app.get('/health', (req, res) => {

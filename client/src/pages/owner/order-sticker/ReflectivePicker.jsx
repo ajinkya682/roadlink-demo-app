@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
+import img4 from '../../../assets/images/stickers/reflective-chrome-blob.png';
+import img5 from '../../../assets/images/stickers/reflective-halo-ring.png';
+import img6 from '../../../assets/images/stickers/reflective-hazard-accent.png';
+import img7 from '../../../assets/images/stickers/reflective-night-edge.png';
+
 const MOCK_TEMPLATES = [
-  { _id: '4', name: 'Reflective Chrome Blob', previewImageUrl: '/src/assets/images/stickers/reflective-chrome-blob.png' },
-  { _id: '5', name: 'Reflective Halo Ring', previewImageUrl: '/src/assets/images/stickers/reflective-halo-ring.png' },
-  { _id: '6', name: 'Reflective Hazard Accent', previewImageUrl: '/src/assets/images/stickers/reflective-hazard-accent.png' },
-  { _id: '7', name: 'Reflective Night Edge', previewImageUrl: '/src/assets/images/stickers/reflective-night-edge.png' }
+  { _id: '4', name: 'Reflective Chrome Blob', previewImageUrl: img4 },
+  { _id: '5', name: 'Reflective Halo Ring', previewImageUrl: img5 },
+  { _id: '6', name: 'Reflective Hazard Accent', previewImageUrl: img6 },
+  { _id: '7', name: 'Reflective Night Edge', previewImageUrl: img7 }
 ];
 
 export default function ReflectivePicker() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const vehicle = location.state?.vehicle;
   // Array of selected template IDs. Order matters for badge "1" and "2".
   const [selections, setSelections] = useState([]);
 
@@ -43,6 +50,7 @@ export default function ReflectivePicker() {
       navigate('/order-sticker/cart', { 
         state: { 
           tier: 'reflective', 
+          vehicle,
           selections: [
             { templateId: selections[0], position: 'front', previewImageUrl: MOCK_TEMPLATES.find(t => t._id === selections[0]).previewImageUrl },
             { templateId: selections[1], position: 'back', previewImageUrl: MOCK_TEMPLATES.find(t => t._id === selections[1]).previewImageUrl }

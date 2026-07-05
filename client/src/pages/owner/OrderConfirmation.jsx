@@ -6,7 +6,8 @@ import { Truck, CheckCircle, Download } from 'lucide-react';
 export default function OrderConfirmation() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orderId } = location.state || { orderId: 'RL-9823-XQ' };
+  const { orderInfo, orderId } = location.state || {};
+  const finalOrderId = orderInfo?._id || orderId || 'RL-9823-XQ';
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#1c1b1b] flex flex-col font-body relative z-0">
@@ -78,7 +79,7 @@ export default function OrderConfirmation() {
           >
             <div className="font-body text-[12px] font-bold tracking-[0.08em] text-[#434751] uppercase mb-3 text-center">ORDER REFERENCE</div>
             <div className="border-[2px] border-[#1A1A1A] bg-white px-8 py-3 rounded-lg inline-flex items-center justify-center hover:bg-black/5 transition-colors cursor-default mb-4">
-              <span className="font-mono text-[22px] font-semibold text-[#1A1A1A] tracking-[0.1em]">{orderId}</span>
+              <span className="font-mono text-[22px] font-semibold text-[#1A1A1A] tracking-[0.1em]">{finalOrderId}</span>
             </div>
             
             <button 

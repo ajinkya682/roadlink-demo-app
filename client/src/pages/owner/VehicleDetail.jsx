@@ -145,6 +145,9 @@ export default function VehicleDetail() {
             color: v.color || 'Unknown',
             year: v.year || new Date(v.createdAt).getFullYear(),
             imageUrl: v.imageUrl,
+            protectionStatus: v.protectionStatus || 'pending_payment',
+            refundGuaranteeExpiresAt: v.refundGuaranteeExpiresAt,
+            hasUsedFreeStickerOrder: v.hasUsedFreeStickerOrder
           });
         }
       } catch (err) {
@@ -344,10 +347,40 @@ export default function VehicleDetail() {
           )}
         </button>
         <PlateTag plateNumber={vehicle.plate} displayName={vehicle.displayName} isVerified={vehicle.isVerified} size="lg" />
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 bg-verified-green rounded-full" />
-          <span className="font-body text-xs font-semibold text-verified-green">Active & Protected</span>
-        </div>
+        
+        {/* Protection Status Badges */}
+        {vehicle.protectionStatus === 'active' && (
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 bg-verified-green rounded-full" />
+            <span className="font-body text-xs font-semibold text-verified-green">Active & Protected</span>
+          </div>
+        )}
+        {vehicle.protectionStatus === 'pending_payment' && (
+          <div className="flex flex-col items-center mt-2 w-full max-w-sm">
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="w-2 h-2 bg-signal-amber rounded-full" />
+              <span className="font-body text-xs font-semibold text-signal-amber">Action Required: Pending Payment</span>
+            </div>
+            <button 
+              onClick={() => navigate('/subscription-payment', { state: { vehicle } })}
+              className="w-full bg-navy text-white text-sm font-semibold py-2 rounded-xl"
+            >
+              Activate Protection
+            </button>
+          </div>
+        )}
+        {vehicle.protectionStatus === 'lapsed' && (
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 bg-alert-red rounded-full" />
+            <span className="font-body text-xs font-semibold text-alert-red">Protection Lapsed</span>
+          </div>
+        )}
+        {vehicle.protectionStatus === 'grace_period' && (
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 bg-signal-amber rounded-full" />
+            <span className="font-body text-xs font-semibold text-signal-amber">Grace Period - Update Payment</span>
+          </div>
+        )}
       </div>
 
       {/* Tab bar */}
@@ -552,6 +585,33 @@ export default function VehicleDetail() {
                     </div>
                   </div>
                 )}
+
+                {/* Refund & Cancel Section */}
+                {vehicle.protectionStatus === 'active' && vehicle.refundGuaranteeExpiresAt && new Date() < new Date(vehicle.refundGuaranteeExpiresAt) && (
+                  <div className="mt-6 bg-alert-red/5 border border-alert-red/20 rounded-xl p-4">
+                     <h4 className="font-body text-sm font-bold text-alert-red mb-2">Cancel & Refund</h4>
+                     <p className="font-body text-xs text-on-surface-muted mb-3">You are within your 7-day money-back guarantee. If you haven't received free physical stickers yet, you can cancel and refund.</p>
+                     <button
+                        className="text-alert-red text-xs font-bold uppercase tracking-wider hover:underline"
+                        onClick={async () => {
+                           if (await showConfirm('Cancel & Refund', 'Are you sure you want to cancel your subscription and request a refund?')) {
+                             try {
+                               const res = await api.post(`/subscriptions/cancel-refund/${vehicle.id}`);
+                               if (res.data.success) {
+                                 showAlert('Success', res.data.data.message);
+                                 setVehicle(prev => ({ ...prev, protectionStatus: 'pending_payment' }));
+                               }
+                             } catch (err) {
+                               showAlert('Error', err.response?.data?.error?.message || 'Failed to process refund');
+                             }
+                           }
+                        }}
+                     >
+                       REQUEST REFUND
+                     </button>
+                  </div>
+                )}
+
               </>
             )}
 
@@ -654,31 +714,50 @@ export default function VehicleDetail() {
             {/* ── QR ── */}
             {activeTab === 3 && (
               <div className="flex flex-col items-center gap-5 py-4">
-                <motion.div
-                  className="bg-white rounded-2xl border-2 border-asphalt p-5 shadow-plate"
-                  initial={{ rotateX: 90, opacity: 0 }}
-                  animate={{ rotateX: 0, opacity: 1 }}
-                  transition={{ type: 'spring', damping: 16, stiffness: 100 }}
-                  style={{ perspective: 800, transformOrigin: 'center top' }}
-                >
-                  <QRCodeSVG 
-                    value={`${window.location.origin}/scan-landing?qr=${vehicle.qrToken}`}
-                    size={160}
-                    level="Q"
-                    className="w-full h-full"
-                    fgColor="#1A1A1A"
-                    bgColor="transparent"
-                  />
-                </motion.div>
-                <p className="font-mono text-xs tracking-wider text-on-surface-muted">{vehicle.qrToken}</p>
-                <div className="flex w-full">
-                  <button
-                    className="flex-1 border-2 border-navy text-navy rounded-xl py-3 font-body text-sm font-semibold flex items-center justify-center gap-2 hover:bg-navy/5 transition-colors"
-                    onClick={() => navigate('/qr-detail', { state: { vehicle } })}
-                  >
-                    <QrCode size={16} /> Full QR Page
-                  </button>
-                </div>
+                {vehicle.protectionStatus !== 'active' ? (
+                   <div className="bg-white rounded-2xl border-2 border-outline-light p-8 text-center max-w-sm">
+                      <div className="w-16 h-16 bg-surface-low rounded-full flex items-center justify-center mx-auto mb-4">
+                         <QrCode size={32} className="text-on-surface-muted" />
+                      </div>
+                      <h4 className="font-display text-lg font-bold text-on-surface mb-2">Digital ID Locked</h4>
+                      <p className="font-body text-sm text-on-surface-muted mb-6">
+                        Your QR token is inactive because your vehicle protection is not active.
+                      </p>
+                      {vehicle.protectionStatus === 'pending_payment' && (
+                        <Button fullWidth onClick={() => navigate('/subscription-payment', { state: { vehicle } })}>
+                          ACTIVATE NOW
+                        </Button>
+                      )}
+                   </div>
+                ) : (
+                  <>
+                    <motion.div
+                      className="bg-white rounded-2xl border-2 border-asphalt p-5 shadow-plate"
+                      initial={{ rotateX: 90, opacity: 0 }}
+                      animate={{ rotateX: 0, opacity: 1 }}
+                      transition={{ type: 'spring', damping: 16, stiffness: 100 }}
+                      style={{ perspective: 800, transformOrigin: 'center top' }}
+                    >
+                      <QRCodeSVG 
+                        value={`${window.location.origin}/scan-landing?qr=${vehicle.qrToken}`}
+                        size={160}
+                        level="Q"
+                        className="w-full h-full"
+                        fgColor="#1A1A1A"
+                        bgColor="transparent"
+                      />
+                    </motion.div>
+                    <p className="font-mono text-xs tracking-wider text-on-surface-muted">{vehicle.qrToken}</p>
+                    <div className="flex w-full">
+                      <button
+                        className="flex-1 border-2 border-navy text-navy rounded-xl py-3 font-body text-sm font-semibold flex items-center justify-center gap-2 hover:bg-navy/5 transition-colors"
+                        onClick={() => navigate('/qr-detail', { state: { vehicle } })}
+                      >
+                        <QrCode size={16} /> Full QR Page
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </motion.div>

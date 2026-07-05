@@ -17,7 +17,15 @@ const vehicleSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: String,
     permissions: [String]
-  }]
+  }],
+  // Subscription & Protection Model
+  protectionStatus: { type: String, enum: ['pending_payment', 'active', 'grace_period', 'lapsed'], default: 'pending_payment' },
+  razorpaySubscriptionId: { type: String },
+  currentPeriodStart: { type: Date },
+  currentPeriodEnd: { type: Date },
+  gracePeriodEndsAt: { type: Date },
+  hasUsedFreeStickerOrder: { type: Boolean, default: false },
+  refundGuaranteeExpiresAt: { type: Date }
 }, { timestamps: true });
 
 // Pre-save to normalize registrationNumber by removing spaces

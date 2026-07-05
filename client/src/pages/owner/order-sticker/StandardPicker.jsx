@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
+import img1 from '../../../assets/images/stickers/standard-immersive-gradient.png';
+import img2 from '../../../assets/images/stickers/standard-minimal-card.png';
+import img3 from '../../../assets/images/stickers/standard-split-panel.png';
+
 const MOCK_TEMPLATES = [
-  { _id: '1', name: 'Standard Immersive Gradient', previewImageUrl: '/src/assets/images/stickers/standard-immersive-gradient.png' },
-  { _id: '2', name: 'Standard Minimal Card', previewImageUrl: '/src/assets/images/stickers/standard-minimal-card.png' },
-  { _id: '3', name: 'Standard Split Panel', previewImageUrl: '/src/assets/images/stickers/standard-split-panel.png' }
+  { _id: '1', name: 'Standard Immersive Gradient', previewImageUrl: img1 },
+  { _id: '2', name: 'Standard Minimal Card', previewImageUrl: img2 },
+  { _id: '3', name: 'Standard Split Panel', previewImageUrl: img3 }
 ];
 
 export default function StandardPicker() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const vehicle = location.state?.vehicle;
   const [selectedId, setSelectedId] = useState(null);
 
   const handleContinue = () => {
     if (selectedId) {
       // Pass selected data via state or context. Using state for simplicity.
-      navigate('/order-sticker/cart', { state: { tier: 'standard', selections: [{ templateId: selectedId, position: null, previewImageUrl: MOCK_TEMPLATES.find(t => t._id === selectedId).previewImageUrl }] } });
+      navigate('/order-sticker/cart', { state: { tier: 'standard', vehicle, selections: [{ templateId: selectedId, position: null, previewImageUrl: MOCK_TEMPLATES.find(t => t._id === selectedId).previewImageUrl }] } });
     }
   };
 

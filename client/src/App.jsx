@@ -24,6 +24,7 @@ import OTPVerification from './pages/auth/OTPVerification'
 // Owner
 import AddVehicle from './pages/owner/AddVehicle'
 import QRDetail from './pages/owner/QRDetail'
+import SubscriptionPayment from './pages/owner/SubscriptionPayment'
 import PlanSelection from './pages/owner/order-sticker/PlanSelection'
 import StandardPicker from './pages/owner/order-sticker/StandardPicker'
 import ReflectivePicker from './pages/owner/order-sticker/ReflectivePicker'
@@ -126,6 +127,7 @@ function App() {
 
             {/* Owner (Protected) */}
             <Route path="/add-vehicle" element={<RequireAuth><PageWrapper><AddVehicle /></PageWrapper></RequireAuth>} />
+            <Route path="/subscription-payment" element={<RequireAuth><PageWrapper><SubscriptionPayment /></PageWrapper></RequireAuth>} />
             <Route path="/qr-detail" element={<RequireAuth><PageWrapper><QRDetail /></PageWrapper></RequireAuth>} />
             <Route path="/order-sticker" element={<RequireAuth><PageWrapper><PlanSelection /></PageWrapper></RequireAuth>} />
             <Route path="/order-sticker/standard" element={<RequireAuth><PageWrapper><StandardPicker /></PageWrapper></RequireAuth>} />

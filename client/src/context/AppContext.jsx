@@ -331,7 +331,8 @@ export function AppProvider({ children }) {
           addedDate: new Date(v.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
           unreadAlerts: 0,
           qrToken: v.qrToken,
-          qrId: v._id
+          qrId: v._id,
+          protectionStatus: v.protectionStatus || 'pending_payment'
         }));
         setVehicles(fetchedVehicles);
       }

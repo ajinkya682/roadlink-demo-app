@@ -136,7 +136,7 @@ export default function QRDetail() {
             <span className="font-body text-[13px] font-bold tracking-widest uppercase">CONTINUE TO DASHBOARD</span>
           </Button>
 
-          <Button fullWidth onClick={() => navigate('/order-sticker')} className="bg-signal-amber text-on-surface hover:bg-signal-amber/90 border-0 h-[56px]">
+          <Button fullWidth onClick={() => navigate('/order-sticker', { state: { vehicle } })} className="bg-signal-amber text-on-surface hover:bg-signal-amber/90 border-0 h-[56px]">
             <Truck size={20} /> 
             <span className="font-body text-[13px] font-bold tracking-widest uppercase ml-1">ORDER STICKER</span>
           </Button>
