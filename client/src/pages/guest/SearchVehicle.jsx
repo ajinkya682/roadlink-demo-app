@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../components/Button';
+import TopAuthButton from '../../components/TopAuthButton';
 
 function formatPlate(val) {
   const raw = val.replace(/\s/g, '').toUpperCase().slice(0, 10);
@@ -29,7 +30,8 @@ export default function SearchVehicle() {
   const isValid = plate.replace(/\s/g, '').length >= 6;
 
   return (
-    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12">
+    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12 relative">
+      <TopAuthButton />
       <motion.div
         className="w-full max-w-sm space-y-6"
         initial={{ opacity: 0, y: 24 }}

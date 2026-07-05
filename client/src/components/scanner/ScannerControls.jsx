@@ -1,6 +1,7 @@
 import React from 'react';
 import { Camera, X, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import TopAuthButton from '../TopAuthButton';
 
 export default function ScannerControls({ 
   cameras = [], 
@@ -30,8 +31,8 @@ export default function ScannerControls({
         <p className="font-display text-white font-semibold text-[16px] tracking-wide shadow-black drop-shadow-md">
           Scan QR Code
         </p>
-        <div className="w-10 flex items-center justify-center">
-           {/* Spacer to keep title centered, could put history icon here later */}
+        <div className="flex items-center justify-center">
+           <TopAuthButton theme="dark" className="" />
         </div>
       </div>
 

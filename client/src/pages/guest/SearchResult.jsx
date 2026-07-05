@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Shield } from 'lucide-react';
 import Button from '../../components/Button';
 import PlateTag from '../../components/PlateTag';
+import TopAuthButton from '../../components/TopAuthButton';
 // Fallback mock since backend isn't ready
 const vehicles = [
   { plate: 'MH 14 AB 1234', displayName: 'Honda Activa', isVerified: true },
@@ -40,7 +41,8 @@ export default function SearchResult() {
   }
 
   return (
-    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12">
+    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12 relative">
+      <TopAuthButton />
       <div className="w-full max-w-sm space-y-6">
         {found ? (
           <>

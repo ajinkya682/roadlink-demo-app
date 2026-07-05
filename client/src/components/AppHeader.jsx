@@ -39,7 +39,7 @@ export default function AppHeader({ title, rightSlot, onBack, transparent = fals
       )}
 
       {/* Right slot */}
-      <div className="flex items-center justify-end w-10">
+      <div className="flex items-center justify-end min-w-[40px]">
         {rightSlot ? (
           <span className="flex items-center justify-center text-on-surface-muted">
             {rightSlot}

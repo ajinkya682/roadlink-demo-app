@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
 import { reportCategories } from '../../demo-data/categories';
 import api from '../../lib/api';
+import TopAuthButton from '../../components/TopAuthButton';
 
 const containerVariants = {
   hidden: {},
@@ -77,7 +78,8 @@ export default function ScanLanding() {
   }
 
   return (
-    <div className="bg-[#F7F8FA] text-[#1c1b1b] font-body min-h-screen flex flex-col">
+    <div className="bg-[#F7F8FA] text-[#1c1b1b] font-body min-h-screen flex flex-col relative">
+      <TopAuthButton />
       <main className="flex-grow container mx-auto px-4 md:px-10 py-8 max-w-2xl">
         <header className="flex flex-col gap-6 mb-10 mt-4 items-center w-full">
           <div className="flex flex-col items-center gap-3">

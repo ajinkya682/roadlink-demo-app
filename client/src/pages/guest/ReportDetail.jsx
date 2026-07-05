@@ -7,6 +7,7 @@ import Button from '../../components/Button';
 import Toggle from '../../components/Toggle';
 import api from '../../lib/api';
 import { useDialog } from '../../context/DialogContext';
+import TopAuthButton from '../../components/TopAuthButton';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const fadeUp = {
@@ -141,7 +142,7 @@ export default function ReportDetail() {
 
   return (
     <div className="min-h-screen bg-fog flex flex-col">
-      <AppHeader title="Report" />
+      <AppHeader title="Report" rightSlot={<TopAuthButton className="" />} />
 
       <div className="flex-1 px-5 py-5 space-y-5">
         <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }}>

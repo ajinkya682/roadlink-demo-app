@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Phone } from 'lucide-react';
 import Button from '../../components/Button';
+import TopAuthButton from '../../components/TopAuthButton';
 
 export default function ReportConfirmation() {
   const navigate = useNavigate();
@@ -10,7 +11,8 @@ export default function ReportConfirmation() {
   const cat = location.state?.category || { label: 'Wrong Parking', isAlert: false };
 
   return (
-    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12">
+    <div className="min-h-screen bg-fog flex flex-col items-center justify-center px-5 pb-12 relative">
+      <TopAuthButton />
       <motion.div
         className="w-full max-w-sm flex flex-col items-center text-center space-y-6"
         initial={{ opacity: 0, y: 24 }}

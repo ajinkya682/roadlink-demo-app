@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { QrCode, Search, ChevronRight, Shield, LayoutDashboard, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppData } from '../context/AppContext';
+import TopAuthButton from '../components/TopAuthButton';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 const fadeUp = {
@@ -17,25 +18,7 @@ export default function GuestDashboard() {
   return (
     <div className="min-h-screen bg-fog flex flex-col relative">
       {/* Top right auth button */}
-      <div className="absolute top-4 right-4 z-50">
-        {isAuthenticated ? (
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-full text-white font-semibold text-sm transition-all shadow-sm border border-white/10"
-          >
-            <LayoutDashboard size={16} />
-            Dashboard
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate('/login')}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-full text-white font-semibold text-sm transition-all shadow-sm border border-white/10"
-          >
-            <User size={16} />
-            Login
-          </button>
-        )}
-      </div>
+      <TopAuthButton theme="dark" />
 
       {/* Hero */}
       <div className="bg-navy px-6 pt-16 pb-16 text-center relative overflow-hidden">
