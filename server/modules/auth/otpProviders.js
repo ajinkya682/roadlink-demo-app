@@ -20,6 +20,11 @@ class Msg91Provider extends BaseOTPProvider {
       formattedPhone = '91' + formattedPhone;
     }
 
+    // ==========================================
+    // TEMPORARY BYPASS: Print OTP to Render Logs
+    // ==========================================
+    logger.info(`\n=========================================\n[ROADLINK] OTP FOR ${formattedPhone} IS: ${otp}\n(Use this code to login while DLT is pending)\n=========================================\n`);
+
     const authKey = process.env.MSG91_AUTH_KEY;
     const templateId = process.env.MSG91_TEMPLATE_ID;
 

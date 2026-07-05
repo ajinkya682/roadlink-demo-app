@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { Capacitor } from '@capacitor/core'
-import { PushNotifications } from '@capacitor/push-notifications'
+// import { PushNotifications } from '@capacitor/push-notifications'
 import PageWrapper from './components/PageWrapper'
 import BottomTabBar from './components/BottomTabBar'
 import RequireAuth from './components/RequireAuth'
@@ -60,6 +60,9 @@ function App() {
 
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
+      /* 
+      // Push Notifications require a Firebase google-services.json file to be placed in the android/app folder.
+      // Until Firebase is configured, this plugin will cause a fatal crash on startup.
       // Request push notification permission
       PushNotifications.requestPermissions().then(result => {
         if (result.receive === 'granted') {
@@ -101,6 +104,7 @@ function App() {
       return () => {
         PushNotifications.removeAllListeners();
       };
+      */
     }
   }, [navigate]);
 
