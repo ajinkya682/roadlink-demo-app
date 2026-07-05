@@ -141,18 +141,33 @@ exports.updateVehicle = async (req, res) => {
 exports.deleteVehicle = async (req, res) => {
   try {
     const { id } = req.params;
-    const vehicle = await Vehicle.findOneAndUpdate(
-      { _id: id, ownerId: req.user.userId },
-      { $set: { status: 'deleted' } },
-      { new: true }
-    );
+    const vehicle = await Vehicle.findOne({ _id: id, ownerId: req.user.userId });
     if (!vehicle) return sendError(res, 'Vehicle not found', 404);
+
+    if (vehicle.imageUrl) {
+      try {
+        const publicId = extractPublicId(vehicle.imageUrl);
+        if (publicId) {
+          await deleteResource(publicId);
+        }
+      } catch (err) {
+        logger.error('Failed to delete vehicle image from Cloudinary', err);
+      }
+    }
+
+    await QrToken.deleteMany({ vehicleId: id });
     
-    // Invalidate QR tokens
-    await QrToken.updateMany({ vehicleId: id, active: true }, { $set: { active: false, revokedAt: new Date() } });
+    const EmergencyContact = require('../../models/EmergencyContact');
+    await EmergencyContact.deleteMany({ vehicleId: id });
+    
+    const Order = require('../orders/models/Order');
+    await Order.deleteMany({ vehicleId: id });
+    
+    await Vehicle.findByIdAndDelete(id);
 
     return sendSuccess(res, { message: 'Vehicle deleted successfully' });
   } catch (error) {
+    logger.error('Error in deleteVehicle:', error);
     return sendError(res, 'Failed to delete vehicle', 500);
   }
 };

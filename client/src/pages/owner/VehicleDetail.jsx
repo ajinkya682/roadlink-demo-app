@@ -607,6 +607,28 @@ export default function VehicleDetail() {
                      </button>
                   </div>
                 )}
+                {/* Delete Vehicle Section */}
+                <div className="mt-8 mb-4">
+                   <button
+                      className="w-full bg-alert-red/10 text-alert-red border border-alert-red/20 font-body text-sm font-bold py-3 rounded-xl hover:bg-alert-red hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2"
+                      onClick={async () => {
+                         if (await showConfirm('Delete Vehicle', 'Are you sure you want to permanently delete this vehicle? This will remove all associated contacts, QR codes, and orders, but your uploaded documents will be preserved.')) {
+                           try {
+                             const res = await api.delete(`/vehicles/${vehicle.id || vehicle._id}`);
+                             if (res.data.success) {
+                               // No need to show alert as we navigate away, but could be useful if dashboard expects it.
+                               navigate('/dashboard');
+                             }
+                           } catch (err) {
+                             showAlert('Error', err.response?.data?.error?.message || 'Failed to delete vehicle');
+                           }
+                         }
+                      }}
+                   >
+                     <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                     Delete Vehicle
+                   </button>
+                </div>
 
               </>
             )}
