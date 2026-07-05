@@ -6,7 +6,7 @@ import api from '../../../lib/api';
 export default function CartAddress() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tier, selections, vehicle, customization } = location.state || { tier: 'standard', selections: [] };
+  const { tier, selections, vehicle: initialVehicle, customization } = location.state || { tier: 'standard', selections: [] };
 
   const [formData, setFormData] = useState({
     name: '', line1: '', line2: '', city: '', state: '', pincode: '', phone: ''
@@ -15,8 +15,25 @@ export default function CartAddress() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImgUrl, setPreviewImgUrl] = useState('');
+  
+  const [vehicle, setVehicle] = useState(initialVehicle);
+  const [isFree, setIsFree] = useState(initialVehicle && !initialVehicle.hasUsedFreeStickerOrder);
 
-  const isFree = vehicle && !vehicle.hasUsedFreeStickerOrder;
+  useEffect(() => {
+    if (initialVehicle && (initialVehicle._id || initialVehicle.id)) {
+      const vId = initialVehicle._id || initialVehicle.id;
+      api.get(`/vehicles/${vId}`)
+        .then(res => {
+          if (res.data.success) {
+            const latestV = res.data.data.vehicle;
+            setVehicle({ ...initialVehicle, ...latestV });
+            setIsFree(!latestV.hasUsedFreeStickerOrder);
+          }
+        })
+        .catch(err => console.error("Failed to fetch latest vehicle status", err));
+    }
+  }, [initialVehicle]);
+
   const basePrices = { standard: 199, reflective: 299, premium: 399 };
   const basePrice = isFree ? 0 : (basePrices[tier] || 199);
   const shipping = isFree ? 0 : 50;

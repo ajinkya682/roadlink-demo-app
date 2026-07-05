@@ -40,25 +40,21 @@ exports.createSubscription = async (req, res) => {
     const planId = process.env.RAZORPAY_PLAN_ID || 'plan_default';
 
     if (planId === 'plan_default') {
-      const mockId = `sub_mock_${Date.now()}`;
-      vehicle.razorpaySubscriptionId = mockId;
+      // Instead of skipping Razorpay entirely, create a standard Order so the user sees the test UI
+      const options = {
+        amount: 29900,
+        currency: 'INR',
+        receipt: `mock_sub_${vehicle._id}`
+      };
       
-      // Auto-activate in mock mode since there's no webhook
-      vehicle.protectionStatus = 'active';
-      const now = new Date();
-      vehicle.currentPeriodStart = now;
-      vehicle.currentPeriodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      vehicle.refundGuaranteeExpiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const rzpOrder = await instance.orders.create(options);
+      
+      vehicle.razorpaySubscriptionId = rzpOrder.id; // Store order ID temporarily
       await vehicle.save();
       
-      // Generate QR token
-      await QrToken.updateMany({ vehicleId: vehicle._id }, { $set: { active: false } });
-      const tokenStr = generateQRToken(vehicle._id.toString());
-      await new QrToken({ vehicleId: vehicle._id, token: tokenStr }).save();
-      
       return sendSuccess(res, {
-        subscriptionId: mockId,
-        keyId: 'dummy_key',
+        orderId: rzpOrder.id,
+        keyId: process.env.RAZORPAY_KEY_ID,
         amount: 29900
       });
     }
@@ -211,13 +207,22 @@ exports.cancelAndRefund = async (req, res) => {
 
 exports.verifySubscription = async (req, res) => {
   try {
-    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature, vehicleId } = req.body;
+    const { razorpay_payment_id, razorpay_subscription_id, razorpay_order_id, razorpay_signature, vehicleId } = req.body;
 
     const secret = process.env.RAZORPAY_KEY_SECRET;
-    const expectedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(razorpay_payment_id + '|' + razorpay_subscription_id)
-      .digest('hex');
+    
+    let expectedSignature;
+    if (razorpay_order_id) {
+       expectedSignature = crypto
+         .createHmac('sha256', secret)
+         .update(razorpay_order_id + '|' + razorpay_payment_id)
+         .digest('hex');
+    } else {
+       expectedSignature = crypto
+         .createHmac('sha256', secret)
+         .update(razorpay_payment_id + '|' + razorpay_subscription_id)
+         .digest('hex');
+    }
 
     if (expectedSignature !== razorpay_signature) {
       return sendError(res, 'Invalid signature', 400);

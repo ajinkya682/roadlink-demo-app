@@ -32,6 +32,27 @@ const uploadBuffer = (buffer, folder = 'roadlink', resourceType = 'auto', isPriv
   });
 };
 
+const uploadPDFBuffer = (buffer, folder = 'roadlink/receipts', isPrivate = false) => {
+  return new Promise((resolve, reject) => {
+    const uploadOptions = { 
+      folder, 
+      resource_type: 'raw', // Use raw for PDF files
+    };
+    if (isPrivate) {
+      uploadOptions.type = 'private';
+    }
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      uploadOptions,
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    uploadStream.end(buffer);
+  });
+};
+
 const extractPublicId = (url) => {
   if (!url || !url.includes('cloudinary.com')) return null;
   try {
@@ -72,6 +93,7 @@ const getSignedUrl = (publicId) => {
 module.exports = {
   cloudinary,
   uploadBuffer,
+  uploadPDFBuffer,
   extractPublicId,
   deleteResource,
   getSignedUrl

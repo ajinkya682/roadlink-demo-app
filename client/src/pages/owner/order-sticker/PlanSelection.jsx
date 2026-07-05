@@ -8,9 +8,28 @@ import premiumImg from '../../../assets/images/stickers/sticker-template1.png';
 export default function PlanSelection() {
   const navigate = useNavigate();
   const location = useLocation();
-  const vehicle = location.state?.vehicle;
+  const initialVehicle = location.state?.vehicle;
+  
+  const [vehicle, setVehicle] = React.useState(initialVehicle);
+  const [isFree, setIsFree] = React.useState(initialVehicle && !initialVehicle.hasUsedFreeStickerOrder);
 
-  const isFree = vehicle && !vehicle.hasUsedFreeStickerOrder;
+  React.useEffect(() => {
+    if (initialVehicle && (initialVehicle._id || initialVehicle.id)) {
+      const vId = initialVehicle._id || initialVehicle.id;
+      // Fetch latest vehicle status to ensure accurate hasUsedFreeStickerOrder
+      import('../../../lib/api').then(({ default: api }) => {
+        api.get(`/vehicles/${vId}`)
+          .then(res => {
+            if (res.data.success) {
+              const latestV = res.data.data.vehicle;
+              setVehicle({ ...initialVehicle, ...latestV });
+              setIsFree(!latestV.hasUsedFreeStickerOrder);
+            }
+          })
+          .catch(err => console.error("Failed to fetch latest vehicle status", err));
+      });
+    }
+  }, [initialVehicle]);
 
   const handleSelect = (tier) => {
     if (tier === 'standard') navigate('/order-sticker/standard', { state: { vehicle } });

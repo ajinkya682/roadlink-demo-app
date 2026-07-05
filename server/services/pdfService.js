@@ -12,17 +12,8 @@ exports.generateReceiptPDF = (order) => {
   return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50 });
-      const filename = `receipt_${order._id}.pdf`;
-      const receiptsDir = path.join(__dirname, '..', 'uploads', 'receipts');
-      const filepath = path.join(receiptsDir, filename);
-
-      // Ensure directory exists
-      if (!fs.existsSync(receiptsDir)) {
-        fs.mkdirSync(receiptsDir, { recursive: true });
-      }
-
-      const writeStream = fs.createWriteStream(filepath);
-      doc.pipe(writeStream);
+      const buffers = [];
+      doc.on('data', buffers.push.bind(buffers));
 
       // Header
       doc.fontSize(24).font('Helvetica-Bold').text('RoadLink', { align: 'left' });
@@ -125,16 +116,20 @@ exports.generateReceiptPDF = (order) => {
       doc.fontSize(10).font('Helvetica-Oblique').fillColor('#888888').text('Support: support@roadlink.com', { align: 'center' });
       doc.text('This is a computer-generated receipt.', { align: 'center' });
 
-      doc.end();
-
-      writeStream.on('finish', () => {
-        const fileUrl = `/uploads/receipts/${filename}`;
-        resolve(fileUrl);
+      doc.on('end', async () => {
+        try {
+          const pdfData = Buffer.concat(buffers);
+          const cloudinary = require('./cloudinary');
+          // uploadPDFBuffer(buffer, folder, isPrivate)
+          const result = await cloudinary.uploadPDFBuffer(pdfData, 'roadlink/receipts', false);
+          resolve(result.secure_url);
+        } catch (uploadErr) {
+          console.error('Cloudinary PDF Upload Error:', uploadErr);
+          reject(uploadErr);
+        }
       });
       
-      writeStream.on('error', (err) => {
-        reject(err);
-      });
+      doc.end();
       
     } catch (error) {
       reject(error);

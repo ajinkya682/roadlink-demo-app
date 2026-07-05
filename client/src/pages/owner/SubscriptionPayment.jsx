@@ -47,10 +47,9 @@ export default function SubscriptionPayment() {
         throw new Error(data.error?.message || "Failed to initiate subscription");
       }
 
-      const { subscriptionId, keyId, amount } = data.data;
+      const { subscriptionId, orderId, keyId, amount } = data.data;
 
       if (keyId === 'dummy_key') {
-         // Mock mode: backend already activated the subscription
          setTimeout(() => {
             navigate(`/vehicle-detail/${vehicle.id || vehicle._id}`);
          }, 1000);
@@ -59,16 +58,16 @@ export default function SubscriptionPayment() {
 
       const options = {
         key: keyId,
-        subscription_id: subscriptionId,
+        ...(orderId ? { order_id: orderId } : { subscription_id: subscriptionId }),
         name: "RoadLink Digital",
         description: `Vehicle Protection for ${vehicle.plate || vehicle.registrationNumber}`,
         image: "https://via.placeholder.com/150",
         handler: async function (response) {
-          // Send signature to backend for verification so we don't need webhooks during testing
           try {
             await api.post("/subscriptions/verify", {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,
               vehicleId: vehicle.id || vehicle._id
             });
