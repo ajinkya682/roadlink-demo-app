@@ -62,31 +62,41 @@ export default function Settings() {
           </p>
           <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
             {[
-              { key: "push", label: "Push Notifications", sub: null },
+              { key: "push", label: "Push Notifications", sub: null, disabled: false },
               {
                 key: "whatsapp",
                 label: "WhatsApp Alerts",
                 sub: "Instant messages from guests",
+                disabled: true
               },
               {
                 key: "sms",
                 label: "SMS Fallback",
                 sub: "If WhatsApp is unreachable",
+                disabled: true
               },
               {
                 key: "email",
                 label: "Email Digest",
                 sub: "Daily summary of activity",
+                disabled: true
               },
-            ].map(({ key, label, sub }) => (
+            ].map(({ key, label, sub, disabled }) => (
               <div
                 key={key}
-                className="flex items-center justify-between px-4 py-3.5"
+                className={`flex items-center justify-between px-4 py-3.5 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <div>
-                  <p className="font-body text-sm font-semibold text-on-surface">
-                    {label}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-body text-sm font-semibold text-on-surface">
+                      {label}
+                    </p>
+                    {disabled && (
+                      <span className="bg-surface-low text-on-surface-muted text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border border-outline-light">
+                        Soon
+                      </span>
+                    )}
+                  </div>
                   {sub && (
                     <p className="font-body text-xs text-on-surface-muted">
                       {sub}
@@ -94,7 +104,8 @@ export default function Settings() {
                   )}
                 </div>
                 <Toggle
-                  on={user.notificationPrefs[key]}
+                  on={disabled ? false : user.notificationPrefs[key]}
+                  disabled={disabled}
                   onChange={(val) => updateNotifPref(key, val)}
                 />
               </div>
