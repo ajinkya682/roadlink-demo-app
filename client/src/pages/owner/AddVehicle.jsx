@@ -79,10 +79,12 @@ export default function AddVehicle() {
       if (res.data.success) {
         const { vehicle } = res.data.data;
         // Prepend to local AppContext cache to immediately show in dashboard
-        const newVehicle = addVehicle ? addVehicle(vehicle, null) : vehicle;
+        if (addVehicle) {
+          await addVehicle(vehicle, null);
+        }
 
         // Navigate to Subscription Payment directly
-        navigate("/subscription-payment", { state: { vehicle: newVehicle } });
+        navigate("/subscription-payment", { state: { vehicle } });
       } else {
         throw new Error(res.data.error?.message || "Failed to add vehicle");
       }
