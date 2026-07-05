@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 const MOCK_TEMPLATES = [
-  { _id: '1', name: 'Classic Navy', previewImageUrl: 'https://via.placeholder.com/600x400/000080/FFFFFF?text=Classic+Navy+Layout' },
-  { _id: '2', name: 'Signal Amber', previewImageUrl: 'https://via.placeholder.com/600x400/FFBF00/FFFFFF?text=Signal+Amber+Layout' },
-  { _id: '3', name: 'Monochrome Edge', previewImageUrl: 'https://via.placeholder.com/600x400/333333/FFFFFF?text=Monochrome+Layout' }
+  { _id: '1', name: 'Standard Immersive Gradient', previewImageUrl: '/src/assets/images/stickers/standard-immersive-gradient.png' },
+  { _id: '2', name: 'Standard Minimal Card', previewImageUrl: '/src/assets/images/stickers/standard-minimal-card.png' },
+  { _id: '3', name: 'Standard Split Panel', previewImageUrl: '/src/assets/images/stickers/standard-split-panel.png' }
 ];
 
 export default function StandardPicker() {
@@ -15,7 +15,7 @@ export default function StandardPicker() {
   const handleContinue = () => {
     if (selectedId) {
       // Pass selected data via state or context. Using state for simplicity.
-      navigate('/order-sticker/cart', { state: { tier: 'standard', selections: [{ templateId: selectedId, position: null }] } });
+      navigate('/order-sticker/cart', { state: { tier: 'standard', selections: [{ templateId: selectedId, position: null, previewImageUrl: MOCK_TEMPLATES.find(t => t._id === selectedId).previewImageUrl }] } });
     }
   };
 
@@ -64,7 +64,7 @@ export default function StandardPicker() {
       </main>
 
       {/* Sticky Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-200 z-10 pb-8">
+      <div className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[420px] p-6 bg-white border-t border-slate-200 z-10 pb-8">
         <button
           onClick={handleContinue}
           disabled={!selectedId}

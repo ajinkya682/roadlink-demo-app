@@ -14,7 +14,12 @@ export default function OrderHistory() {
 
   useEffect(() => {
     // Mock fetch
-    setOrders(MOCK_ORDERS);
+    const existingOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+    if (existingOrders.length > 0) {
+      setOrders(existingOrders);
+    } else {
+      setOrders(MOCK_ORDERS);
+    }
   }, []);
 
   const getStatusColor = (status) => {

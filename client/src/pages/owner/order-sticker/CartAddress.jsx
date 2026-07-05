@@ -12,6 +12,8 @@ export default function CartAddress() {
   });
   const [saveDefault, setSaveDefault] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImgUrl, setPreviewImgUrl] = useState('');
 
   // Compute pricing for display (MVP hardcoded, normally fetch from API or wait for draft order)
   const basePrices = { standard: 199, reflective: 299, premium: 399 };
@@ -35,24 +37,25 @@ export default function CartAddress() {
     setIsSubmitting(true);
     
     try {
-      // In a real app, we'd make a POST to /v1/orders with the vehicleId (which we should have got from context)
-      // and the formData as shippingAddress.
-      // We will mock the backend response here for the frontend flow test.
-      
-      const token = localStorage.getItem('token');
-      // Mock API call to create order
+      const mockOrderId = `RL-${Math.floor(1000 + Math.random() * 9000)}-XQ`;
       const mockOrderResponse = {
-        _id: 'ord_mock_123',
+        _id: mockOrderId,
         tier,
-        pricing: { basePrice, shippingFee: shipping, gst, total }
+        pricing: { basePrice, shippingFee: shipping, gst, total },
+        date: new Date().toISOString().split('T')[0],
+        status: 'processing',
+        vehicleName: 'My Vehicle - MH12XX9999',
+        selections: selections
       };
 
-      // Pretend network delay
+      const existingOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+      localStorage.setItem('mockOrders', JSON.stringify([mockOrderResponse, ...existingOrders]));
+
       await new Promise(resolve => setTimeout(resolve, 800));
 
       navigate('/order-sticker/payment', { 
         state: { 
-          orderId: mockOrderResponse._id, 
+          orderId: mockOrderId, 
           amount: total,
           tier: tier
         } 
@@ -78,11 +81,15 @@ export default function CartAddress() {
         <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
           <h2 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Order Summary</h2>
           <div className="flex items-center mb-4">
-             <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mr-4">
-                {/* Mock thumbnail */}
-                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-400 bg-slate-200 uppercase">
-                  {tier}
-                </div>
+             <div 
+                className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mr-4 cursor-pointer relative"
+                onClick={() => { if(selections[0]?.previewImageUrl) { setPreviewImgUrl(selections[0].previewImageUrl); setPreviewOpen(true); } }}
+             >
+                {selections && selections[0] && selections[0].previewImageUrl ? (
+                   <img src={selections[0].previewImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-400 bg-slate-200 uppercase">{tier}</div>
+                )}
              </div>
              <div>
                <h3 className="font-bold text-slate-800 capitalize">{tier} Tier</h3>
@@ -163,7 +170,7 @@ export default function CartAddress() {
       </main>
 
       {/* Sticky Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-200 z-10 pb-8 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[420px] p-6 bg-white border-t border-slate-200 z-10 pb-8 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <button
           onClick={handleSubmit}
           disabled={!isFormValid() || isSubmitting}
@@ -186,6 +193,16 @@ export default function CartAddress() {
           )}
         </button>
       </div>
+
+      {/* Full screen image preview */}
+      {previewOpen && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setPreviewOpen(false)}>
+           <div className="relative w-full max-w-lg" onClick={e => e.stopPropagation()}>
+             <button onClick={() => setPreviewOpen(false)} className="absolute -top-12 right-0 text-white font-bold p-2 bg-black/50 rounded-full w-10 h-10 flex items-center justify-center">X</button>
+             <img src={previewImgUrl} alt="Full Screen Preview" className="w-full h-auto object-contain rounded-lg" />
+           </div>
+        </div>
+      )}
     </div>
   );
 }

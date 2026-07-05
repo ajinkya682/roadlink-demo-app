@@ -33,7 +33,7 @@ export default function PlanSelection() {
             className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex items-center cursor-pointer active:scale-95 transition-transform"
           >
             <div className="w-16 h-16 bg-slate-100 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-slate-200">
-               <img src="https://via.placeholder.com/150/FFFFFF/000080?text=Standard" alt="Standard Preview" className="w-full h-full object-cover" />
+               <img src="/src/assets/images/stickers/standard-minimal-card.png" alt="Standard Preview" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex justify-between items-start mb-1">
@@ -54,7 +54,7 @@ export default function PlanSelection() {
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-transparent via-white to-transparent opacity-20 pointer-events-none"></div>
             
             <div className="w-16 h-16 bg-slate-100 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-slate-300 relative">
-               <img src="https://via.placeholder.com/150/E5E7EB/000080?text=Reflective" alt="Reflective Preview" className="w-full h-full object-cover" />
+               <img src="/src/assets/images/stickers/reflective-split.png" alt="Reflective Preview" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white to-transparent opacity-40"></div>
             </div>
             <div className="flex-1">
@@ -73,7 +73,7 @@ export default function PlanSelection() {
             className="bg-white rounded-xl shadow-md border-2 border-[#F59E0B] p-4 flex items-center cursor-pointer active:scale-95 transition-transform"
           >
             <div className="w-16 h-16 bg-amber-50 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-amber-200">
-               <img src="https://via.placeholder.com/150/FEF3C7/F59E0B?text=Custom" alt="Premium Preview" className="w-full h-full object-cover" />
+               <img src="/src/assets/images/stickers/sticker-template1.png" alt="Premium Preview" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <div className="flex justify-between items-start mb-1">

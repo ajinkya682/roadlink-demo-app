@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 const MOCK_TEMPLATES = [
-  { _id: '4', name: 'Night Glow Navy', previewImageUrl: 'https://via.placeholder.com/300x300/000080/FFFFFF?text=Glow' },
-  { _id: '5', name: 'Hi-Vis Amber', previewImageUrl: 'https://via.placeholder.com/300x300/FFBF00/FFFFFF?text=Hi-Vis' },
-  { _id: '6', name: 'Metallic Silver', previewImageUrl: 'https://via.placeholder.com/300x300/C0C0C0/000000?text=Silver' },
-  { _id: '7', name: 'Stealth Reflective', previewImageUrl: 'https://via.placeholder.com/300x300/111111/FFFFFF?text=Stealth' }
+  { _id: '4', name: 'Reflective Chrome Blob', previewImageUrl: '/src/assets/images/stickers/reflective-chrome-blob.png' },
+  { _id: '5', name: 'Reflective Halo Ring', previewImageUrl: '/src/assets/images/stickers/reflective-halo-ring.png' },
+  { _id: '6', name: 'Reflective Hazard Accent', previewImageUrl: '/src/assets/images/stickers/reflective-hazard-accent.png' },
+  { _id: '7', name: 'Reflective Night Edge', previewImageUrl: '/src/assets/images/stickers/reflective-night-edge.png' }
 ];
 
 export default function ReflectivePicker() {
@@ -44,8 +44,8 @@ export default function ReflectivePicker() {
         state: { 
           tier: 'reflective', 
           selections: [
-            { templateId: selections[0], position: 'front' },
-            { templateId: selections[1], position: 'back' }
+            { templateId: selections[0], position: 'front', previewImageUrl: MOCK_TEMPLATES.find(t => t._id === selections[0]).previewImageUrl },
+            { templateId: selections[1], position: 'back', previewImageUrl: MOCK_TEMPLATES.find(t => t._id === selections[1]).previewImageUrl }
           ] 
         } 
       });
@@ -120,7 +120,7 @@ export default function ReflectivePicker() {
       </main>
 
       {/* Sticky Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-200 z-10 pb-8">
+      <div className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[420px] p-6 bg-white border-t border-slate-200 z-10 pb-8">
         <button
           onClick={handleContinue}
           disabled={selections.length !== 2}
