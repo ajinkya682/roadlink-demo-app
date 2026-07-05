@@ -28,7 +28,7 @@ export default function Payment() {
         handler: function (response) {
           // On success, Razorpay will call our webhook to verify and process.
           // We can optimistically show the confirmation.
-          navigate('/order-confirmation', { state: { orderInfo: checkoutData.orderInfo } });
+          navigate('/order-confirmation', { state: { orderId: location.state.orderId } });
         },
         prefill: {
           name: checkoutData.orderInfo?.shippingAddress?.name || '',

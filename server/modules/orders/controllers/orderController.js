@@ -105,7 +105,9 @@ exports.updateAddress = async (req, res) => {
 exports.checkout = async (req, res) => {
   try {
     const { id } = req.params;
-    const order = await Order.findOne({ _id: id, userId: req.user.userId, fulfillmentStatus: 'draft' });
+    const order = await Order.findOne({ _id: id, userId: req.user.userId, fulfillmentStatus: 'draft' })
+      .populate('templateSelections.templateId')
+      .populate('vehicleId');
     
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
@@ -128,8 +130,19 @@ exports.checkout = async (req, res) => {
     if (order.pricing.total === 0) {
       order.paymentStatus = 'paid';
       order.fulfillmentStatus = 'processing';
+      
+      // Generate Receipt for free order
+      try {
+        const { generateReceiptPDF } = require('../../../services/pdfService');
+        const receiptUrl = await generateReceiptPDF(order);
+        order.receiptUrl = receiptUrl;
+      } catch (pdfErr) {
+        console.error("PDF Generation failed for free order", pdfErr);
+      }
+      
       await order.save();
       
+      const Vehicle = require('../../../models/Vehicle');
       await Vehicle.findByIdAndUpdate(order.vehicleId, { hasUsedFreeStickerOrder: true });
       
       return res.json({
@@ -244,9 +257,24 @@ exports.getOrderDetail = async (req, res) => {
 
 exports.getReceipt = async (req, res) => {
   try {
-    const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId });
+    const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId })
+      .populate('templateSelections.templateId')
+      .populate('vehicleId');
+      
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (!order.receiptUrl) return res.status(404).json({ error: 'Receipt not found or not yet generated' });
+    
+    // Lazy generate if not present
+    if (!order.receiptUrl) {
+      try {
+        const { generateReceiptPDF } = require('../../../services/pdfService');
+        const receiptUrl = await generateReceiptPDF(order);
+        order.receiptUrl = receiptUrl;
+        await order.save();
+      } catch (pdfErr) {
+        console.error("Lazy PDF Generation failed", pdfErr);
+        return res.status(500).json({ error: 'Failed to generate receipt' });
+      }
+    }
     
     // In local setup, receiptUrl is just /uploads/receipts/filename.pdf
     res.json({ receiptUrl: order.receiptUrl });

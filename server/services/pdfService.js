@@ -9,7 +9,7 @@ const path = require('path');
  * @returns {Promise<String>} - URL/path to the generated PDF.
  */
 exports.generateReceiptPDF = (order) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50 });
       const filename = `receipt_${order._id}.pdf`;
@@ -25,47 +25,88 @@ exports.generateReceiptPDF = (order) => {
       doc.pipe(writeStream);
 
       // Header
-      doc.fontSize(20).font('Helvetica-Bold').text('RoadLink', { align: 'left' });
-      doc.fontSize(12).font('Helvetica').text('Order Receipt', { align: 'left' });
+      doc.fontSize(24).font('Helvetica-Bold').text('RoadLink', { align: 'left' });
+      doc.fontSize(12).font('Helvetica').fillColor('#666666').text('Official Order Receipt', { align: 'left' });
       doc.moveDown(2);
+      
+      doc.fillColor('#000000');
 
       // Order Info
       doc.fontSize(12).font('Courier-Bold').text(`Order ID: ${order._id}`);
-      doc.font('Helvetica').text(`Order Date: ${new Date(order.createdAt).toLocaleDateString()}`);
+      doc.font('Helvetica').text(`Order Date: ${new Date(order.createdAt).toLocaleString()}`);
       
       const vehicleName = order.vehicleId ? (order.vehicleId.displayName || order.vehicleId.registrationNumber) : 'Unknown Vehicle';
       doc.text(`Vehicle: ${vehicleName}`);
-      doc.moveDown(1);
+      doc.moveDown(1.5);
 
       // Line Items
-      doc.font('Helvetica-Bold').text('Line Items:');
-      doc.font('Helvetica').text(`- Tier: ${order.tier.charAt(0).toUpperCase() + order.tier.slice(1)}`);
+      doc.fontSize(14).font('Helvetica-Bold').text('Order Details:');
+      doc.moveDown(0.5);
+      doc.fontSize(12).font('Helvetica').text(`Tier: ${order.tier.charAt(0).toUpperCase() + order.tier.slice(1)}`);
       
+      const qty = order.tier === 'reflective' ? 2 : 1;
+      doc.text(`Quantity: ${qty}`);
+      doc.moveDown(1);
+
       if (order.tier === 'premium') {
         doc.text(`- Design: Custom Design`);
       } else if (order.templateSelections && order.templateSelections.length > 0) {
-        order.templateSelections.forEach(selection => {
-           const tmplName = selection.templateId ? selection.templateId.name : 'Template';
-           doc.text(`- Design: ${tmplName} ${selection.position ? `(${selection.position})` : ''}`);
-        });
+        doc.font('Helvetica-Bold').text('Selected Templates:');
+        doc.moveDown(0.5);
+        
+        for (const selection of order.templateSelections) {
+          const tmplName = selection.templateId ? selection.templateId.name : 'Template';
+          doc.font('Helvetica').text(`- ${tmplName} ${selection.position ? `(${selection.position})` : ''}`);
+          
+          // Embed image if available
+          if (selection.previewImageUrl) {
+            try {
+              let imageBuffer;
+              if (selection.previewImageUrl.startsWith('http')) {
+                const response = await fetch(selection.previewImageUrl);
+                const arrayBuffer = await response.arrayBuffer();
+                imageBuffer = Buffer.from(arrayBuffer);
+              } else {
+                // Local file path from frontend
+                const localPath = path.join(__dirname, '../../../client', selection.previewImageUrl);
+                if (fs.existsSync(localPath)) {
+                  imageBuffer = fs.readFileSync(localPath);
+                }
+              }
+              
+              if (imageBuffer) {
+                // Draw image indented
+                doc.image(imageBuffer, { width: 100 });
+                doc.moveDown(0.5);
+              }
+            } catch (imgErr) {
+              console.error('Failed to embed image in PDF:', imgErr);
+            }
+          }
+        }
       }
       
-      const qty = order.tier === 'reflective' ? 2 : 1;
-      doc.text(`- Quantity: ${qty}`);
       doc.moveDown(1);
 
       // Price Breakdown
-      doc.font('Helvetica-Bold').text('Price Breakdown:');
-      doc.font('Courier').text(`Subtotal: \u20B9${order.pricing.basePrice}`);
+      doc.fontSize(14).font('Helvetica-Bold').text('Payment Breakdown:');
+      doc.moveDown(0.5);
+      doc.fontSize(12).font('Courier').text(`Subtotal: \u20B9${order.pricing.basePrice}`);
       doc.text(`Shipping: \u20B9${order.pricing.shippingFee}`);
       doc.text(`GST:      \u20B9${order.pricing.gst}`);
       doc.moveDown(0.5);
       doc.fontSize(14).font('Courier-Bold').text(`Total:    \u20B9${order.pricing.total}`);
-      doc.moveDown(1);
+      doc.moveDown(1.5);
+      
+      doc.fillColor('#000000');
 
       // Payment Details
       doc.fontSize(12).font('Helvetica-Bold').text('Payment Method:');
-      doc.font('Helvetica').text(`Razorpay Ref: ${order.razorpayOrderId || 'N/A'}`);
+      if (order.pricing.total === 0) {
+        doc.font('Helvetica').text(`Status: Free Tier (No Payment Required)`);
+      } else {
+        doc.font('Helvetica').text(`Razorpay Ref: ${order.razorpayOrderId || 'N/A'}`);
+      }
       doc.moveDown(1);
 
       // Shipping Address
@@ -81,13 +122,12 @@ exports.generateReceiptPDF = (order) => {
       doc.moveDown(2);
       
       // Footer
-      doc.fontSize(10).font('Helvetica-Oblique').text('Support: support@roadlink.com', { align: 'center' });
+      doc.fontSize(10).font('Helvetica-Oblique').fillColor('#888888').text('Support: support@roadlink.com', { align: 'center' });
       doc.text('This is a computer-generated receipt.', { align: 'center' });
 
       doc.end();
 
       writeStream.on('finish', () => {
-        // Return a path that the client can access via the backend server
         const fileUrl = `/uploads/receipts/${filename}`;
         resolve(fileUrl);
       });

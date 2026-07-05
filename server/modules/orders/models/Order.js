@@ -18,7 +18,8 @@ const orderSchema = new mongoose.Schema({
   },
   templateSelections: [{
     templateId: { type: mongoose.Schema.Types.ObjectId, ref: 'StickerTemplate' },
-    position: { type: String, enum: ['front', 'back', null] }
+    position: { type: String, enum: ['front', 'back', null] },
+    previewImageUrl: { type: String, default: null }
   }],
   customization: {
     layoutJson: { type: Object, default: null },

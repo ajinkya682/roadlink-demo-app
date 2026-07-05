@@ -57,7 +57,7 @@ export default function CartAddress() {
 
       if (checkoutData.isFree) {
         // Free order complete, go straight to confirmation
-        navigate('/order-confirmation', { state: { orderInfo: checkoutData.orderInfo } });
+        navigate('/order-confirmation', { state: { orderId: order._id } });
       } else {
         // Proceed to Razorpay payment screen
         navigate('/order-sticker/payment', { 

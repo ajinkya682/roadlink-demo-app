@@ -1,19 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Truck, Download, ArrowLeft } from 'lucide-react';
+import api from '../../lib/api';
 
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // In a real app, fetch order details using the ID
-  const order = {
-    _id: id || 'RL-9823-XQ',
-    status: 'processing', // 'processing' | 'shipped' | 'delivered'
-    date: '2026-07-04',
-    tier: 'standard'
-  };
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const res = await api.get(`/orders/${id}`);
+        setOrder(res.data);
+      } catch (err) {
+        console.error('Failed to fetch order', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchOrder();
+  }, [id]);
 
   const getStatusText = (status) => {
     switch (status) {
@@ -23,6 +32,39 @@ export default function OrderDetail() {
       default: return 'Draft';
     }
   };
+
+  const handleDownload = async () => {
+    try {
+      const res = await api.get(`/orders/${id}/receipt`);
+      if (res.data && res.data.receiptUrl) {
+        const a = document.createElement('a');
+        a.href = res.data.receiptUrl.startsWith('http') ? res.data.receiptUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${res.data.receiptUrl}`;
+        a.target = '_blank';
+        a.download = `Receipt_${id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert('Receipt not available yet.');
+      }
+    } catch (err) {
+      console.error('Download failed', err);
+      alert('Could not download receipt.');
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!order) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center">
+        <p className="mb-4 text-slate-500">Order not found</p>
+        <button onClick={() => navigate(-1)} className="px-6 py-2 bg-blue-600 text-white rounded-lg">Go Back</button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#1c1b1b] flex flex-col font-body relative z-0">
@@ -59,7 +101,7 @@ export default function OrderDetail() {
             </div>
             
             <button 
-              onClick={() => alert('Downloading receipt...')}
+              onClick={handleDownload}
               className="flex items-center justify-center space-x-2 border-2 border-[#1E3A8A] text-[#1E3A8A] font-body text-[14px] font-bold tracking-[0.08em] uppercase py-2 px-6 rounded-lg hover:bg-slate-50 active:scale-[0.98] transition-all"
             >
               <Download size={18} />
@@ -72,7 +114,7 @@ export default function OrderDetail() {
             <div className="bg-[#F7F8FA] p-5 rounded-lg border border-black/5 flex flex-col items-center">
               <Truck size={28} className="text-[#003470] mb-2" strokeWidth={1.5} />
               <span className="font-body text-[12px] font-bold tracking-[0.08em] text-[#434751] uppercase mb-1">STATUS</span>
-              <span className="font-display text-[20px] font-semibold text-[#1c1b1b]">{getStatusText(order.status)}</span>
+              <span className="font-display text-[20px] font-semibold text-[#1c1b1b]">{getStatusText(order.fulfillmentStatus)}</span>
             </div>
           </div>
         </motion.div>

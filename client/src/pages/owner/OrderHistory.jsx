@@ -2,28 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download } from 'lucide-react';
 
-const MOCK_ORDERS = [
-  { _id: 'ord_123', tier: 'premium', vehicleName: 'Daily Rider - MH12AB1234', date: '2026-07-01', status: 'delivered' },
-  { _id: 'ord_124', tier: 'reflective', vehicleName: 'Wife\'s Scooter - MH12CD5678', date: '2026-07-03', status: 'shipped' },
-  { _id: 'ord_125', tier: 'standard', vehicleName: 'Daily Rider - MH12AB1234', date: '2026-07-04', status: 'processing' },
-];
+import api from '../../lib/api';
 
 export default function OrderHistory() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock fetch
-    const existingOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
-    if (existingOrders.length > 0) {
-      setOrders(existingOrders);
-    } else {
-      setOrders(MOCK_ORDERS);
-    }
+    const fetchOrders = async () => {
+      try {
+        const res = await api.get('/orders');
+        setOrders(res.data);
+      } catch (err) {
+        console.error('Failed to fetch orders', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
   }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
+      case 'draft': return 'bg-slate-100 text-slate-700 border-slate-200';
       case 'processing': return 'bg-amber-100 text-amber-700 border-amber-200';
       case 'shipped': return 'bg-blue-100 text-[#1E3A8A] border-blue-200';
       case 'delivered': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
@@ -31,9 +33,26 @@ export default function OrderHistory() {
     }
   };
 
-  const handleDownload = (e, orderId) => {
+  const handleDownload = async (e, orderId) => {
     e.stopPropagation(); // prevent row click
-    alert(`Downloading receipt for ${orderId}`);
+    try {
+      const res = await api.get(`/orders/${orderId}/receipt`);
+      if (res.data && res.data.receiptUrl) {
+        // Create an invisible link to download the file
+        const a = document.createElement('a');
+        a.href = res.data.receiptUrl.startsWith('http') ? res.data.receiptUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${res.data.receiptUrl}`;
+        a.target = '_blank';
+        a.download = `Receipt_${orderId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert('Receipt not available yet.');
+      }
+    } catch (err) {
+      console.error('Download failed', err);
+      alert('Could not download receipt.');
+    }
   };
 
   return (
@@ -70,17 +89,21 @@ export default function OrderHistory() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-bold text-slate-800 capitalize">{order.tier} Sticker</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">{order.vehicleName}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {order.vehicleId ? (order.vehicleId.displayName || order.vehicleId.registrationNumber) : 'Unknown Vehicle'}
+                    </p>
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider ${getStatusColor(order.status)}`}>
-                    {order.status}
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider ${getStatusColor(order.fulfillmentStatus)}`}>
+                    {order.fulfillmentStatus}
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-end mt-4 pt-4 border-t border-slate-100">
                   <div>
                     <p className="text-xs text-slate-400">Order Date</p>
-                    <p className="text-sm font-medium text-slate-700">{order.date}</p>
+                    <p className="text-sm font-medium text-slate-700">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                   <button 
                     onClick={(e) => handleDownload(e, order._id)}

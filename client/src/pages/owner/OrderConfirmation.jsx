@@ -1,13 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Truck, CheckCircle, Download } from 'lucide-react';
+import api from '../../lib/api';
 
 export default function OrderConfirmation() {
   const navigate = useNavigate();
   const location = useLocation();
   const { orderInfo, orderId } = location.state || {};
   const finalOrderId = orderInfo?._id || orderId || 'RL-9823-XQ';
+
+  const [deliveryDate, setDeliveryDate] = useState('');
+
+  useEffect(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    setDeliveryDate(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+  }, []);
+
+  const handleDownload = async () => {
+    try {
+      const res = await api.get(`/orders/${finalOrderId}/receipt`);
+      if (res.data && res.data.receiptUrl) {
+        const a = document.createElement('a');
+        a.href = res.data.receiptUrl.startsWith('http') ? res.data.receiptUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${res.data.receiptUrl}`;
+        a.target = '_blank';
+        a.download = `Receipt_${finalOrderId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert('Receipt not available yet.');
+      }
+    } catch (err) {
+      console.error('Download failed', err);
+      alert('Could not download receipt.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#1c1b1b] flex flex-col font-body relative z-0">
@@ -83,10 +112,7 @@ export default function OrderConfirmation() {
             </div>
             
             <button 
-              onClick={() => {
-                // In a real app, fetch receipt URL from /v1/orders/${orderId}/receipt and open it
-                alert('Downloading receipt...');
-              }}
+              onClick={handleDownload}
               className="flex items-center justify-center space-x-2 border-2 border-[#1E3A8A] text-[#1E3A8A] font-body text-[14px] font-bold tracking-[0.08em] uppercase py-2 px-6 rounded-lg hover:bg-slate-50 active:scale-[0.98] transition-all"
             >
               <Download size={18} />
@@ -104,7 +130,7 @@ export default function OrderConfirmation() {
             <div className="bg-[#F7F8FA] p-5 rounded-lg border border-black/5 flex flex-col items-center">
               <Truck size={28} className="text-[#003470] mb-2" strokeWidth={1.5} />
               <span className="font-body text-[12px] font-bold tracking-[0.08em] text-[#434751] uppercase mb-1">ESTIMATED DELIVERY</span>
-              <span className="font-display text-[20px] font-semibold text-[#1c1b1b]">Arriving by Oct 24</span>
+              <span className="font-display text-[20px] font-semibold text-[#1c1b1b]">Arriving by {deliveryDate}</span>
             </div>
           </motion.div>
 
