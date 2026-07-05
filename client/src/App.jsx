@@ -7,6 +7,7 @@ import PageWrapper from './components/PageWrapper'
 import BottomTabBar from './components/BottomTabBar'
 import RequireAuth from './components/RequireAuth'
 import RequireGuest from './components/RequireGuest'
+import { OfflineBanner } from './components/OfflineBanner'
 
 // Guest
 import GuestDashboard from './pages/GuestDashboard'
@@ -107,6 +108,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      <OfflineBanner />
       <div className="safe-area-wrapper">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>

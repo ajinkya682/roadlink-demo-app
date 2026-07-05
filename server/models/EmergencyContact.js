@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const emergencyContactSchema = new mongoose.Schema({
-  vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true },
   phone: { type: String, required: true },
   priority: { type: Number, default: 2 }, // 1 = primary

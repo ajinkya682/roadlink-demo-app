@@ -6,6 +6,7 @@ import AppHeader from "../../components/AppHeader";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { useAppData } from "../../context/AppContext";
+import SyncIndicator from "../../components/SyncIndicator";
 
 export default function MyProfile() {
   const navigate = useNavigate();
@@ -99,8 +100,9 @@ export default function MyProfile() {
             </div>
           </div>
           <div className="text-center">
-            <h2 className="font-display text-[24px] font-semibold text-[#1c1b1b]">
+            <h2 className="font-display text-[24px] font-semibold text-[#1c1b1b] flex items-center justify-center gap-2">
               {form.name || "Your Name"}
+              <SyncIndicator urlPrefix="/users/me" />
             </h2>
             <p className="font-body text-[14px] text-[#737782]">
               Member since {user.joinedDate}

@@ -2,27 +2,23 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SecureStorage } from '../hooks/useNative';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// AppContext
-//
-// Central app state — replaces DemoContext (which seeded from hardcoded demo
-// files). All arrays start empty; data will come from real API calls in Phase 3.
+import { useLiveQuery } from 'dexie-react-hooks';
+import db from '../lib/db/database';
+import { UserRepository } from '../lib/repositories/UserRepository';
+import { VehicleRepository } from '../lib/repositories/VehicleRepository';
+import { DocumentRepository } from '../lib/repositories/DocumentRepository';
+import { ContactRepository } from '../lib/repositories/ContactRepository';
+import { syncManager } from '../lib/sync/SyncManager';
 import api from '../lib/api';
-//
-// TODO (Phase 3/4): Replace SecureStorage persistence with real access/refresh
-// token session management. isAuthenticated here is a local placeholder only.
-// ─────────────────────────────────────────────────────────────────────────────
 
 const AppContext = createContext(null);
 
-// ── Empty initial shapes ─────────────────────────────────────────────────────
 const EMPTY_USER = {
   id: null,
-  name: '',
+  name: 'User',
   phone: '',
-  maskedPhone: '',
-  avatar: '',
+  maskedPhone: '•••••',
+  avatar: 'U',
   joinedDate: '',
   notificationPrefs: {
     push: true,
@@ -39,26 +35,32 @@ const EMPTY_USER = {
 };
 
 export function AppProvider({ children }) {
-  const [user, setUser]                   = useState(EMPTY_USER);
-  const [vehicles, setVehicles]           = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [documents, setDocuments]         = useState([]);
-  const [contacts, setContacts]           = useState([]);
-  const [medicalProfile, setMedicalProfileState] = useState({
-    dob: '',
-    address: '',
-    bloodType: '',
-    conditions: '',
-    allergies: '',
-    prescriptions: '',
-    devices: '',
-    doctorName: '',
-    doctorPhone: ''
+  // ── Offline-First State via Dexie ──────────────────────────────────────────
+  const userQuery = useLiveQuery(async () => {
+    const u = await db.user.get('me');
+    return u || null; // null means empty, undefined means loading
+  });
+  
+  const vehiclesQuery = useLiveQuery(async () => {
+    const v = await db.vehicles.toArray();
+    return v || null;
   });
 
-  // TODO (Phase 3/4): Replace this local boolean with real JWT-backed session
-  // check. Once the backend exists, isAuthenticated should derive from whether
-  // a valid access token exists (and is not expired), not from local state.
+  const isCacheLoading = userQuery === undefined || vehiclesQuery === undefined;
+  
+  const user = userQuery || EMPTY_USER;
+  const vehicles = vehiclesQuery || [];
+  
+  const documents = useLiveQuery(() => db.documents.toArray()) || [];
+  const contacts = useLiveQuery(() => db.contacts.toArray()) || [];
+  
+  // Local state for UI only (not heavily cached or not migrated to dexie yet)
+  const [notifications, setNotifications] = useState([]);
+  const [medicalProfile, setMedicalProfileState] = useState({
+    dob: '', address: '', bloodType: '', conditions: '', allergies: '',
+    prescriptions: '', devices: '', doctorName: '', doctorPhone: ''
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   
@@ -70,59 +72,72 @@ export function AppProvider({ children }) {
   const showUpgradeModal = () => setIsUpgradeModalOpen(true);
   const hideUpgradeModal = () => setIsUpgradeModalOpen(false);
 
-  // ── Hydrate from device storage on mount ──────────────────────────────────
+  // ── Initialization & Migration ────────────────────────────────────────────
   useEffect(() => {
     async function loadData() {
-      const storedAuth  = await SecureStorage.get('roadlink_auth');
-      const storedUser  = await SecureStorage.get('roadlink_user');
-      const storedVehicles      = await SecureStorage.get('roadlink_vehicles');
-      const storedNotifications = await SecureStorage.get('roadlink_notifications');
-      const storedDocuments     = await SecureStorage.get('roadlink_documents');
-      const storedContacts      = await SecureStorage.get('roadlink_contacts');
-      const storedMedicalProfile = await SecureStorage.get('roadlink_medical_profile');
-
+      // 1. Check Auth
+      const storedAuth = await SecureStorage.get('roadlink_auth');
       if (storedAuth === true || storedAuth === 'true') {
         const accessToken = await SecureStorage.get('roadlink_access_token');
-        if (accessToken) {
-          setIsAuthenticated(true);
-        }
+        if (accessToken) setIsAuthenticated(true);
       }
-      if (storedUser) {
-        setUser({
-          ...EMPTY_USER,
-          ...storedUser,
-          notificationPrefs: {
-            ...EMPTY_USER.notificationPrefs,
-            ...(storedUser.notificationPrefs || {})
-          }
-        });
+
+      // 2. Migration from Legacy SecureStorage to Dexie
+      const legacyUser = await SecureStorage.get('roadlink_user');
+      if (legacyUser) {
+        await db.user.put({ id: 'me', ...legacyUser });
+        await SecureStorage.remove('roadlink_user');
       }
-      if (storedVehicles)      setVehicles(storedVehicles);
+
+      const legacyVehicles = await SecureStorage.get('roadlink_vehicles');
+      if (legacyVehicles) {
+        await db.vehicles.bulkPut(legacyVehicles);
+        await SecureStorage.remove('roadlink_vehicles');
+      }
+
+      const legacyDocs = await SecureStorage.get('roadlink_documents');
+      if (legacyDocs) {
+        await db.documents.bulkPut(legacyDocs);
+        await SecureStorage.remove('roadlink_documents');
+      }
+
+      const legacyContacts = await SecureStorage.get('roadlink_contacts');
+      if (legacyContacts) {
+        await db.contacts.bulkPut(legacyContacts);
+        await SecureStorage.remove('roadlink_contacts');
+      }
+
+      // 3. Load non-migrated stuff
+      const storedNotifications = await SecureStorage.get('roadlink_notifications');
       if (storedNotifications) setNotifications(storedNotifications);
-      if (storedDocuments)     setDocuments(storedDocuments);
-      if (storedContacts)      setContacts(storedContacts);
-      if (storedMedicalProfile) setMedicalProfile(storedMedicalProfile);
+      
+      const storedMedical = await SecureStorage.get('roadlink_medical_profile');
+      if (storedMedical) setMedicalProfileState(storedMedical);
 
       setIsInitialized(true);
+
+      // 4. Trigger silent refreshes if authenticated
+      if (storedAuth === true || storedAuth === 'true') {
+        UserRepository.refreshProfileSilently();
+        VehicleRepository.refreshVehiclesSilently();
+        DocumentRepository.refreshDocumentsSilently();
+        ContactRepository.refreshContactsSilently();
+      }
     }
     loadData();
   }, []);
 
-  // ── Persist mutations to device storage ───────────────────────────────────
+  // ── Persist legacy non-migrated state ─────────────────────────────────────
   useEffect(() => {
     if (!isInitialized) return;
-    SecureStorage.set('roadlink_auth',          isAuthenticated);
-    SecureStorage.set('roadlink_user',          user);
-    SecureStorage.set('roadlink_vehicles',      vehicles);
+    SecureStorage.set('roadlink_auth', isAuthenticated);
     SecureStorage.set('roadlink_notifications', notifications);
-    SecureStorage.set('roadlink_documents',     documents);
-    SecureStorage.set('roadlink_contacts',      contacts);
     SecureStorage.set('roadlink_medical_profile', medicalProfile);
-  }, [user, vehicles, notifications, documents, contacts, medicalProfile, isAuthenticated, isInitialized]);
+  }, [notifications, medicalProfile, isAuthenticated, isInitialized]);
 
   // ── Auth actions ──────────────────────────────────────────────────────────
   const signIn = async (userProfile, accessToken, refreshToken) => {
-    setUser(userProfile);
+    await db.user.put({ id: 'me', ...userProfile });
     setIsAuthenticated(true);
     await SecureStorage.set('roadlink_access_token', accessToken);
     await SecureStorage.set('roadlink_refresh_token', refreshToken);
@@ -131,108 +146,116 @@ export function AppProvider({ children }) {
 
   const signOut = async () => {
     setIsAuthenticated(false);
-    setUser(EMPTY_USER);
-    setVehicles([]);
+    await UserRepository.clear();
+    await VehicleRepository.clear();
+    await DocumentRepository.clear();
+    await ContactRepository.clear();
     setNotifications([]);
-    setDocuments([]);
-    setContacts([]);
-    // Clear persisted session
+    
     await SecureStorage.remove('roadlink_access_token');
     await SecureStorage.remove('roadlink_refresh_token');
+    await SecureStorage.remove('roadlink_auth');
     await SecureStorage.clear();
   };
 
-  // ── User actions ──────────────────────────────────────────────────────────
+  // ── User actions (Delegated to Repo) ──────────────────────────────────────
   const refreshUser = async () => {
-    try {
-      const res = await api.get('/users/me');
-      if (res.data.success) {
-        setUser(prev => ({
-          ...prev,
-          ...res.data.data.user,
-          notificationPrefs: {
-            ...EMPTY_USER.notificationPrefs,
-            ...(res.data.data.user.notificationPrefs || {})
-          },
-          privacyPrefs: {
-            ...EMPTY_USER.privacyPrefs,
-            ...(res.data.data.user.privacyPrefs || {})
-          }
-        }));
-        if (res.data.data.user.medicalProfile) {
-          setMedicalProfileState(prev => ({ ...prev, ...res.data.data.user.medicalProfile }));
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch user', err);
-    }
+    await UserRepository.refreshProfileSilently();
   };
 
   const updateProfile = async (formData) => {
-    try {
-      const res = await api.patch('/users/me', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      if (res.data.success) {
-        setUser(prev => ({
-          ...prev,
-          ...res.data.data.user
-        }));
-        return res.data.data.user;
-      }
-    } catch (err) {
-      console.error('Failed to update profile', err);
-      throw err;
-    }
+    return await UserRepository.updateProfile(formData);
+  };
+
+  const updateNotifPref = async (key, value) => {
+    const newPrefs = { ...user.notificationPrefs, [key]: value };
+    await UserRepository.updateSettings({ notificationPrefs: newPrefs });
   };
 
   const deleteAccount = async () => {
-    try {
-      // Best effort API call to delete from DB
-      await api.delete('/users/me');
-    } catch (err) {
-      console.error('Failed to delete user account on backend:', err);
-    }
-    
-    // Fully wipe browser storage and cache
+    try { await api.delete('/users/me'); } catch (err) {}
     await SecureStorage.clear();
     localStorage.clear();
     sessionStorage.clear();
-    
-    // Clear cookies
     document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
-
-    // Hard reload the window to reset all JS state and memory
     window.location.href = '/';
   };
 
-  // ── Notification actions ──────────────────────────────────────────────────
-  const markResolved = async (id) => {
-    try {
-      await api.patch(`/reports/${id}`, { status: 'resolved' });
-    } catch (err) {
-      console.error('Failed to mark resolved on backend:', err);
+  // ── Vehicle actions ───────────────────────────────────────────────────────
+  const addVehicle = async (v, qrToken) => {
+    return await VehicleRepository.addVehicle(v, qrToken);
+  };
+
+  const updateVehicleInContext = async (id, updates) => {
+    // Fallback for simple local updates not fully migrated to repo yet
+    const v = await db.vehicles.get(id);
+    if (v) {
+      await db.vehicles.put({ ...v, ...updates });
     }
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, resolved: true, read: true, status: 'resolved' } : n)
-    );
   };
 
-  const dismissNotification = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const togglePrivacyMode = async (vehicleId) => {
+    const v = await db.vehicles.get(vehicleId);
+    if (v) {
+      await VehicleRepository.updatePrivacyMode(vehicleId, !v.privacyMode);
+    }
   };
 
-  const markRead = (id) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const refreshVehicles = async () => {
+    await VehicleRepository.refreshVehiclesSilently();
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // ── Document actions ──────────────────────────────────────────────────────
+  const addDocument = async (doc) => {
+    const newDoc = { ...doc, id: `d${Date.now()}` };
+    await db.documents.put(newDoc);
+    // Ideally this goes through repo to sync, but MVP logic was local.
+  };
+
+  const removeDocument = async (id) => {
+    await DocumentRepository.deleteDocument(id);
+  };
+
+  const updateDocument = async (id, updates) => {
+    await DocumentRepository.updateDocument(id, updates);
+  };
+
+  const refreshDocuments = async () => {
+    await DocumentRepository.refreshDocumentsSilently();
+  };
+
+  // ── Contact actions ───────────────────────────────────────────────────────
+  const refreshContacts = async () => {
+    await ContactRepository.refreshContactsSilently();
+  };
+
+  const addContact = async (contact) => {
+    return await ContactRepository.addContact(contact);
+  };
+
+  const deleteContact = async (id) => {
+    await ContactRepository.deleteContact(id);
+  };
+
+  const updateContact = async (id, updatedContact) => {
+    await ContactRepository.updateContact(id, updatedContact);
+  };
+
+  const setPrimaryContact = async (id) => {
+    await ContactRepository.setPrimaryContact(id);
+  };
+
+  // ── Misc ──────────────────────────────────────────────────────────────────
+  const setMedicalProfile = async (profile) => {
+    setMedicalProfileState(prev => ({ ...prev, ...profile }));
+    try {
+      await api.patch('/users/me', { medicalProfile: profile });
+    } catch (err) {
+      await syncManager.enqueueAction('updateMedicalProfile', 'PATCH', '/users/me', { medicalProfile: profile });
+    }
+  };
 
   const getRelativeTime = (dateString) => {
     if (!dateString) return '';
@@ -281,243 +304,21 @@ export function AppProvider({ children }) {
         });
         setNotifications(fetchedReports);
       }
-    } catch (err) {
-      console.error('Failed to fetch reports', err);
-    }
+    } catch (err) {}
   };
 
-  // ── Vehicle actions ───────────────────────────────────────────────────────
-  const addVehicle = (v, qrToken) => {
-    const newVehicle = {
-      id: v._id,
-      plate: v.registrationNumber,
-      type: v.type || 'four-wheeler',
-      make: v.make,
-      model: v.model,
-      year: v.year,
-      color: v.color,
-      nickname: v.nickname,
-      imageUrl: v.imageUrl,
-      displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
-      isVerified: v.isVerified,
-      privacyMode: v.showOwnerName === false,
-      addedDate: new Date(v.createdAt || Date.now()).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
-      unreadAlerts: 0,
-      qrToken: qrToken || v.qrToken,
-      qrId: v._id
-    };
-    setVehicles(prev => [newVehicle, ...prev]);
-    return newVehicle;
+  const markResolved = async (id) => {
+    try { await api.patch(`/reports/${id}`, { status: 'resolved' }); } 
+    catch (err) { await syncManager.enqueueAction('markResolved', 'PATCH', `/reports/${id}`, { status: 'resolved' }); }
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, resolved: true, read: true, status: 'resolved' } : n));
   };
 
-  const updateVehicleInContext = (id, updates) => {
-    setVehicles(prev => prev.map(v => v.id === id ? { ...v, ...updates } : v));
-  };
+  const dismissNotification = (id) => setNotifications(prev => prev.filter(n => n.id !== id));
+  const markRead = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const unreadCount = notifications.filter(n => !n.read).length;
 
-  const togglePrivacyMode = (vehicleId) => {
-    setVehicles(prev =>
-      prev.map(v => v.id === vehicleId ? { ...v, privacyMode: !v.privacyMode } : v)
-    );
-  };
-
-  const refreshVehicles = async () => {
-    try {
-      const res = await api.get('/vehicles');
-      if (res.data.success) {
-        // Map backend format to frontend expected format
-        const fetchedVehicles = res.data.data.vehicles.map(v => ({
-          id: v._id,
-          plate: v.registrationNumber,
-          type: v.type || 'four-wheeler',
-          make: v.make,
-          model: v.model,
-          year: v.year,
-          color: v.color,
-          nickname: v.nickname,
-          imageUrl: v.imageUrl,
-          displayName: `${v.make || ''} ${v.model || ''}`.trim() || 'VEHICLE',
-          isVerified: v.isVerified,
-          privacyMode: v.showOwnerName === false,
-          addedDate: new Date(v.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
-          unreadAlerts: 0,
-          qrToken: v.qrToken,
-          qrId: v._id,
-          protectionStatus: v.protectionStatus || 'pending_payment'
-        }));
-        setVehicles(fetchedVehicles);
-      }
-    } catch (err) {
-      console.error('Failed to fetch vehicles', err);
-    }
-  };
-
-  // ── Document actions ──────────────────────────────────────────────────────
-  const addDocument = (doc) => {
-    const newDoc = { ...doc, id: `d${Date.now()}` };
-    setDocuments(prev => {
-      const existing = prev.findIndex(d => d.vehicleId === doc.vehicleId && d.type === doc.type);
-      if (existing >= 0) {
-        const updated = [...prev];
-        updated[existing] = newDoc;
-        return updated;
-      }
-      return [...prev, newDoc];
-    });
-  };
-
-  const removeDocument = async (id) => {
-    try {
-      await api.delete(`/documents/${id}`);
-      setDocuments(prev => prev.filter(d => d.id !== id));
-    } catch (err) {
-      console.error('Failed to delete document', err);
-      throw err;
-    }
-  };
-
-  const updateDocument = async (id, updates) => {
-    try {
-      const res = await api.patch(`/documents/${id}`, updates);
-      if (res.data.success) {
-        await refreshDocuments();
-      }
-    } catch (err) {
-      console.error('Failed to update document', err);
-      throw err;
-    }
-  };
-
-  const refreshDocuments = async () => {
-    try {
-      const res = await api.get('/documents');
-      if (res.data.success) {
-        // Map backend format to frontend
-        const fetchedDocs = res.data.data.documents.map(d => ({
-          id: d._id,
-          vehicleId: d.vehicleId,
-          type: d.type,
-          fileUrl: d.fileUrl,
-          number: d.documentNumber,
-          expiry: d.expiryDate ? new Date(d.expiryDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : null,
-          expiryDateValue: d.expiryDate, // store raw for editing
-          status: d.expiryDate && new Date(d.expiryDate) < new Date() ? 'expired' : 'valid'
-        }));
-        setDocuments(fetchedDocs);
-      }
-    } catch (err) {
-      console.error('Failed to fetch documents', err);
-    }
-  };
-
-  // ── Contact actions ───────────────────────────────────────────────────────
-  const refreshContacts = async () => {
-    try {
-      const res = await api.get('/emergency-contacts');
-      if (res.data.success) {
-        const fetchedContacts = res.data.data.contacts.map(c => ({
-          id: c._id,
-          name: c.name,
-          phone: c.phone,
-          maskedPhone: maskPhone(c.phone),
-          relation: c.relationship,
-          isPrimary: c.isPrimary
-        }));
-        setContacts(fetchedContacts);
-      }
-    } catch (err) {
-      console.error('Failed to fetch contacts', err);
-    }
-  };
-
-  const addContact = async (contact) => {
-    try {
-      const res = await api.post('/emergency-contacts', {
-        name: contact.name,
-        phone: contact.phone,
-        relationship: contact.relation,
-        isPrimary: contact.isPrimary
-      });
-      if (res.data.success) {
-        await refreshContacts();
-      }
-    } catch (err) {
-      console.error('Failed to add contact', err);
-      throw err;
-    }
-  };
-
-  const deleteContact = async (id) => {
-    try {
-      const res = await api.delete(`/emergency-contacts/${id}`);
-      if (res.data.success) {
-        setContacts(prev => prev.filter(c => c.id !== id));
-      }
-    } catch (err) {
-      console.error('Failed to delete contact', err);
-      throw err;
-    }
-  };
-
-  const updateContact = async (id, updatedContact) => {
-    try {
-      const res = await api.patch(`/emergency-contacts/${id}`, {
-        name: updatedContact.name,
-        phone: updatedContact.phone,
-        relationship: updatedContact.relation,
-        isPrimary: updatedContact.isPrimary
-      });
-      if (res.data.success) {
-        await refreshContacts();
-      }
-    } catch (err) {
-      console.error('Failed to update contact', err);
-      throw err;
-    }
-  };
-
-  const setPrimaryContact = async (id) => {
-    try {
-      const res = await api.patch(`/emergency-contacts/${id}`, { isPrimary: true });
-      if (res.data.success) {
-        await refreshContacts();
-      }
-    } catch (err) {
-      console.error('Failed to set primary', err);
-      throw err;
-    }
-  };
-
-  const setMedicalProfile = async (profile) => {
-    try {
-      // Optimistic update
-      setMedicalProfileState(prev => ({ ...prev, ...profile }));
-      const res = await api.patch('/users/me', { medicalProfile: profile });
-      if (res.data.success && res.data.data.user.medicalProfile) {
-        setMedicalProfileState(res.data.data.user.medicalProfile);
-      }
-    } catch (err) {
-      console.error('Failed to update medical profile', err);
-      // It will revert on next refreshUser or we could manually revert here
-      throw err;
-    }
-  };
-
-  // ── User preference actions ───────────────────────────────────────────────
-  const updateNotifPref = async (key, value) => {
-    const previousPrefs = user.notificationPrefs;
-    const newPrefs = { ...previousPrefs, [key]: value };
-    
-    // Optimistic UI update
-    setUser(prev => ({ ...prev, notificationPrefs: newPrefs }));
-    
-    try {
-      await api.patch('/users/settings', { notificationPrefs: newPrefs });
-    } catch (err) {
-      console.error('Failed to update notification preferences', err);
-      // Revert on error
-      setUser(prev => ({ ...prev, notificationPrefs: previousPrefs }));
-    }
-  };
+  // No-op setter for components that try to call setUser or setVehicles directly
+  const setUser = () => console.warn('setUser is deprecated. Use Repositories instead.');
 
   return (
     <AppContext.Provider value={{
@@ -528,6 +329,7 @@ export function AppProvider({ children }) {
       showComingSoon,
       showUpgradeModal,
       hideUpgradeModal,
+      isCacheLoading,
       // Data
       user,
       setUser,
@@ -537,33 +339,12 @@ export function AppProvider({ children }) {
       contacts,
       medicalProfile,
       unreadCount,
-      // Notification actions
-      markResolved,
-      dismissNotification,
-      markRead,
-      refreshNotifications,
-      // Vehicle actions
-      addVehicle,
-      updateVehicleInContext,
-      togglePrivacyMode,
-      refreshVehicles,
-      // Document actions
-      addDocument,
-      updateDocument,
-      removeDocument,
-      refreshDocuments,
-      // Contact actions
-      refreshContacts,
-      addContact,
-      updateContact,
-      deleteContact,
-      setPrimaryContact,
-      setMedicalProfile,
-      // User actions
-      refreshUser,
-      updateProfile,
-      updateNotifPref,
-      deleteAccount,
+      // Actions
+      markResolved, dismissNotification, markRead, refreshNotifications,
+      addVehicle, updateVehicleInContext, togglePrivacyMode, refreshVehicles,
+      addDocument, updateDocument, removeDocument, refreshDocuments,
+      refreshContacts, addContact, updateContact, deleteContact, setPrimaryContact,
+      setMedicalProfile, refreshUser, updateProfile, updateNotifPref, deleteAccount,
     }}>
       {children}
       
@@ -571,45 +352,15 @@ export function AppProvider({ children }) {
       <AnimatePresence>
         {comingSoonFeature && (
           <div className="fixed inset-0 z-[999] flex items-center justify-center px-5 pb-safe">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-              onClick={() => setComingSoonFeature(null)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden z-10"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setComingSoonFeature(null)} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden z-10">
               <div className="bg-gradient-to-br from-road-navy to-[#1a386d] p-6 flex flex-col items-center text-center">
-                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mb-4">
-                  <Sparkles size={28} className="text-white" />
-                </div>
-                <h3 className="font-display text-2xl font-bold text-white mb-2">
-                  Coming Soon
-                </h3>
-                <p className="font-body text-[14px] text-white/90 leading-relaxed max-w-[240px]">
-                  We're working hard on bringing you <span className="font-bold">{comingSoonFeature}</span>. Check back in our next big update!
-                </p>
+                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mb-4"><Sparkles size={28} className="text-white" /></div>
+                <h3 className="font-display text-2xl font-bold text-white mb-2">Coming Soon</h3>
+                <p className="font-body text-[14px] text-white/90 leading-relaxed max-w-[240px]">We're working hard on bringing you <span className="font-bold">{comingSoonFeature}</span>. Check back in our next big update!</p>
               </div>
-              <div className="p-4 bg-white">
-                <button
-                  className="w-full py-3.5 bg-road-navy text-white rounded-xl font-body font-semibold text-[15px] hover:bg-road-navy/90 transition-colors"
-                  onClick={() => setComingSoonFeature(null)}
-                >
-                  Got it
-                </button>
-              </div>
-              <button
-                className="absolute top-4 right-4 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center text-white hover:bg-black/20 transition-colors"
-                onClick={() => setComingSoonFeature(null)}
-              >
-                <X size={18} />
-              </button>
+              <div className="p-4 bg-white"><button className="w-full py-3.5 bg-road-navy text-white rounded-xl font-body font-semibold text-[15px] hover:bg-road-navy/90 transition-colors" onClick={() => setComingSoonFeature(null)}>Got it</button></div>
+              <button className="absolute top-4 right-4 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center text-white hover:bg-black/20 transition-colors" onClick={() => setComingSoonFeature(null)}><X size={18} /></button>
             </motion.div>
           </div>
         )}
@@ -619,44 +370,16 @@ export function AppProvider({ children }) {
       <AnimatePresence>
         {isUpgradeModalOpen && (
           <div className="fixed inset-0 z-[999] flex items-center justify-center px-5 pb-safe">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-              onClick={hideUpgradeModal}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden z-10"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={hideUpgradeModal} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden z-10">
               <div className="bg-gradient-to-br from-road-navy to-[#1a386d] p-6 flex flex-col items-center text-center">
-                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mb-4">
-                  <Sparkles size={28} className="text-[#feae2c]" />
-                </div>
-                <h3 className="font-display text-2xl font-bold text-white mb-2">
-                  Upgrade Required
-                </h3>
-                <p className="font-body text-[14px] text-white/90 leading-relaxed max-w-[240px]">
-                  You have reached the maximum limit of <span className="font-bold">5 vehicles</span>. Please upgrade your account to add more.
-                </p>
+                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mb-4"><Sparkles size={28} className="text-[#feae2c]" /></div>
+                <h3 className="font-display text-2xl font-bold text-white mb-2">Upgrade Required</h3>
+                <p className="font-body text-[14px] text-white/90 leading-relaxed max-w-[240px]">You have reached the maximum limit of <span className="font-bold">5 vehicles</span>. Please upgrade your account to add more.</p>
               </div>
               <div className="p-4 bg-white space-y-3">
-                <button
-                  className="w-full py-3.5 bg-[#feae2c] text-[#291800] rounded-xl font-body font-bold text-[15px] hover:bg-[#feae2c]/90 transition-colors shadow-sm"
-                  onClick={hideUpgradeModal}
-                >
-                  View Upgrade Options
-                </button>
-                <button
-                  className="w-full py-3.5 bg-white text-on-surface border border-outline-light rounded-xl font-body font-semibold text-[15px] hover:bg-surface-low transition-colors"
-                  onClick={hideUpgradeModal}
-                >
-                  Not Now
-                </button>
+                <button className="w-full py-3.5 bg-[#feae2c] text-[#291800] rounded-xl font-body font-bold text-[15px] hover:bg-[#feae2c]/90 transition-colors shadow-sm" onClick={hideUpgradeModal}>View Upgrade Options</button>
+                <button className="w-full py-3.5 bg-white text-on-surface border border-outline-light rounded-xl font-body font-semibold text-[15px] hover:bg-surface-low transition-colors" onClick={hideUpgradeModal}>Not Now</button>
               </div>
             </motion.div>
           </div>
@@ -670,14 +393,4 @@ export function useAppData() {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error('useAppData must be used within AppProvider');
   return ctx;
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function maskPhone(phone) {
-  const digits = phone.replace(/\D/g, '');
-  if (digits.length >= 2) {
-    const last2 = digits.slice(-2);
-    return `+91 ${digits.slice(2, 4)}•••••${last2}`;
-  }
-  return phone;
 }
