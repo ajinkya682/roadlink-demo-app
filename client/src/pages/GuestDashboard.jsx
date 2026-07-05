@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { QrCode, Search, ChevronRight, Shield } from 'lucide-react';
+import { QrCode, Search, ChevronRight, Shield, LayoutDashboard, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAppData } from '../context/AppContext';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 const fadeUp = {
@@ -11,11 +12,33 @@ const fadeUp = {
 
 export default function GuestDashboard() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAppData();
 
   return (
-    <div className="min-h-screen bg-fog flex flex-col">
+    <div className="min-h-screen bg-fog flex flex-col relative">
+      {/* Top right auth button */}
+      <div className="absolute top-4 right-4 z-50">
+        {isAuthenticated ? (
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-full text-white font-semibold text-sm transition-all shadow-sm border border-white/10"
+          >
+            <LayoutDashboard size={16} />
+            Dashboard
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/login')}
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-full text-white font-semibold text-sm transition-all shadow-sm border border-white/10"
+          >
+            <User size={16} />
+            Login
+          </button>
+        )}
+      </div>
+
       {/* Hero */}
-      <div className="bg-navy px-6 pt-14 pb-16 text-center relative overflow-hidden">
+      <div className="bg-navy px-6 pt-16 pb-16 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white" />
           <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white" />

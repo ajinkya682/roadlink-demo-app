@@ -52,21 +52,14 @@ export default function QRScanner() {
         const token = extractVehicleID(qrData.value);
         if (!token) throw new Error('Invalid RoadLink QR Format');
 
-        // 1. Check if user owns this vehicle
-        const matchedVehicle = vehicles.find(v => v.qrToken === token || v.qrId === token);
-        if (matchedVehicle) {
-          navigate(`/vehicle-detail/${matchedVehicle.id}`);
-          return;
-        }
-
-        // 2. Guest flow - resolve the token via backend
+        // Always navigate to scan landing with the qr parameter
         if (token === 'ROADLINK-SIMULATED123') {
-          return navigate('/scan-landing', { state: { qrId: token, profile: { publicDisplayName: 'TEST VEHICLE' } } });
+          return navigate(`/scan-landing?qr=${token}`, { state: { qrId: token, profile: { publicDisplayName: 'TEST VEHICLE' } } });
         }
 
         const res = await api.get(`/vehicles/resolve?token=${token}`);
         if (res.data.success) {
-          navigate('/scan-landing', { state: { qrId: token, profile: res.data.data.profile } });
+          navigate(`/scan-landing?qr=${token}`, { state: { qrId: token, profile: res.data.data.profile } });
         } else {
           throw new Error('Invalid QR');
         }

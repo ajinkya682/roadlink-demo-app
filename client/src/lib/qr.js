@@ -31,6 +31,14 @@ export const isRoadLinkQR = (text) => {
   if (text.startsWith('roadlink://v/') || text.startsWith('roadlink://vehicle/')) return true;
   if (text.startsWith('https://roadlink.app/v/') || text.startsWith('http://roadlink.app/v/')) return true;
   if (text.startsWith('https://roadlink.app/verify/') || text.startsWith('http://roadlink.app/verify/')) return true;
+  
+  try {
+    const url = new URL(text);
+    if (url.pathname === '/scan-landing' && (url.searchParams.has('qr') || url.searchParams.has('qrToken') || url.searchParams.has('number'))) {
+      return true;
+    }
+  } catch(e) {}
+  
   return false;
 };
 
@@ -49,6 +57,10 @@ export const extractVehicleID = (text) => {
     // pathParts will be like ['v', 'token'] or ['verify', 'token']
     if (pathParts.length >= 2 && (pathParts[0] === 'v' || pathParts[0] === 'verify')) {
       return pathParts[1];
+    }
+    
+    if (url.pathname === '/scan-landing') {
+      return url.searchParams.get('qr') || url.searchParams.get('qrToken') || url.searchParams.get('number');
     }
   } catch (e) {
     // ignore parsing errors
