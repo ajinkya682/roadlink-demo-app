@@ -72,7 +72,7 @@ export default function AddVehicle() {
 
       const res = await api.post("/vehicles", formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": undefined,
         },
       });
 

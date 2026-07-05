@@ -27,7 +27,7 @@ exports.createVehicle = async (req, res) => {
 
     if (req.file) {
       try {
-        const result = await uploadBuffer(req.file.buffer, 'roadlink/vehicles', 'image');
+        const result = await uploadBuffer(req.file.buffer, 'roadlink/vehicles', 'image', false);
         vehicle.imageUrl = result.secure_url;
       } catch (uploadError) {
         logger.error('Failed to upload vehicle image', uploadError);

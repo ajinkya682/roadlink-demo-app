@@ -331,10 +331,11 @@ export default function VehicleDetail() {
         >
           {(() => {
             const currentImageUrl = isEditing && editForm.imageUrl !== undefined ? editForm.imageUrl : vehicle.imageUrl;
+            const currentType = isEditing && editForm.type !== undefined ? editForm.type : vehicle.type;
             return currentImageUrl ? (
               <img src={currentImageUrl} alt="Vehicle" className="w-full h-full object-cover" />
             ) : (
-              <VehicleIcon type={vehicle.type} size={32} className="text-navy" />
+              <VehicleIcon type={currentType} size={32} className="text-navy" />
             );
           })()}
           <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

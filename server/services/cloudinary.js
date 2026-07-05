@@ -6,20 +6,23 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const uploadBuffer = (buffer, folder = 'roadlink', resourceType = 'auto') => {
+const uploadBuffer = (buffer, folder = 'roadlink', resourceType = 'auto', isPrivate = true) => {
   return new Promise((resolve, reject) => {
+    const uploadOptions = { 
+      folder, 
+      resource_type: resourceType,
+      transformation: [
+        { width: 1600, crop: "limit" },
+        { quality: "auto" },
+        { fetch_format: "auto" }
+      ]
+    };
+    if (isPrivate) {
+      uploadOptions.type = 'private'; // Enforce private access
+    }
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      { 
-        folder, 
-        resource_type: resourceType,
-        type: 'private', // Enforce private access
-        // Automatically compress and resize large images/documents on upload
-        transformation: [
-          { width: 1600, crop: "limit" },
-          { quality: "auto" },
-          { fetch_format: "auto" }
-        ]
-      },
+      uploadOptions,
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
