@@ -30,6 +30,12 @@ const EMPTY_USER = {
     sms: true,
     email: false,
   },
+  privacyPrefs: {
+    publicVehicleProfile: true,
+    displayPhoneNumber: false,
+    plateSearchable: true,
+    shareAnalytics: false
+  },
 };
 
 export function AppProvider({ children }) {
@@ -147,6 +153,10 @@ export function AppProvider({ children }) {
           notificationPrefs: {
             ...EMPTY_USER.notificationPrefs,
             ...(res.data.data.user.notificationPrefs || {})
+          },
+          privacyPrefs: {
+            ...EMPTY_USER.privacyPrefs,
+            ...(res.data.data.user.privacyPrefs || {})
           }
         }));
         if (res.data.data.user.medicalProfile) {
@@ -520,6 +530,7 @@ export function AppProvider({ children }) {
       hideUpgradeModal,
       // Data
       user,
+      setUser,
       vehicles,
       notifications,
       documents,

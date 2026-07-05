@@ -37,7 +37,8 @@ const userSchema = new mongoose.Schema({
   privacyPrefs: {
     publicVehicleProfile: { type: Boolean, default: true },
     displayPhoneNumber: { type: Boolean, default: false },
-    plateSearchable: { type: Boolean, default: true }
+    plateSearchable: { type: Boolean, default: true },
+    shareAnalytics: { type: Boolean, default: false }
   }
 }, { timestamps: true });
 

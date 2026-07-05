@@ -1,19 +1,53 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Eye, Database, Smartphone } from 'lucide-react';
 import AppHeader from '../../components/AppHeader';
 import Toggle from '../../components/Toggle';
+import { useAppData } from '../../context/AppContext';
+import api from '../../lib/api';
 
 export default function PrivacyControls() {
-  const [controls, setControls] = useState({
-    publicProfile: false,
-    showPhone: false,
-    shareAnalytics: true,
-    allowSearch: false,
-  });
+  const { user, setUser } = useAppData();
+  
+  // Map keys used in UI to keys in user.privacyPrefs
+  const keyMap = {
+    publicProfile: 'publicVehicleProfile',
+    showPhone: 'displayPhoneNumber',
+    allowSearch: 'plateSearchable',
+    shareAnalytics: 'shareAnalytics'
+  };
 
-  const toggleControl = (key) => {
-    setControls(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleControl = async (uiKey) => {
+    if (!user || !user.privacyPrefs) return;
+    
+    const dbKey = keyMap[uiKey];
+    const currentVal = user.privacyPrefs[dbKey];
+    const newVal = currentVal === undefined ? false : !currentVal;
+
+    // Optimistic UI update
+    setUser(prev => ({
+      ...prev,
+      privacyPrefs: {
+        ...prev.privacyPrefs,
+        [dbKey]: newVal
+      }
+    }));
+
+    try {
+      await api.patch('/users/settings', {
+        privacyPrefs: { [dbKey]: newVal }
+      });
+    } catch (err) {
+      console.error('Failed to update privacy preference', err);
+      // Revert on failure
+      setUser(prev => ({
+        ...prev,
+        privacyPrefs: {
+          ...prev.privacyPrefs,
+          [dbKey]: currentVal
+        }
+      }));
+    }
   };
 
   const sections = [
@@ -99,7 +133,10 @@ export default function PrivacyControls() {
                       <p className="font-body text-[13px] text-[#737782] mt-1 leading-snug">{item.desc}</p>
                     </div>
                     <div className="shrink-0 mt-1">
-                      <Toggle on={controls[item.key]} onChange={() => toggleControl(item.key)} />
+                      <Toggle 
+                        on={user?.privacyPrefs?.[keyMap[item.key]] ?? false} 
+                        onChange={() => toggleControl(item.key)} 
+                      />
                     </div>
                   </div>
                 ))}
