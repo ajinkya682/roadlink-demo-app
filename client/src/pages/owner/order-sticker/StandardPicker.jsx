@@ -7,9 +7,9 @@ import img2 from '../../../assets/images/stickers/standard-minimal-card.png';
 import img3 from '../../../assets/images/stickers/standard-split-panel.png';
 
 const MOCK_TEMPLATES = [
-  { _id: '1', name: 'Standard Immersive Gradient', previewImageUrl: img1 },
-  { _id: '2', name: 'Standard Minimal Card', previewImageUrl: img2 },
-  { _id: '3', name: 'Standard Split Panel', previewImageUrl: img3 }
+  { _id: '64f0b2c1e4b0a1d2c3e4f5b1', name: 'Standard Immersive Gradient', previewImageUrl: img1 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f5b2', name: 'Standard Minimal Card', previewImageUrl: img2 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f5b3', name: 'Standard Split Panel', previewImageUrl: img3 }
 ];
 
 export default function StandardPicker() {

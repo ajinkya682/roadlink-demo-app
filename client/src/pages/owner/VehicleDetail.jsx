@@ -55,7 +55,7 @@ export default function VehicleDetail() {
       const reader = new FileReader();
       reader.onloadend = () => {
         const img = new Image();
-        img.onload = () => {
+        img.onload = async () => {
           const canvas = document.createElement('canvas');
           const MAX_SIZE = 400; // Compress to avoid 413 payload too large
           let width = img.width;
@@ -78,19 +78,17 @@ export default function VehicleDetail() {
           ctx.drawImage(img, 0, 0, width, height);
           const base64String = canvas.toDataURL('image/jpeg', 0.8);
           
-          if (!isEditing) {
-            setEditForm({
-              make: vehicle.make || '',
-              model: vehicle.model || '',
-              year: vehicle.year || '',
-              color: vehicle.color || '',
-              nickname: vehicle.nickname || '',
-              privacyMode: vehicle.privacyMode,
-              imageUrl: base64String
-            });
-            setIsEditing(true);
-          } else {
-            setEditForm(prev => ({ ...prev, imageUrl: base64String }));
+          try {
+            const res = await api.patch(`/vehicles/${id}`, { imageUrl: base64String });
+            if (res.data.success) {
+              const updatedVehicle = res.data.data.vehicle;
+              setVehicle(prev => ({ ...prev, imageUrl: updatedVehicle.imageUrl }));
+              if (isEditing) {
+                setEditForm(prev => ({ ...prev, imageUrl: updatedVehicle.imageUrl }));
+              }
+            }
+          } catch (err) {
+            console.error('Failed to update image', err);
           }
         };
         img.src = reader.result;
@@ -103,19 +101,16 @@ export default function VehicleDetail() {
 
   const handleRemoveImage = async () => {
     setShowImageOptions(false);
-    if (!isEditing) {
-      setEditForm({
-        make: vehicle.make || '',
-        model: vehicle.model || '',
-        year: vehicle.year || '',
-        color: vehicle.color || '',
-        nickname: vehicle.nickname || '',
-        privacyMode: vehicle.privacyMode,
-        imageUrl: null
-      });
-      setIsEditing(true);
-    } else {
-      setEditForm(prev => ({ ...prev, imageUrl: null }));
+    try {
+      const res = await api.patch(`/vehicles/${id}`, { imageUrl: null });
+      if (res.data.success) {
+        setVehicle(prev => ({ ...prev, imageUrl: null }));
+        if (isEditing) {
+          setEditForm(prev => ({ ...prev, imageUrl: null }));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to remove image', err);
     }
   };
 

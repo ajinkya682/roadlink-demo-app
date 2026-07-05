@@ -3,7 +3,7 @@ const QrToken = require('../../models/QrToken');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { generateQRToken } = require('../../utils/hmac');
 const { logger } = require('../../middleware/logger');
-const { uploadBuffer } = require('../../services/cloudinary');
+const { uploadBuffer, extractPublicId, deleteResource, cloudinary } = require('../../services/cloudinary');
 
 exports.createVehicle = async (req, res) => {
   try {
@@ -78,7 +78,10 @@ exports.getVehicleById = async (req, res) => {
     // Also fetch the active QR token
     const qrToken = await QrToken.findOne({ vehicleId: id, active: true }).sort({ createdAt: -1 });
     
-    return sendSuccess(res, { vehicle, qrToken: qrToken ? qrToken.token : null });
+    const vehicleObj = vehicle.toObject();
+    vehicleObj.qrToken = qrToken ? qrToken.token : null;
+    
+    return sendSuccess(res, { vehicle: vehicleObj });
   } catch (error) {
     return sendError(res, 'Failed to fetch vehicle', 500);
   }
@@ -92,15 +95,45 @@ exports.updateVehicle = async (req, res) => {
     delete updates.ownerId;
     delete updates.registrationNumber;
 
+    let existingVehicle = await Vehicle.findOne({ _id: id, ownerId: req.user.userId, status: { $ne: 'deleted' } });
+    if (!existingVehicle) return sendError(res, 'Vehicle not found', 404);
+
+    // Handle image upload/removal
+    if (updates.imageUrl === null) {
+      if (existingVehicle.imageUrl) {
+        const publicId = extractPublicId(existingVehicle.imageUrl);
+        if (publicId) await deleteResource(publicId, 'image').catch(e => logger.error('Cloudinary delete failed', e));
+      }
+    } else if (updates.imageUrl && updates.imageUrl.startsWith('data:image/')) {
+      // Upload new base64 image to cloudinary
+      try {
+        const uploadRes = await cloudinary.uploader.upload(updates.imageUrl, {
+          folder: 'roadlink/vehicles',
+          type: 'upload', // public
+          transformation: [{ width: 1600, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }]
+        });
+        updates.imageUrl = uploadRes.secure_url;
+        
+        // Delete old image if exists
+        if (existingVehicle.imageUrl) {
+          const publicId = extractPublicId(existingVehicle.imageUrl);
+          if (publicId) await deleteResource(publicId, 'image').catch(e => logger.error('Cloudinary delete failed', e));
+        }
+      } catch (e) {
+        logger.error('Cloudinary upload failed', e);
+        delete updates.imageUrl; // Don't save the massive base64 string to DB if upload fails
+      }
+    }
+
     const vehicle = await Vehicle.findOneAndUpdate(
       { _id: id, ownerId: req.user.userId, status: { $ne: 'deleted' } },
       { $set: updates },
       { new: true, runValidators: true }
     );
 
-    if (!vehicle) return sendError(res, 'Vehicle not found', 404);
     return sendSuccess(res, { vehicle });
   } catch (error) {
+    logger.error('Error in updateVehicle:', error);
     return sendError(res, 'Failed to update vehicle', 500);
   }
 };

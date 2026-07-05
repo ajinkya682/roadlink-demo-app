@@ -10,6 +10,8 @@ export default function PlanSelection() {
   const location = useLocation();
   const vehicle = location.state?.vehicle;
 
+  const isFree = vehicle && !vehicle.hasUsedFreeStickerOrder;
+
   const handleSelect = (tier) => {
     if (tier === 'standard') navigate('/order-sticker/standard', { state: { vehicle } });
     else if (tier === 'reflective') navigate('/order-sticker/reflective', { state: { vehicle } });
@@ -32,28 +34,10 @@ export default function PlanSelection() {
         
         <div className="space-y-4">
           
-          {/* Standard Tier */}
-          <div 
-            onClick={() => handleSelect('standard')}
-            className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex items-center cursor-pointer active:scale-95 transition-transform"
-          >
-            <div className="w-16 h-16 bg-slate-100 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-slate-200">
-               <img src={standardImg} alt="Standard Preview" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="font-bold text-[#1F2937]">Standard</h3>
-                <span className="font-mono font-medium text-slate-500">₹199</span>
-              </div>
-              <p className="text-sm text-slate-500">1 sticker, choose your design</p>
-            </div>
-            <ChevronRight size={20} className="text-slate-400 ml-2" />
-          </div>
-
           {/* Reflective Tier */}
           <div 
             onClick={() => handleSelect('reflective')}
-            className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex items-center cursor-pointer active:scale-95 transition-transform relative overflow-hidden"
+            className="bg-white rounded-xl shadow-md border-2 border-[#1E3A8A] p-4 flex items-center cursor-pointer active:scale-95 transition-transform relative overflow-hidden"
           >
             {/* Subtle sheen effect for reflective */}
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-transparent via-white to-transparent opacity-20 pointer-events-none"></div>
@@ -65,32 +49,22 @@ export default function PlanSelection() {
             <div className="flex-1">
               <div className="flex justify-between items-start mb-1">
                 <h3 className="font-bold text-[#1F2937]">Reflective</h3>
-                <span className="font-mono font-medium text-slate-500">₹299</span>
+                {isFree ? (
+                  <>
+                    <span className="font-mono font-medium text-slate-500 line-through mr-1 text-xs">₹299</span>
+                    <span className="font-mono font-bold text-verified-green">FREE</span>
+                  </>
+                ) : (
+                  <span className="font-mono font-medium text-slate-500">₹299</span>
+                )}
               </div>
               <p className="text-sm text-slate-500">2 stickers, reflective material</p>
             </div>
-            <ChevronRight size={20} className="text-slate-400 ml-2" />
+            <ChevronRight size={20} className="text-[#1E3A8A] ml-2" />
           </div>
 
-          {/* Premium Tier */}
-          <div 
-            onClick={() => handleSelect('premium')}
-            className="bg-white rounded-xl shadow-md border-2 border-[#F59E0B] p-4 flex items-center cursor-pointer active:scale-95 transition-transform"
-          >
-            <div className="w-16 h-16 bg-amber-50 rounded-lg flex-shrink-0 mr-4 overflow-hidden border border-amber-200">
-               <img src={premiumImg} alt="Premium Preview" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between items-start mb-1">
-                <div className="flex items-center">
-                  <h3 className="font-bold text-[#1F2937] mr-2">Premium</h3>
-                  <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Custom</span>
-                </div>
-                <span className="font-mono font-medium text-[#F59E0B]">₹399</span>
-              </div>
-              <p className="text-sm text-slate-500">Fully custom, design your own</p>
-            </div>
-            <ChevronRight size={20} className="text-amber-500 ml-2" />
+          <div className="text-center mt-6">
+            <p className="text-xs text-slate-400 font-medium tracking-wide uppercase">Other plans coming soon</p>
           </div>
 
         </div>

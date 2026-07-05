@@ -40,7 +40,7 @@ export default function CartAddress() {
     try {
       // 1. Create Draft Order
       const createRes = await api.post('/orders', {
-        vehicleId: vehicle.id,
+        vehicleId: vehicle._id || vehicle.id,
         tier,
         templateSelections: selections,
         customization: customization || {}
@@ -49,7 +49,7 @@ export default function CartAddress() {
       const order = createRes.data;
 
       // 2. Update Address
-      await api.patch(`/orders/${order._id}/address`, formData);
+      await api.patch(`/orders/${order._id}/address`, { ...formData, saveDefault });
 
       // 3. Checkout
       const checkoutRes = await api.post(`/orders/${order._id}/checkout`);

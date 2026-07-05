@@ -8,10 +8,10 @@ import img6 from '../../../assets/images/stickers/reflective-hazard-accent.png';
 import img7 from '../../../assets/images/stickers/reflective-night-edge.png';
 
 const MOCK_TEMPLATES = [
-  { _id: '4', name: 'Reflective Chrome Blob', previewImageUrl: img4 },
-  { _id: '5', name: 'Reflective Halo Ring', previewImageUrl: img5 },
-  { _id: '6', name: 'Reflective Hazard Accent', previewImageUrl: img6 },
-  { _id: '7', name: 'Reflective Night Edge', previewImageUrl: img7 }
+  { _id: '64f0b2c1e4b0a1d2c3e4f5a1', name: 'Reflective Chrome Blob', previewImageUrl: img4 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f5a2', name: 'Reflective Halo Ring', previewImageUrl: img5 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f5a3', name: 'Reflective Hazard Accent', previewImageUrl: img6 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f5a4', name: 'Reflective Night Edge', previewImageUrl: img7 }
 ];
 
 export default function ReflectivePicker() {

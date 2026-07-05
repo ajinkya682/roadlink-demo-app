@@ -78,8 +78,8 @@ export default function OrderConfirmation() {
             className="mb-8 flex flex-col items-center w-full"
           >
             <div className="font-body text-[12px] font-bold tracking-[0.08em] text-[#434751] uppercase mb-3 text-center">ORDER REFERENCE</div>
-            <div className="border-[2px] border-[#1A1A1A] bg-white px-8 py-3 rounded-lg inline-flex items-center justify-center hover:bg-black/5 transition-colors cursor-default mb-4">
-              <span className="font-mono text-[22px] font-semibold text-[#1A1A1A] tracking-[0.1em]">{finalOrderId}</span>
+            <div className="border-[2px] border-[#1A1A1A] bg-white px-4 md:px-6 py-2 md:py-3 rounded-lg inline-flex flex-wrap items-center justify-center hover:bg-black/5 transition-colors cursor-default mb-4 max-w-full overflow-hidden">
+              <span className="font-mono text-[14px] md:text-[16px] font-semibold text-[#1A1A1A] tracking-wider truncate">{finalOrderId}</span>
             </div>
             
             <button 

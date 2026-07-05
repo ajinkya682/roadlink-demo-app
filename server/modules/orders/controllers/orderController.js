@@ -39,7 +39,7 @@ exports.getTemplates = async (req, res) => {
 exports.createOrder = async (req, res) => {
   try {
     const { vehicleId, tier, templateSelections, customization } = req.body;
-    const userId = req.user.id; // From auth middleware
+    const userId = req.user.userId; // From auth middleware
 
     if (!['standard', 'reflective', 'premium'].includes(tier)) {
       return res.status(400).json({ error: 'Invalid tier' });
@@ -69,17 +69,18 @@ exports.createOrder = async (req, res) => {
     await order.save();
     res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Create Order Error:', error);
+    res.status(500).json({ error: error.message, stack: error.stack });
   }
 };
 
 exports.updateAddress = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, line1, line2, city, state, pincode, phone } = req.body;
+    const { name, line1, line2, city, state, pincode, phone, saveDefault } = req.body;
     
     const order = await Order.findOneAndUpdate(
-      { _id: id, userId: req.user.id, fulfillmentStatus: 'draft' },
+      { _id: id, userId: req.user.userId, fulfillmentStatus: 'draft' },
       { 
         shippingAddress: { name, line1, line2, city, state, pincode, phone } 
       },
@@ -87,6 +88,13 @@ exports.updateAddress = async (req, res) => {
     );
     
     if (!order) return res.status(404).json({ error: 'Order not found or not in draft state' });
+    
+    if (saveDefault) {
+      const User = require('../../../models/User');
+      await User.findByIdAndUpdate(req.user.userId, {
+        $set: { address: { name, line1, line2, city, state, pincode, phone } }
+      });
+    }
     
     res.json(order);
   } catch (error) {
@@ -97,7 +105,7 @@ exports.updateAddress = async (req, res) => {
 exports.checkout = async (req, res) => {
   try {
     const { id } = req.params;
-    const order = await Order.findOne({ _id: id, userId: req.user.id, fulfillmentStatus: 'draft' });
+    const order = await Order.findOne({ _id: id, userId: req.user.userId, fulfillmentStatus: 'draft' });
     
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
@@ -211,7 +219,7 @@ exports.paymentWebhook = async (req, res) => {
 
 exports.getOrderHistory = async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user.id })
+    const orders = await Order.find({ userId: req.user.userId })
       .sort({ createdAt: -1 })
       .populate('vehicleId', 'displayName registrationNumber type make model')
       .populate('templateSelections.templateId');
@@ -223,7 +231,7 @@ exports.getOrderHistory = async (req, res) => {
 
 exports.getOrderDetail = async (req, res) => {
   try {
-    const order = await Order.findOne({ _id: req.params.id, userId: req.user.id })
+    const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId })
       .populate('vehicleId', 'displayName registrationNumber type make model')
       .populate('templateSelections.templateId');
       
@@ -236,7 +244,7 @@ exports.getOrderDetail = async (req, res) => {
 
 exports.getReceipt = async (req, res) => {
   try {
-    const order = await Order.findOne({ _id: req.params.id, userId: req.user.id });
+    const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId });
     if (!order) return res.status(404).json({ error: 'Order not found' });
     if (!order.receiptUrl) return res.status(404).json({ error: 'Receipt not found or not yet generated' });
     
