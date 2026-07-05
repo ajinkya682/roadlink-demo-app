@@ -64,12 +64,18 @@ export default function SubscriptionPayment() {
         description: `Vehicle Protection for ${vehicle.plate || vehicle.registrationNumber}`,
         image: "https://via.placeholder.com/150",
         handler: async function (response) {
-          // Razorpay returns razorpay_payment_id, razorpay_subscription_id, razorpay_signature
-          // We rely on webhooks to activate the subscription in DB
-          // For UX, we wait a brief moment then navigate to a success page or vehicle details
-          setTimeout(() => {
-             navigate(`/vehicle-detail/${vehicle.id || vehicle._id}`);
-          }, 1500);
+          // Send signature to backend for verification so we don't need webhooks during testing
+          try {
+            await api.post("/subscriptions/verify", {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_signature: response.razorpay_signature,
+              vehicleId: vehicle.id || vehicle._id
+            });
+            navigate(`/vehicle-detail/${vehicle.id || vehicle._id}`);
+          } catch (err) {
+            setError("Payment verification failed. Please contact support.");
+          }
         },
         prefill: {
           name: "User",

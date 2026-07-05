@@ -208,3 +208,46 @@ exports.cancelAndRefund = async (req, res) => {
     return sendError(res, 'Failed to process refund cancellation', 500);
   }
 };
+
+exports.verifySubscription = async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature, vehicleId } = req.body;
+
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(razorpay_payment_id + '|' + razorpay_subscription_id)
+      .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+      return sendError(res, 'Invalid signature', 400);
+    }
+
+    const vehicle = await Vehicle.findById(vehicleId);
+    if (!vehicle) return sendError(res, 'Vehicle not found', 404);
+
+    if (vehicle.protectionStatus !== 'active') {
+      await QrToken.updateMany({ vehicleId: vehicle._id }, { $set: { active: false } });
+      const tokenStr = generateQRToken(vehicle._id.toString());
+      const qrToken = new QrToken({
+        vehicleId: vehicle._id,
+        token: tokenStr
+      });
+      await qrToken.save();
+      
+      const now = new Date();
+      const refundGuaranteeExpiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      
+      vehicle.protectionStatus = 'active';
+      vehicle.currentPeriodStart = now;
+      vehicle.currentPeriodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      vehicle.refundGuaranteeExpiresAt = refundGuaranteeExpiresAt;
+      await vehicle.save();
+    }
+
+    return sendSuccess(res, { message: 'Subscription verified and activated successfully.' });
+  } catch (error) {
+    logger.error('Manual verification failed:', error);
+    return sendError(res, 'Failed to verify subscription', 500);
+  }
+};
