@@ -25,6 +25,8 @@ const EMPTY_USER = {
     whatsapp: true,
     sms: true,
     email: false,
+    sound: true,
+    haptic: true,
   },
   privacyPrefs: {
     publicVehicleProfile: true,

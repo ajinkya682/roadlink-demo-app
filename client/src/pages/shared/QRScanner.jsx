@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NativeFeedback } from '../../hooks/useNative';
+import { hapticManager } from '../../services/sound/HapticManager';
 import { useAppData } from '../../context/AppContext';
 import api from '../../lib/api';
 import { detectQRType, extractVehicleID, QR_TYPES } from '../../lib/qr';
@@ -42,7 +43,7 @@ export default function QRScanner() {
   const handleScanSuccess = async (decodedText) => {
     if (scannedResult) return; // Prevent duplicate reads
     
-    await NativeFeedback.vibrateSuccess();
+    hapticManager.success();
     
     const qrData = detectQRType(decodedText);
     
@@ -75,7 +76,7 @@ export default function QRScanner() {
 
   const handleErrorFlash = async () => {
     setErrorFlash(true);
-    await NativeFeedback.vibrateError();
+    hapticManager.error();
     setTimeout(() => {
       setErrorFlash(false);
       resumeScanning(); // Allow another scan

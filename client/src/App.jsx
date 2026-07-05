@@ -8,6 +8,8 @@ import BottomTabBar from './components/BottomTabBar'
 import RequireAuth from './components/RequireAuth'
 import RequireGuest from './components/RequireGuest'
 import { OfflineBanner } from './components/OfflineBanner'
+import { soundManager } from './services/sound/SoundManager'
+import { hapticManager } from './services/sound/HapticManager'
 
 // Guest
 import GuestDashboard from './pages/GuestDashboard'
@@ -79,7 +81,8 @@ function App() {
       // Listen for notification received while app is in foreground
       PushNotifications.addListener('pushNotificationReceived', (notification) => {
         console.log('Push received: ' + JSON.stringify(notification));
-        // You could show a custom toast here
+        soundManager.play('notification');
+        hapticManager.notification();
       });
 
       // Listen for notification action (when user taps on it)
@@ -93,6 +96,11 @@ function App() {
           navigate('/notifications');
         }
       });
+      
+      // Cleanup listeners on unmount
+      return () => {
+        PushNotifications.removeAllListeners();
+      };
     }
   }, [navigate]);
 

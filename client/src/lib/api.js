@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { SecureStorage } from '../hooks/useNative';
+import { hapticManager } from '../services/sound/HapticManager';
 
 // Create an Axios instance pointing to the Phase 3 backend
 const api = axios.create({
@@ -42,8 +43,19 @@ api.interceptors.request.use(
 
 // Response Interceptor: Handle 401s and Refresh Token
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Trigger success feedback for mutations (only haptics now)
+    if (response.config && response.config.method && response.config.method.toLowerCase() !== 'get') {
+      hapticManager.success();
+    }
+    return response;
+  },
   async (error) => {
+    // Trigger error feedback for mutations or specific errors
+    if (error.config && error.config.method && error.config.method.toLowerCase() !== 'get') {
+      hapticManager.error();
+    }
+    
     const originalRequest = error.config;
 
     if (error.response && error.response.status === 401 && !originalRequest._retry) {

@@ -63,6 +63,8 @@ export default function Settings() {
           <div className="bg-white rounded-2xl border border-outline-light divide-y divide-outline-light overflow-hidden">
             {[
               { key: "push", label: "Push Notifications", sub: null, disabled: false },
+              { key: "sound", label: "Sound Effects", sub: "Play sounds on success or error", disabled: false },
+              { key: "haptic", label: "Haptic Feedback", sub: "Vibrate on important actions", disabled: false },
               {
                 key: "whatsapp",
                 label: "WhatsApp Alerts",
