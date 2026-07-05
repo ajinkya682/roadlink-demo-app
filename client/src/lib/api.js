@@ -2,9 +2,14 @@ import axios from 'axios';
 import { SecureStorage } from '../hooks/useNative';
 import { hapticManager } from '../services/sound/HapticManager';
 
+const API_URL = import.meta.env.VITE_API_URL;
+if (!API_URL) {
+  console.error("VITE_API_URL is not defined in environment variables.");
+}
+
 // Create an Axios instance pointing to the Phase 3 backend
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/v1',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -80,8 +85,7 @@ api.interceptors.response.use(
         }
 
         // Call refresh endpoint directly using fetch to avoid interceptor loops
-        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
-        const response = await fetch(`${baseURL}/auth/refresh`, {
+        const response = await fetch(`${API_URL}/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),

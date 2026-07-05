@@ -40,7 +40,7 @@ export default function OrderHistory() {
       if (res.data && res.data.receiptUrl) {
         // Create an invisible link to download the file
         const a = document.createElement('a');
-        a.href = res.data.receiptUrl.startsWith('http') ? res.data.receiptUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${res.data.receiptUrl}`;
+        a.href = res.data.receiptUrl.startsWith('http') ? res.data.receiptUrl : `${import.meta.env.VITE_API_URL}${res.data.receiptUrl}`;
         a.target = '_blank';
         a.download = `Receipt_${orderId}.pdf`;
         document.body.appendChild(a);

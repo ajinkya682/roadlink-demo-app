@@ -177,7 +177,6 @@ export function AppProvider({ children }) {
   const deleteAccount = async () => {
     try { await api.delete('/users/me'); } catch (err) {}
     await SecureStorage.clear();
-    localStorage.clear();
     sessionStorage.clear();
     document.cookie.split(";").forEach((c) => {
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
