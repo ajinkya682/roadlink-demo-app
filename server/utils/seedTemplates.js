@@ -48,21 +48,23 @@ const templates = [
   }
 ];
 
+const { logger } = require('../middleware/logger');
+
 const seedDB = async () => {
   try {
     const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/roadlink_demo';
     await mongoose.connect(mongoURI);
-    console.log('Connected to MongoDB');
+    logger.info('Connected to MongoDB');
     
     await StickerTemplate.deleteMany({});
-    console.log('Cleared existing templates');
+    logger.info('Cleared existing templates');
     
     await StickerTemplate.insertMany(templates);
-    console.log('Inserted new templates');
+    logger.info('Inserted new templates');
     
     process.exit(0);
   } catch (err) {
-    console.error('Error seeding DB', err);
+    logger.error(`Error seeding DB: ${err.message}`);
     process.exit(1);
   }
 };

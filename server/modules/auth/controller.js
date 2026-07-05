@@ -50,8 +50,7 @@ exports.requestOtp = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    // Development only: Print OTP to console
-    console.log(`[DEV] Generated OTP for ${phone}: ${otp}`);
+
 
     await otpProvider.sendOTP(phone, otp);
 
