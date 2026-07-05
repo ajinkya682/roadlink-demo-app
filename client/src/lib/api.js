@@ -4,7 +4,7 @@ import { hapticManager } from '../services/sound/HapticManager';
 
 // Create an Axios instance pointing to the Phase 3 backend
 const api = axios.create({
-  baseURL: 'http://localhost:3000/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -80,7 +80,8 @@ api.interceptors.response.use(
         }
 
         // Call refresh endpoint directly using fetch to avoid interceptor loops
-        const response = await fetch('http://localhost:3000/v1/auth/refresh', {
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
+        const response = await fetch(`${baseURL}/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
