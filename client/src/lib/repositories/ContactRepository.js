@@ -1,7 +1,7 @@
 import { db } from '../db/database';
 import api from '../api';
 import { syncManager } from '../sync/SyncManager';
-import { Network } from '@capacitor/network';
+
 
 let lastContactRefreshAt = 0;
 const CONTACT_TTL_MS = 60 * 1000;
@@ -14,8 +14,7 @@ export class ContactRepository {
   }
 
   static async refreshContactsSilently() {
-    const status = await Network.getStatus();
-    if (!status.connected) return;
+    if (!navigator.onLine) return;
 
     const now = Date.now();
     if (now - lastContactRefreshAt < CONTACT_TTL_MS) return;
@@ -75,8 +74,7 @@ export class ContactRepository {
 
   static async deleteContact(id) {
     await db.contacts.delete(id);
-    const status = await Network.getStatus();
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.delete(`/emergency-contacts/${id}`);
       } catch (err) {
@@ -101,8 +99,7 @@ export class ContactRepository {
     Object.assign(c, updatedContact);
     await db.contacts.put(c);
 
-    const status = await Network.getStatus();
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.patch(`/emergency-contacts/${id}`, payload);
       } catch (err) {
@@ -122,8 +119,7 @@ export class ContactRepository {
     }
 
     const payload = { isPrimary: true };
-    const status = await Network.getStatus();
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.patch(`/emergency-contacts/${id}`, payload);
       } catch (err) {

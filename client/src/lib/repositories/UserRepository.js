@@ -1,7 +1,7 @@
 import { db } from '../db/database';
 import api from '../api';
 import { syncManager } from '../sync/SyncManager';
-import { Network } from '@capacitor/network';
+
 
 let lastUserRefreshAt = 0;
 const USER_TTL_MS = 60 * 1000;
@@ -18,8 +18,7 @@ export class UserRepository {
   }
 
   static async refreshProfileSilently() {
-    const status = await Network.getStatus();
-    if (!status.connected) return;
+    if (!navigator.onLine) return;
 
     const now = Date.now();
     if (now - lastUserRefreshAt < USER_TTL_MS) return;
@@ -62,8 +61,7 @@ export class UserRepository {
     const updated = { ...current, ...updates, updatedAt: Date.now() };
     await db.user.put(updated);
 
-    const status = await Network.getStatus();
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.patch('/users/me', formDataObj);
       } catch (err) {
@@ -83,8 +81,7 @@ export class UserRepository {
     const updated = { ...current, ...settingsData, updatedAt: Date.now() };
     await db.user.put(updated);
 
-    const status = await Network.getStatus();
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.patch('/users/settings', settingsData);
       } catch (err) {

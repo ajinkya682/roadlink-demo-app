@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
-import { Capacitor } from '@capacitor/core'
-import { useBackButton } from './hooks/useBackButton'
 import PageWrapper from './components/PageWrapper'
 import BottomTabBar from './components/BottomTabBar'
 import RequireAuth from './components/RequireAuth'
@@ -58,7 +56,7 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useBackButton();
+
 
   const showNavRoutes = [
     '/dashboard',       // Home

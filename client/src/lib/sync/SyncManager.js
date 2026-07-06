@@ -1,23 +1,19 @@
 import { db } from '../db/database';
 import api from '../api';
-import { Network } from '@capacitor/network';
 
 class SyncManager {
   constructor() {
     this.isSyncing = false;
-    this.isOnline = true;
-    
-    // Check initial status
-    Network.getStatus().then(status => {
-      this.isOnline = status.connected;
-    });
+    this.isOnline = navigator.onLine;
 
     // Listen to network changes
-    Network.addListener('networkStatusChange', status => {
-      this.isOnline = status.connected;
-      if (this.isOnline) {
-        this.processQueue();
-      }
+    window.addEventListener('online', () => {
+      this.isOnline = true;
+      this.processQueue();
+    });
+
+    window.addEventListener('offline', () => {
+      this.isOnline = false;
     });
   }
 

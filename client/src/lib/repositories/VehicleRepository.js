@@ -1,7 +1,7 @@
 import { db } from '../db/database';
 import api from '../api';
 import { syncManager } from '../sync/SyncManager';
-import { Network } from '@capacitor/network';
+
 
 let lastVehicleRefreshAt = 0;
 const VEHICLE_TTL_MS = 60 * 1000;
@@ -16,8 +16,7 @@ export class VehicleRepository {
   }
 
   static async refreshVehiclesSilently() {
-    const status = await Network.getStatus();
-    if (!status.connected) return;
+    if (!navigator.onLine) return;
 
     const now = Date.now();
     if (now - lastVehicleRefreshAt < VEHICLE_TTL_MS) return;
@@ -102,9 +101,7 @@ export class VehicleRepository {
     await db.vehicles.put(v);
 
     const payload = { showOwnerName: !newMode };
-    const status = await Network.getStatus();
-
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.patch(`/vehicles/${id}`, payload);
       } catch (err) {

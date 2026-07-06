@@ -1,7 +1,7 @@
 import { db } from '../db/database';
 import api from '../api';
 import { syncManager } from '../sync/SyncManager';
-import { Network } from '@capacitor/network';
+
 
 let lastDocumentRefreshAt = 0;
 const DOCUMENT_TTL_MS = 60 * 1000;
@@ -14,8 +14,7 @@ export class DocumentRepository {
   }
 
   static async refreshDocumentsSilently() {
-    const status = await Network.getStatus();
-    if (!status.connected) return;
+    if (!navigator.onLine) return;
 
     const now = Date.now();
     if (now - lastDocumentRefreshAt < DOCUMENT_TTL_MS) return;
@@ -69,8 +68,7 @@ export class DocumentRepository {
   static async deleteDocument(id) {
     await db.documents.delete(id);
 
-    const status = await Network.getStatus();
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.delete(`/documents/${id}`);
       } catch (err) {
@@ -89,8 +87,7 @@ export class DocumentRepository {
     Object.assign(doc, updates);
     await db.documents.put(doc);
 
-    const status = await Network.getStatus();
-    if (status.connected) {
+    if (navigator.onLine) {
       try {
         await api.patch(`/documents/${id}`, updates);
       } catch (err) {
