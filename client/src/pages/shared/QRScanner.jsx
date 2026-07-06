@@ -43,7 +43,7 @@ export default function QRScanner() {
   const handleScanSuccess = async (decodedText) => {
     if (scannedResult) return; // Prevent duplicate reads
     
-    hapticManager.success();
+    hapticManager.vibrateSuccess();
     
     const qrData = detectQRType(decodedText);
     

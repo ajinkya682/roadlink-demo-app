@@ -51,14 +51,14 @@ api.interceptors.response.use(
   (response) => {
     // Trigger success feedback for mutations (only haptics now)
     if (response.config && response.config.method && response.config.method.toLowerCase() !== 'get') {
-      hapticManager.success();
+      hapticManager.vibrateSuccess();
     }
     return response;
   },
   async (error) => {
     // Trigger error feedback for mutations or specific errors
     if (error.config && error.config.method && error.config.method.toLowerCase() !== 'get') {
-      hapticManager.error();
+      hapticManager.vibrateError();
     }
     
     const originalRequest = error.config;

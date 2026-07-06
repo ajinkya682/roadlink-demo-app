@@ -5,6 +5,7 @@ import AppHeader from "../../components/AppHeader";
 import Button from "../../components/Button";
 import api from "../../lib/api";
 import { db } from "../../lib/db/database";
+import { hapticManager } from "../../services/sound/HapticManager";
 
 export default function SubscriptionPayment() {
   const location = useLocation();
@@ -90,6 +91,7 @@ export default function SubscriptionPayment() {
               v.protectionStatus = 'active';
               await db.vehicles.put(v);
             }
+            hapticManager.playSuccessSound();
             navigate("/dashboard", { replace: true });
           } catch (err) {
             setError("Payment verification failed. Please contact support.");

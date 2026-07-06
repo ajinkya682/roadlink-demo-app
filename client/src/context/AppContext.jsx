@@ -134,6 +134,7 @@ export function AppProvider({ children }) {
         VehicleRepository.refreshVehiclesSilently();
         DocumentRepository.refreshDocumentsSilently();
         ContactRepository.refreshContactsSilently();
+        refreshNotifications();
       }
     }
     loadData();
@@ -189,7 +190,10 @@ export function AppProvider({ children }) {
         try {
           const notification = JSON.parse(e.data);
           await db.notifications.put(notification);
-          import('../services/sound/HapticManager').then(m => m.hapticManager.notification());
+          import('../services/sound/HapticManager').then(m => {
+            m.hapticManager.playNotificationSound();
+            m.hapticManager.vibrateNotification();
+          });
         } catch(err) { console.error('[SSE] Error parsing notification', err); }
       });
 
