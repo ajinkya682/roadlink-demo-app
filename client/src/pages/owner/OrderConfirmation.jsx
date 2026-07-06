@@ -142,13 +142,13 @@ export default function OrderConfirmation() {
             className="space-y-4"
           >
             <button 
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/dashboard', { replace: true })}
               className="w-full bg-[#1B4B8F] text-white font-body text-[14px] font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:bg-[#153a6f] active:scale-[0.98] transition-all shadow-md"
             >
               BACK TO DASHBOARD
             </button>
             <button 
-              onClick={() => navigate('/order-history')}
+              onClick={() => navigate('/order-history', { replace: true })}
               className="w-full bg-transparent text-[#003470] font-body text-[14px] font-bold tracking-[0.08em] uppercase py-2 hover:underline active:scale-[0.98] transition-all"
             >
               VIEW ORDER HISTORY

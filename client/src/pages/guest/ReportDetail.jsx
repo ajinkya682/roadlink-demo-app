@@ -132,7 +132,7 @@ export default function ReportDetail() {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       }
-      setTimeout(() => navigate('/report-confirmation', { state: { category: cat } }), 800);
+      setTimeout(() => navigate('/report-confirmation', { state: { category: cat }, replace: true }), 800);
     } catch (err) {
       console.error('Failed to submit report', err);
       setLoading(false);

@@ -16,8 +16,16 @@ export default function SubscriptionPayment() {
 
   useEffect(() => {
     if (!vehicle) {
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
+      return;
     }
+
+    // Check live DB in case location.state is stale from a back-navigation
+    db.vehicles.get(vehicle.id || vehicle._id).then(v => {
+      if (v && v.protectionStatus === 'active') {
+        navigate("/dashboard", { replace: true });
+      }
+    });
   }, [vehicle, navigate]);
 
   const loadRazorpayScript = () => {
@@ -57,7 +65,7 @@ export default function SubscriptionPayment() {
            await db.vehicles.put(v);
          }
          setTimeout(() => {
-            navigate("/dashboard");
+            navigate("/dashboard", { replace: true });
          }, 1000);
          return;
       }
@@ -82,7 +90,7 @@ export default function SubscriptionPayment() {
               v.protectionStatus = 'active';
               await db.vehicles.put(v);
             }
-            navigate("/dashboard");
+            navigate("/dashboard", { replace: true });
           } catch (err) {
             setError("Payment verification failed. Please contact support.");
           }

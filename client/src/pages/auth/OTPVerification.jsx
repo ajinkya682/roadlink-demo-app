@@ -86,7 +86,7 @@ export default function OTPVerification() {
         };
 
         await signIn(enhancedUser, accessToken, refreshToken);
-        navigate('/add-vehicle', { state: { isNewSetup: true } });
+        navigate('/add-vehicle', { state: { isNewSetup: true }, replace: true });
       } else {
         throw new Error(res.data.error?.message || 'Invalid OTP');
       }

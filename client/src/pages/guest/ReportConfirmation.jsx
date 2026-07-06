@@ -80,7 +80,7 @@ export default function ReportConfirmation() {
           transition={{ delay: 0.9 }}
           className="w-full"
         >
-          <Button variant="outline" fullWidth onClick={() => navigate('/guest-dashboard')}>
+          <Button variant="outline" fullWidth onClick={() => navigate('/guest-dashboard', { replace: true })}>
             Done
           </Button>
         </motion.div>

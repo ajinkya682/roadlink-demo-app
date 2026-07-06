@@ -74,7 +74,7 @@ export default function AddVehicle() {
       const vehicle = await VehicleRepository.createVehicle(formData);
       
       setLoading(false);
-      navigate("/subscription-payment", { state: { vehicle } });
+      navigate("/subscription-payment", { state: { vehicle }, replace: true });
     } catch (err) {
       setError(
         err.response?.data?.error?.message || err.message || "Network error",
@@ -309,7 +309,7 @@ export default function AddVehicle() {
           {isNewSetup && (
             <button
               className="w-full py-2 text-on-surface font-body text-[14px] font-medium underline hover:text-navy transition-colors"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/dashboard", { replace: true })}
             >
               Skip for now
             </button>
