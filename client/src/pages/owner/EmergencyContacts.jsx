@@ -10,11 +10,9 @@ import { useAppData } from "../../context/AppContext";
 const relations = ['Family', 'Friend', 'Colleague', 'Spouse', 'Brother', 'Other'];
 
 export default function EmergencyContacts() {
-  const { contacts, medicalProfile, setMedicalProfile, refreshContacts, addContact, updateContact, deleteContact } = useAppData();
+  const { contacts, medicalProfile, setMedicalProfile, addContact, updateContact, deleteContact } = useAppData();
   
-  useEffect(() => {
-    refreshContacts();
-  }, []);
+
   
   // Section toggle states
   const [openSection, setOpenSection] = useState('medical'); // 'medical' or 'contacts'

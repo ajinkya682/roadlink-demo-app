@@ -3,6 +3,9 @@ import api from '../api';
 import { syncManager } from '../sync/SyncManager';
 import { Network } from '@capacitor/network';
 
+let lastUserRefreshAt = 0;
+const USER_TTL_MS = 60 * 1000;
+
 export class UserRepository {
   static async getProfile() {
     // 1. Return cached profile immediately if exists
@@ -17,6 +20,10 @@ export class UserRepository {
   static async refreshProfileSilently() {
     const status = await Network.getStatus();
     if (!status.connected) return;
+
+    const now = Date.now();
+    if (now - lastUserRefreshAt < USER_TTL_MS) return;
+    lastUserRefreshAt = now;
 
     try {
       const res = await api.get('/users/me');
@@ -42,9 +49,17 @@ export class UserRepository {
   }
 
   static async updateProfile(formDataObj) {
+    const updates = formDataObj instanceof FormData 
+      ? Object.fromEntries(formDataObj.entries()) 
+      : formDataObj;
+
+    if (updates.file) {
+      delete updates.file;
+    }
+
     // Optimistic update
     const current = await db.user.get('me') || { id: 'me' };
-    const updated = { ...current, ...formDataObj, updatedAt: Date.now() };
+    const updated = { ...current, ...updates, updatedAt: Date.now() };
     await db.user.put(updated);
 
     const status = await Network.getStatus();
@@ -53,11 +68,11 @@ export class UserRepository {
         await api.patch('/users/me', formDataObj);
       } catch (err) {
         console.error('[UserRepository] Update failed online, queuing:', err);
-        await syncManager.enqueueAction('updateProfile', 'PATCH', '/users/me', formDataObj);
+        await syncManager.enqueueAction('updateProfile', 'PATCH', '/users/me', updates);
       }
     } else {
       // Offline: queue it
-      await syncManager.enqueueAction('updateProfile', 'PATCH', '/users/me', formDataObj);
+      await syncManager.enqueueAction('updateProfile', 'PATCH', '/users/me', updates);
     }
     
     return updated;

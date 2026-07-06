@@ -7,6 +7,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { useAppData } from '../../context/AppContext';
 import api from '../../lib/api';
+import { DocumentRepository } from '../../lib/repositories/DocumentRepository';
 
 export default function DocumentUpload() {
   const navigate = useNavigate();
@@ -66,6 +67,7 @@ export default function DocumentUpload() {
       });
 
       if (res.data.success) {
+        await DocumentRepository.addDocument(res.data.data.document);
         setProgress(100);
         setTimeout(() => {
           setUploading(false);

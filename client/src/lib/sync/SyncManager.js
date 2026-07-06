@@ -98,6 +98,11 @@ class SyncManager {
               error: err.response.data?.error?.message || err.message
             });
           } else {
+            if (err.response && err.response.status === 401) {
+              window.dispatchEvent(new Event('auth:logout'));
+              await db.syncQueue.update(item.id, { status: 'failed', error: 'Unauthorized' });
+              break;
+            }
             // 5xx error or network error, increment retry count
             await db.syncQueue.update(item.id, {
               retryCount: item.retryCount + 1

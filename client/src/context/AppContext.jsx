@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { SecureStorage } from '../hooks/useNative';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
@@ -65,6 +65,8 @@ export function AppProvider({ children }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  const lastNotificationsRefreshRef = useRef(0);
   
   // Global Modals
   const [comingSoonFeature, setComingSoonFeature] = useState(null);
@@ -137,6 +139,13 @@ export function AppProvider({ children }) {
     SecureStorage.set('roadlink_medical_profile', medicalProfile);
   }, [notifications, medicalProfile, isAuthenticated, isInitialized]);
 
+  // ── Global Auth Listener ──────────────────────────────────────────────────
+  useEffect(() => {
+    const handleLogout = () => signOut();
+    window.addEventListener('auth:logout', handleLogout);
+    return () => window.removeEventListener('auth:logout', handleLogout);
+  }, []);
+
   // ── Auth actions ──────────────────────────────────────────────────────────
   const signIn = async (userProfile, accessToken, refreshToken) => {
     await db.user.put({ id: 'me', ...userProfile });
@@ -144,6 +153,11 @@ export function AppProvider({ children }) {
     await SecureStorage.set('roadlink_access_token', accessToken);
     await SecureStorage.set('roadlink_refresh_token', refreshToken);
     await SecureStorage.set('roadlink_auth', true);
+    
+    UserRepository.refreshProfileSilently();
+    VehicleRepository.refreshVehiclesSilently();
+    DocumentRepository.refreshDocumentsSilently();
+    ContactRepository.refreshContactsSilently();
   };
 
   const signOut = async () => {
@@ -185,9 +199,7 @@ export function AppProvider({ children }) {
   };
 
   // ── Vehicle actions ───────────────────────────────────────────────────────
-  const addVehicle = async (v, qrToken) => {
-    return await VehicleRepository.addVehicle(v, qrToken);
-  };
+
 
   const updateVehicleInContext = async (id, updates) => {
     // Fallback for simple local updates not fully migrated to repo yet
@@ -273,6 +285,10 @@ export function AppProvider({ children }) {
   };
 
   const refreshNotifications = async () => {
+    const now = Date.now();
+    if (now - lastNotificationsRefreshRef.current < 30000) return;
+    lastNotificationsRefreshRef.current = now;
+
     try {
       const res = await api.get('/reports');
       if (res.data.success) {
@@ -318,9 +334,6 @@ export function AppProvider({ children }) {
   const markRead = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // No-op setter for components that try to call setUser or setVehicles directly
-  const setUser = () => console.warn('setUser is deprecated. Use Repositories instead.');
-
   return (
     <AppContext.Provider value={{
       isAuthenticated,
@@ -333,7 +346,6 @@ export function AppProvider({ children }) {
       isCacheLoading,
       // Data
       user,
-      setUser,
       vehicles,
       notifications,
       documents,
@@ -342,7 +354,7 @@ export function AppProvider({ children }) {
       unreadCount,
       // Actions
       markResolved, dismissNotification, markRead, refreshNotifications,
-      addVehicle, updateVehicleInContext, togglePrivacyMode, refreshVehicles,
+      updateVehicleInContext, togglePrivacyMode, refreshVehicles,
       addDocument, updateDocument, removeDocument, refreshDocuments,
       refreshContacts, addContact, updateContact, deleteContact, setPrimaryContact,
       setMedicalProfile, refreshUser, updateProfile, updateNotifPref, deleteAccount,

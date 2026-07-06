@@ -17,13 +17,11 @@ import { useAppData } from "../../context/AppContext";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, updateNotifPref, signOut, refreshUser, deleteAccount } = useAppData();
+  const { user, updateNotifPref, signOut, deleteAccount } = useAppData();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  useEffect(() => {
-    refreshUser();
-  }, []);
+
 
   return (
     <div className="min-h-screen bg-fog pb-24">
@@ -221,7 +219,7 @@ export default function Settings() {
       <AnimatePresence>
         {showDeleteConfirm && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-asphalt/40 backdrop-blur-sm px-4 pb-6"
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-asphalt/40 backdrop-blur-sm px-4 pb-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -272,7 +270,7 @@ export default function Settings() {
       <AnimatePresence>
         {showLogoutConfirm && (
           <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-asphalt/40 backdrop-blur-sm px-4"
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-asphalt/40 backdrop-blur-sm px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

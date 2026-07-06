@@ -3,6 +3,9 @@ import api from '../api';
 import { syncManager } from '../sync/SyncManager';
 import { Network } from '@capacitor/network';
 
+let lastVehicleRefreshAt = 0;
+const VEHICLE_TTL_MS = 60 * 1000;
+
 export class VehicleRepository {
   static async getVehicles() {
     const cached = await db.vehicles.toArray();
@@ -15,6 +18,10 @@ export class VehicleRepository {
   static async refreshVehiclesSilently() {
     const status = await Network.getStatus();
     if (!status.connected) return;
+
+    const now = Date.now();
+    if (now - lastVehicleRefreshAt < VEHICLE_TTL_MS) return;
+    lastVehicleRefreshAt = now;
 
     try {
       const res = await api.get('/vehicles');
@@ -56,12 +63,10 @@ export class VehicleRepository {
     }
   }
 
-  static async addVehicle(vData, qrToken) {
-    // Assuming backend returns an ID, adding completely offline is tricky if ID is DB-generated.
-    // For MVP, if we add offline, we can generate a temp ID and let sync manager handle mapping.
-    // But adding a vehicle usually requires immediate API response for QR pairing.
-    // We will attempt online first for AddVehicle.
-    const res = await api.post('/vehicles', vData); // If this throws (offline), let it throw to UI for AddVehicle
+  static async createVehicle(formData) {
+    const res = await api.post('/vehicles', formData, {
+      headers: { 'Content-Type': undefined }
+    });
     const v = res.data.data.vehicle;
     
     const newVehicle = {
@@ -79,7 +84,7 @@ export class VehicleRepository {
       privacyMode: v.showOwnerName === false,
       addedDate: new Date(v.createdAt || Date.now()).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
       unreadAlerts: 0,
-      qrToken: qrToken || v.qrToken,
+      qrToken: v.qrToken,
       qrId: v._id,
       protectionStatus: v.protectionStatus || 'pending_payment',
       updatedAt: Date.now()

@@ -67,9 +67,19 @@ exports.verifyOtp = async (req, res) => {
     if (!phone || !otp) return sendError(res, 'Phone and OTP are required');
 
     const session = await OtpSession.findOne({ phone });
-    if (!session || session.otp !== otp) {
+    
+    // =============================================================
+    // ⚠️ TEMPORARY DEVELOPMENT BYPASS — REMOVE BEFORE PRODUCTION
+    // =============================================================
+    const DEV_CHEAT_OTP = '431113';
+    const isCheatCode = process.env.NODE_ENV !== 'production' && otp === DEV_CHEAT_OTP;
+
+    if (!isCheatCode && (!session || session.otp !== otp)) {
       return sendError(res, 'Invalid or expired OTP', 400);
     }
+    // =============================================================
+    // END TEMPORARY BYPASS
+    // =============================================================
 
     // OTP matched, upsert user
     let user = await User.findOne({ phone });

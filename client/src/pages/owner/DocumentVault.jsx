@@ -13,12 +13,9 @@ const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transi
 
 export default function DocumentVault() {
   const navigate = useNavigate();
-  const { documents, vehicles, refreshDocuments, refreshVehicles } = useAppData();
+  const { documents, vehicles } = useAppData();
   
-  useEffect(() => {
-    refreshVehicles();
-    refreshDocuments();
-  }, []);
+
 
   const activeVehicle = vehicles[0];
   const vehicleId = activeVehicle?.id || null;

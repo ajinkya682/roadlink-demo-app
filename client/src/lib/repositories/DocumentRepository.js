@@ -3,6 +3,9 @@ import api from '../api';
 import { syncManager } from '../sync/SyncManager';
 import { Network } from '@capacitor/network';
 
+let lastDocumentRefreshAt = 0;
+const DOCUMENT_TTL_MS = 60 * 1000;
+
 export class DocumentRepository {
   static async getDocuments() {
     const cached = await db.documents.toArray();
@@ -13,6 +16,10 @@ export class DocumentRepository {
   static async refreshDocumentsSilently() {
     const status = await Network.getStatus();
     if (!status.connected) return;
+
+    const now = Date.now();
+    if (now - lastDocumentRefreshAt < DOCUMENT_TTL_MS) return;
+    lastDocumentRefreshAt = now;
 
     try {
       const res = await api.get('/documents');
@@ -41,6 +48,22 @@ export class DocumentRepository {
     } catch (err) {
       console.error('[DocumentRepository] Background refresh failed:', err);
     }
+  }
+
+  static async addDocument(d) {
+    const newDoc = {
+      id: d._id,
+      vehicleId: d.vehicleId,
+      type: d.type,
+      fileUrl: d.fileUrl,
+      number: d.documentNumber,
+      expiry: d.expiryDate ? new Date(d.expiryDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : null,
+      expiryDateValue: d.expiryDate,
+      status: d.expiryDate && new Date(d.expiryDate) < new Date() ? 'expired' : 'valid',
+      updatedAt: Date.now()
+    };
+    await db.documents.put(newDoc);
+    return newDoc;
   }
 
   static async deleteDocument(id) {

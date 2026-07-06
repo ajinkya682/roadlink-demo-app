@@ -3,6 +3,9 @@ import api from '../api';
 import { syncManager } from '../sync/SyncManager';
 import { Network } from '@capacitor/network';
 
+let lastContactRefreshAt = 0;
+const CONTACT_TTL_MS = 60 * 1000;
+
 export class ContactRepository {
   static async getContacts() {
     const cached = await db.contacts.toArray();
@@ -13,6 +16,10 @@ export class ContactRepository {
   static async refreshContactsSilently() {
     const status = await Network.getStatus();
     if (!status.connected) return;
+
+    const now = Date.now();
+    if (now - lastContactRefreshAt < CONTACT_TTL_MS) return;
+    lastContactRefreshAt = now;
 
     try {
       const res = await api.get('/emergency-contacts');

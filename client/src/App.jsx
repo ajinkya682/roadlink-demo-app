@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { Capacitor } from '@capacitor/core'
-// import { PushNotifications } from '@capacitor/push-notifications'
+import { useBackButton } from './hooks/useBackButton'
 import PageWrapper from './components/PageWrapper'
 import BottomTabBar from './components/BottomTabBar'
 import RequireAuth from './components/RequireAuth'
@@ -58,55 +58,7 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      /* 
-      // Push Notifications require a Firebase google-services.json file to be placed in the android/app folder.
-      // Until Firebase is configured, this plugin will cause a fatal crash on startup.
-      // Request push notification permission
-      PushNotifications.requestPermissions().then(result => {
-        if (result.receive === 'granted') {
-          PushNotifications.register();
-        }
-      });
-
-      // Listen for registration success
-      PushNotifications.addListener('registration', (token) => {
-        console.log('Push registration success, token: ' + token.value);
-        // Here you would send the token to your backend
-      });
-
-      // Listen for registration error
-      PushNotifications.addListener('registrationError', (error) => {
-        console.error('Error on registration: ' + JSON.stringify(error));
-      });
-
-      // Listen for notification received while app is in foreground
-      PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('Push received: ' + JSON.stringify(notification));
-        soundManager.play('notification');
-        hapticManager.notification();
-      });
-
-      // Listen for notification action (when user taps on it)
-      PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-        console.log('Push action performed: ' + JSON.stringify(notification));
-        // Navigate based on data payload
-        const data = notification.notification.data;
-        if (data && data.route) {
-          navigate(data.route);
-        } else {
-          navigate('/notifications');
-        }
-      });
-      
-      // Cleanup listeners on unmount
-      return () => {
-        PushNotifications.removeAllListeners();
-      };
-      */
-    }
-  }, [navigate]);
+  useBackButton();
 
   const showNavRoutes = [
     '/dashboard',       // Home

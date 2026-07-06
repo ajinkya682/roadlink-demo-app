@@ -9,6 +9,7 @@ import Toggle from "../../components/Toggle";
 import BottomTabBar from "../../components/BottomTabBar";
 import { useAppData } from "../../context/AppContext";
 import api from "../../lib/api";
+import { VehicleRepository } from "../../lib/repositories/VehicleRepository";
 
 function formatPlate(val) {
   const raw = val.replace(/[^A-Z0-9]/g, "").slice(0, 10);
@@ -34,7 +35,7 @@ export default function AddVehicle() {
   const isNewSetup = location.state?.isNewSetup || false;
 
   // Using AppContext for phase 2 since DemoContext was removed
-  const { addVehicle } = useAppData();
+  const { } = useAppData();
 
   const [plate, setPlate] = useState("");
   const [type, setType] = useState("four-wheeler");
@@ -70,24 +71,10 @@ export default function AddVehicle() {
       formData.append("showOwnerName", showName);
       if (imageFile) formData.append("image", imageFile);
 
-      const res = await api.post("/vehicles", formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
-
-      if (res.data.success) {
-        const { vehicle } = res.data.data;
-        // Prepend to local AppContext cache to immediately show in dashboard
-        if (addVehicle) {
-          await addVehicle(vehicle, null);
-        }
-
-        // Navigate to Subscription Payment directly
-        navigate("/subscription-payment", { state: { vehicle } });
-      } else {
-        throw new Error(res.data.error?.message || "Failed to add vehicle");
-      }
+      const vehicle = await VehicleRepository.createVehicle(formData);
+      
+      setLoading(false);
+      navigate("/subscription-payment", { state: { vehicle } });
     } catch (err) {
       setError(
         err.response?.data?.error?.message || err.message || "Network error",

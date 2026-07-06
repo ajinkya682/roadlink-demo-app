@@ -27,13 +27,10 @@ function greeting() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { vehicles, user, unreadCount, refreshVehicles, refreshNotifications, showComingSoon, showUpgradeModal } = useAppData();
+  const { vehicles, user, unreadCount, showComingSoon, showUpgradeModal } = useAppData();
   const [showShareModal, setShowShareModal] = useState(false);
 
-  useEffect(() => {
-    refreshVehicles();
-    refreshNotifications();
-  }, []);
+
 
   const quickActions = [
     { label: 'Profile',     Icon: UserCircle, action: (nav) => nav('/profile') },

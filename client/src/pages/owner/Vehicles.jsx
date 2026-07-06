@@ -19,11 +19,9 @@ const fadeUp = {
 
 export default function Vehicles() {
   const navigate = useNavigate();
-  const { vehicles, refreshVehicles, showUpgradeModal } = useAppData();
+  const { vehicles, showUpgradeModal } = useAppData();
 
-  useEffect(() => {
-    refreshVehicles();
-  }, []);
+
 
   const handleAddVehicle = () => {
     if (vehicles.length >= 5) {

@@ -6,7 +6,15 @@ export default function RequireAuth({ children }) {
   const { isAuthenticated, isInitialized, isCacheLoading } = useAppData();
   const location = useLocation();
 
-  if (!isInitialized || isCacheLoading) {
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-[#fcf9f8] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-road-navy/20 border-t-road-navy rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (isCacheLoading && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#fcf9f8] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-road-navy/20 border-t-road-navy rounded-full animate-spin"></div>
