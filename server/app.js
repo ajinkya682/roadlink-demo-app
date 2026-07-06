@@ -23,6 +23,21 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
+// SSE Real-time Stream Endpoint
+const sseManager = require('./utils/sseManager');
+const { requireAuth } = require('./middleware/auth');
+
+app.get('/v1/stream', requireAuth, (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  sseManager.addClient(req.user.id, res);
+
+  res.write(`event: connected\ndata: ${JSON.stringify({ status: 'connected' })}\n\n`);
+});
+
 // Module routes will be mounted here
 app.use('/v1/auth', require('./modules/auth/routes'));
 app.use('/v1/users', require('./modules/users/routes'));

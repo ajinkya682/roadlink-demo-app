@@ -248,6 +248,13 @@ exports.verifySubscription = async (req, res) => {
       vehicle.currentPeriodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       vehicle.refundGuaranteeExpiresAt = refundGuaranteeExpiresAt;
       await vehicle.save();
+      
+      try {
+        const sseManager = require('../../../utils/sseManager');
+        sseManager.sendToUser(vehicle.ownerId, 'VEHICLE_UPDATED', vehicle);
+      } catch (err) {
+        logger.error('Failed to emit SSE for vehicle update', err);
+      }
     }
 
     return sendSuccess(res, { message: 'Subscription verified and activated successfully.' });

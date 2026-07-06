@@ -61,6 +61,38 @@ exports.createReport = async (req, res) => {
       logger.error('Unhandled error in notification orchestrator:', err)
     );
 
+    // Emit Real-Time SSE Notification to the vehicle owner
+    try {
+      const sseManager = require('../../utils/sseManager');
+      let categoryLabel = 'Alert';
+      let emoji = '🔔';
+      if (report.category === 'wrong_parking') { categoryLabel = 'Wrong Parking'; emoji = '🅿️'; }
+      else if (report.category === 'theft') { categoryLabel = 'Vehicle Theft'; emoji = '🚨'; }
+      else if (report.category === 'emergency') { categoryLabel = 'Emergency'; emoji = '⚠️'; }
+
+      sseManager.sendToUser(vehicle.ownerId, 'NOTIFICATION_CREATED', {
+        id: report._id,
+        type: categoryLabel,
+        emoji: emoji,
+        category: report.category,
+        categoryId: report.category,
+        title: `Report on ${vehicle.registrationNumber || 'Vehicle'}`,
+        plate: vehicle.registrationNumber || 'UNKNOWN',
+        message: report.message,
+        notes: report.notes || '',
+        timestamp: report.createdAt,
+        time: 'Just now',
+        read: false,
+        resolved: false,
+        vehicleId: vehicle._id,
+        mediaUrls: uploadedMediaUrls,
+        reporterLocation: report.reporterLocation || null,
+        isAlert: report.category === 'theft' || report.category === 'emergency'
+      });
+    } catch(err) {
+      logger.error('Failed to emit SSE for notification', err);
+    }
+
     return sendSuccess(res, {
       reportId: report._id,
       status: report.status

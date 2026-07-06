@@ -15,6 +15,15 @@ db.version(1).stores({
   syncQueue: '++id, action, method, url, status, createdAt' // status: 'pending', 'failed'
 });
 
+db.version(2).stores({
+  user: 'id',
+  vehicles: 'id, isVerified, addedDate',
+  documents: 'id, vehicleId, type',
+  contacts: 'id, isPrimary',
+  syncQueue: '++id, action, method, url, status, createdAt',
+  notifications: 'id, read, resolved, timestamp'
+});
+
 // Optionally, define hooks for automatically setting updatedAt
 db.user.hook('creating', function (primKey, obj, trans) {
   obj.updatedAt = Date.now();

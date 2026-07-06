@@ -56,8 +56,9 @@ export function AppProvider({ children }) {
   const documents = useLiveQuery(() => db.documents.toArray()) || [];
   const contacts = useLiveQuery(() => db.contacts.toArray()) || [];
   
-  // Local state for UI only (not heavily cached or not migrated to dexie yet)
-  const [notifications, setNotifications] = useState([]);
+  // Local state for UI only
+  const notificationsQuery = useLiveQuery(() => db.notifications.toArray());
+  const notifications = notificationsQuery || [];
   const [medicalProfile, setMedicalProfileState] = useState({
     dob: '', address: '', bloodType: '', conditions: '', allergies: '',
     prescriptions: '', devices: '', doctorName: '', doctorPhone: ''
@@ -113,8 +114,10 @@ export function AppProvider({ children }) {
 
       // 3. Load non-migrated stuff
       const storedNotifications = await SecureStorage.get('roadlink_notifications');
-      if (storedNotifications) setNotifications(storedNotifications);
-      
+      if (storedNotifications && storedNotifications.length > 0) {
+        await db.notifications.bulkPut(storedNotifications);
+        await SecureStorage.remove('roadlink_notifications');
+      }
       const storedMedical = await SecureStorage.get('roadlink_medical_profile');
       if (storedMedical) setMedicalProfileState(storedMedical);
 
@@ -135,16 +138,64 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!isInitialized) return;
     SecureStorage.set('roadlink_auth', isAuthenticated);
-    SecureStorage.set('roadlink_notifications', notifications);
     SecureStorage.set('roadlink_medical_profile', medicalProfile);
   }, [notifications, medicalProfile, isAuthenticated, isInitialized]);
 
-  // ── Global Auth Listener ──────────────────────────────────────────────────
+  // ── Global Auth Listener & Real-Time Sync (SSE) ───────────────────────────
   useEffect(() => {
     const handleLogout = () => signOut();
     window.addEventListener('auth:logout', handleLogout);
-    return () => window.removeEventListener('auth:logout', handleLogout);
-  }, []);
+
+    let eventSource = null;
+
+    const setupSSE = async () => {
+      if (isAuthenticated) {
+        const token = await SecureStorage.get('roadlink_access_token');
+        if (token) {
+           const API_URL = import.meta.env.VITE_API_URL || '';
+           eventSource = new EventSource(`${API_URL}/stream?token=${token}`);
+           
+           eventSource.addEventListener('connected', (e) => {
+             console.log('[SSE] Stream connected');
+           });
+
+           eventSource.addEventListener('NOTIFICATION_CREATED', async (e) => {
+             try {
+               const notification = JSON.parse(e.data);
+               await db.notifications.put(notification);
+               // Trigger feedback (haptic/sound)
+               import('../services/sound/HapticManager').then(m => m.hapticManager.notification());
+             } catch(err) { console.error('[SSE] Error parsing notification', err); }
+           });
+
+           eventSource.addEventListener('VEHICLE_UPDATED', async (e) => {
+             try {
+               const vehicleData = JSON.parse(e.data);
+               const v = await db.vehicles.get(vehicleData._id || vehicleData.id);
+               if (v) {
+                 await db.vehicles.put({ ...v, ...vehicleData, updatedAt: Date.now() });
+               } else {
+                 await db.vehicles.put({ ...vehicleData, updatedAt: Date.now() });
+               }
+             } catch(err) { console.error('[SSE] Error parsing vehicle', err); }
+           });
+
+           eventSource.onerror = (error) => {
+             // SSE natively attempts to reconnect. If it's a 401, we might need a refresh.
+           };
+        }
+      }
+    };
+
+    setupSSE();
+
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, [isAuthenticated]);
 
   // ── Auth actions ──────────────────────────────────────────────────────────
   const signIn = async (userProfile, accessToken, refreshToken) => {
@@ -166,7 +217,7 @@ export function AppProvider({ children }) {
     await VehicleRepository.clear();
     await DocumentRepository.clear();
     await ContactRepository.clear();
-    setNotifications([]);
+    await db.notifications.clear();
     
     await SecureStorage.remove('roadlink_access_token');
     await SecureStorage.remove('roadlink_refresh_token');
@@ -319,7 +370,7 @@ export function AppProvider({ children }) {
             isAlert: r.category === 'theft' || r.category === 'emergency'
           };
         });
-        setNotifications(fetchedReports);
+        await db.notifications.bulkPut(fetchedReports);
       }
     } catch (err) {}
   };
@@ -327,11 +378,23 @@ export function AppProvider({ children }) {
   const markResolved = async (id) => {
     try { await api.patch(`/reports/${id}`, { status: 'resolved' }); } 
     catch (err) { await syncManager.enqueueAction('markResolved', 'PATCH', `/reports/${id}`, { status: 'resolved' }); }
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, resolved: true, read: true, status: 'resolved' } : n));
+    
+    const n = await db.notifications.get(id);
+    if (n) {
+      await db.notifications.put({ ...n, resolved: true, read: true, status: 'resolved' });
+    }
   };
 
-  const dismissNotification = (id) => setNotifications(prev => prev.filter(n => n.id !== id));
-  const markRead = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const dismissNotification = async (id) => {
+    await db.notifications.delete(id);
+  };
+  
+  const markRead = async (id) => {
+    const n = await db.notifications.get(id);
+    if (n) {
+      await db.notifications.put({ ...n, read: true });
+    }
+  };
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
