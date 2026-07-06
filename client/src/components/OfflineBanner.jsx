@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Network } from '@capacitor/network';
+
 import { WifiOff, Wifi } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,21 +9,24 @@ export function OfflineBanner() {
 
   useEffect(() => {
     // Check initial
-    Network.getStatus().then(status => {
-      setIsOnline(status.connected);
-      if (!status.connected) setWasOffline(true);
-    });
+    setIsOnline(navigator.onLine);
+    if (!navigator.onLine) setWasOffline(true);
 
     // Listen to changes
-    const listener = Network.addListener('networkStatusChange', status => {
-      setIsOnline(status.connected);
-      if (!status.connected) {
-        setWasOffline(true);
-      }
-    });
+    const handleOnline = () => {
+      setIsOnline(true);
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setWasOffline(true);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      listener.then(l => l.remove());
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 

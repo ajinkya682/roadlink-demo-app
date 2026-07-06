@@ -1,5 +1,3 @@
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { Capacitor } from '@capacitor/core';
 import { db } from '../../lib/db/database';
 
 class HapticManager {
@@ -16,22 +14,18 @@ class HapticManager {
   }
 
   async success() {
-    if (!Capacitor.isNativePlatform()) return;
     if (!(await this.isHapticEnabled())) return;
-    await Haptics.impact({ style: ImpactStyle.Light });
+    if (navigator.vibrate) navigator.vibrate(50);
   }
 
   async error() {
-    if (!Capacitor.isNativePlatform()) return;
     if (!(await this.isHapticEnabled())) return;
-    await Haptics.impact({ style: ImpactStyle.Heavy });
-    setTimeout(() => Haptics.impact({ style: ImpactStyle.Heavy }), 100);
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
   }
 
   async notification() {
-    if (!Capacitor.isNativePlatform()) return;
     if (!(await this.isHapticEnabled())) return;
-    await Haptics.impact({ style: ImpactStyle.Light });
+    if (navigator.vibrate) navigator.vibrate(50);
   }
 }
 
