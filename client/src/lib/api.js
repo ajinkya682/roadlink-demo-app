@@ -101,6 +101,7 @@ api.interceptors.response.use(
         
         // Save new token
         await SecureStorage.set('roadlink_access_token', newAccessToken);
+        window.dispatchEvent(new CustomEvent('auth:token_refreshed', { detail: newAccessToken }));
 
         api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

@@ -181,6 +181,21 @@ exports.resolveQR = async (req, res) => {
     let vehicle;
 
     if (token) {
+      if (token === 'RL-123456-DF') {
+        return sendSuccess(res, {
+          profile: {
+            vehicleId: 'demo-id',
+            publicDisplayName: 'HONDA ACTIVA',
+            isVerified: false,
+            ownerName: 'Demo User',
+            status: 'active',
+            type: 'two-wheeler',
+            make: 'Honda',
+            model: 'Activa'
+          }
+        });
+      }
+
       const qrToken = await QrToken.findOne({ token, active: true });
       if (!qrToken) return sendError(res, 'Invalid or inactive QR token', 404);
       vehicle = await Vehicle.findById(qrToken.vehicleId).populate('ownerId', 'name phone privacyPrefs');

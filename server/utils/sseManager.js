@@ -2,6 +2,17 @@ class SSEManager {
   constructor() {
     // Maps userId -> Array of Response objects
     this.clients = new Map();
+
+    // Heartbeat every 4 seconds to aggressively prevent ERR_INCOMPLETE_CHUNKED_ENCODING timeouts
+    setInterval(() => {
+      this.clients.forEach(userClients => {
+        userClients.forEach(res => {
+          // Send an SSE comment to keep connection alive
+          res.write(':\n\n'); 
+          if (typeof res.flush === 'function') res.flush();
+        });
+      });
+    }, 4000);
   }
 
   addClient(userId, res) {

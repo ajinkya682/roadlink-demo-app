@@ -28,12 +28,17 @@ const sseManager = require('./utils/sseManager');
 const { requireAuth } = require('./middleware/auth');
 
 app.get('/v1/stream', requireAuth, (req, res) => {
+  req.socket.setTimeout(0);
+  req.socket.setNoDelay(true);
+  req.socket.setKeepAlive(true);
+
   res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
 
-  sseManager.addClient(req.user.id, res);
+  sseManager.addClient(req.user.userId || req.user.id, res);
 
   res.write(`event: connected\ndata: ${JSON.stringify({ status: 'connected' })}\n\n`);
 });

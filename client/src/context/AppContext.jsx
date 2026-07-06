@@ -51,7 +51,7 @@ export function AppProvider({ children }) {
   const isCacheLoading = userQuery === undefined || vehiclesQuery === undefined;
   
   const user = userQuery || EMPTY_USER;
-  const vehicles = vehiclesQuery || [];
+  const vehiclesRaw = vehiclesQuery || [];
   
   const documents = useLiveQuery(() => db.documents.toArray()) || [];
   const contacts = useLiveQuery(() => db.contacts.toArray()) || [];
@@ -59,6 +59,11 @@ export function AppProvider({ children }) {
   // Local state for UI only
   const notificationsQuery = useLiveQuery(() => db.notifications.toArray());
   const notifications = notificationsQuery || [];
+
+  const vehicles = React.useMemo(() => vehiclesRaw.map(v => ({
+    ...v,
+    unreadAlerts: notifications.filter(n => (n.vehicleId === v.id || n.vehicleId === v._id) && !n.read).length
+  })), [vehiclesRaw, notifications]);
   const [medicalProfile, setMedicalProfileState] = useState({
     dob: '', address: '', bloodType: '', conditions: '', allergies: '',
     prescriptions: '', devices: '', doctorName: '', doctorPhone: ''
@@ -139,61 +144,106 @@ export function AppProvider({ children }) {
     if (!isInitialized) return;
     SecureStorage.set('roadlink_auth', isAuthenticated);
     SecureStorage.set('roadlink_medical_profile', medicalProfile);
-  }, [notifications, medicalProfile, isAuthenticated, isInitialized]);
+  }, [medicalProfile, isAuthenticated, isInitialized]);
 
   // ── Global Auth Listener & Real-Time Sync (SSE) ───────────────────────────
   useEffect(() => {
-    const handleLogout = () => signOut();
-    window.addEventListener('auth:logout', handleLogout);
+    let sseInstance = null;
+    let reconnectTimer = null;
+    let isMounted = true;
+    let retryCount = 0;
+    const MAX_RETRIES = 5;
 
-    let eventSource = null;
-
-    const setupSSE = async () => {
-      if (isAuthenticated) {
-        const token = await SecureStorage.get('roadlink_access_token');
-        if (token) {
-           const API_URL = import.meta.env.VITE_API_URL || '';
-           eventSource = new EventSource(`${API_URL}/stream?token=${token}`);
-           
-           eventSource.addEventListener('connected', (e) => {
-             console.log('[SSE] Stream connected');
-           });
-
-           eventSource.addEventListener('NOTIFICATION_CREATED', async (e) => {
-             try {
-               const notification = JSON.parse(e.data);
-               await db.notifications.put(notification);
-               // Trigger feedback (haptic/sound)
-               import('../services/sound/HapticManager').then(m => m.hapticManager.notification());
-             } catch(err) { console.error('[SSE] Error parsing notification', err); }
-           });
-
-           eventSource.addEventListener('VEHICLE_UPDATED', async (e) => {
-             try {
-               const vehicleData = JSON.parse(e.data);
-               const v = await db.vehicles.get(vehicleData._id || vehicleData.id);
-               if (v) {
-                 await db.vehicles.put({ ...v, ...vehicleData, updatedAt: Date.now() });
-               } else {
-                 await db.vehicles.put({ ...vehicleData, updatedAt: Date.now() });
-               }
-             } catch(err) { console.error('[SSE] Error parsing vehicle', err); }
-           });
-
-           eventSource.onerror = (error) => {
-             // SSE natively attempts to reconnect. If it's a 401, we might need a refresh.
-           };
-        }
+    const cleanupSSE = () => {
+      if (sseInstance) {
+        sseInstance.close();
+        sseInstance = null;
+      }
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
       }
     };
 
-    setupSSE();
+    const handleLogout = () => {
+      cleanupSSE();
+      signOut();
+    };
+
+    const connectSSE = async (tokenOverride = null) => {
+      cleanupSSE();
+      if (!isAuthenticated || !isMounted) return;
+
+      const token = tokenOverride || await SecureStorage.get('roadlink_access_token');
+      if (!token) return;
+
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      sseInstance = new EventSource(`${API_URL}/stream?token=${token}`);
+      
+      sseInstance.addEventListener('connected', (e) => {
+        console.log('[SSE] Stream connected');
+        retryCount = 0; // Reset retries on successful connection
+      });
+
+      sseInstance.addEventListener('NOTIFICATION_CREATED', async (e) => {
+        try {
+          const notification = JSON.parse(e.data);
+          await db.notifications.put(notification);
+          import('../services/sound/HapticManager').then(m => m.hapticManager.notification());
+        } catch(err) { console.error('[SSE] Error parsing notification', err); }
+      });
+
+      sseInstance.addEventListener('VEHICLE_UPDATED', async (e) => {
+        try {
+          const vehicleData = JSON.parse(e.data);
+          const v = await db.vehicles.get(vehicleData._id || vehicleData.id);
+          if (v) {
+            await db.vehicles.put({ ...v, ...vehicleData, updatedAt: Date.now() });
+          } else {
+            await db.vehicles.put({ ...vehicleData, updatedAt: Date.now() });
+          }
+        } catch(err) { console.error('[SSE] Error parsing vehicle', err); }
+      });
+
+      sseInstance.onerror = (error) => {
+        console.error('[SSE] Connection error. Closing instance to prevent spam.');
+        cleanupSSE(); // Stop native infinite reconnection loop immediately
+
+        if (retryCount >= MAX_RETRIES) {
+          console.warn('[SSE] Max retries reached. Stopping reconnection attempts.');
+          return;
+        }
+
+        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+        const delay = Math.min(30000, 2000 * Math.pow(2, retryCount));
+        retryCount++;
+        
+        console.log(`[SSE] Reconnecting in ${delay}ms (Attempt ${retryCount}/${MAX_RETRIES})`);
+        reconnectTimer = setTimeout(() => {
+          if (isMounted) connectSSE();
+        }, delay);
+      };
+    };
+
+    const handleTokenRefreshed = (e) => {
+      const newToken = e.detail;
+      console.log('[SSE] Token refreshed, reconnecting stream immediately.');
+      retryCount = 0; // Reset retries since we have a valid token
+      connectSSE(newToken);
+    };
+
+    window.addEventListener('auth:logout', handleLogout);
+    window.addEventListener('auth:token_refreshed', handleTokenRefreshed);
+
+    if (isAuthenticated) {
+      connectSSE();
+    }
 
     return () => {
+      isMounted = false;
+      cleanupSSE();
       window.removeEventListener('auth:logout', handleLogout);
-      if (eventSource) {
-        eventSource.close();
-      }
+      window.removeEventListener('auth:token_refreshed', handleTokenRefreshed);
     };
   }, [isAuthenticated]);
 

@@ -251,7 +251,9 @@ exports.verifySubscription = async (req, res) => {
       
       try {
         const sseManager = require('../../../utils/sseManager');
-        sseManager.sendToUser(vehicle.ownerId, 'VEHICLE_UPDATED', vehicle);
+        const vehiclePayload = vehicle.toObject();
+        vehiclePayload.qrToken = tokenStr;
+        sseManager.sendToUser(vehicle.ownerId, 'VEHICLE_UPDATED', vehiclePayload);
       } catch (err) {
         logger.error('Failed to emit SSE for vehicle update', err);
       }
