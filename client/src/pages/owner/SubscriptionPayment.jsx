@@ -4,6 +4,7 @@ import { Shield, CheckCircle, Car } from "lucide-react";
 import AppHeader from "../../components/AppHeader";
 import Button from "../../components/Button";
 import api from "../../lib/api";
+import { db } from "../../lib/db/database";
 
 export default function SubscriptionPayment() {
   const location = useLocation();
@@ -50,6 +51,11 @@ export default function SubscriptionPayment() {
       const { subscriptionId, orderId, keyId, amount } = data.data;
 
       if (keyId === 'dummy_key') {
+         const v = await db.vehicles.get(vehicle.id || vehicle._id);
+         if (v) {
+           v.protectionStatus = 'active';
+           await db.vehicles.put(v);
+         }
          setTimeout(() => {
             navigate("/dashboard");
          }, 1000);
@@ -71,6 +77,11 @@ export default function SubscriptionPayment() {
               razorpay_signature: response.razorpay_signature,
               vehicleId: vehicle.id || vehicle._id
             });
+            const v = await db.vehicles.get(vehicle.id || vehicle._id);
+            if (v) {
+              v.protectionStatus = 'active';
+              await db.vehicles.put(v);
+            }
             navigate("/dashboard");
           } catch (err) {
             setError("Payment verification failed. Please contact support.");
