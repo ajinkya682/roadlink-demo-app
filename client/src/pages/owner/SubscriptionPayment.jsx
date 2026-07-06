@@ -51,7 +51,7 @@ export default function SubscriptionPayment() {
 
       if (keyId === 'dummy_key') {
          setTimeout(() => {
-            navigate(`/vehicle-detail/${vehicle.id || vehicle._id}`);
+            navigate("/dashboard");
          }, 1000);
          return;
       }
@@ -71,7 +71,7 @@ export default function SubscriptionPayment() {
               razorpay_signature: response.razorpay_signature,
               vehicleId: vehicle.id || vehicle._id
             });
-            navigate(`/vehicle-detail/${vehicle.id || vehicle._id}`);
+            navigate("/dashboard");
           } catch (err) {
             setError("Payment verification failed. Please contact support.");
           }
