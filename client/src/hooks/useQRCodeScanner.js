@@ -54,21 +54,24 @@ export function useQRCodeScanner({
     };
   }, [isReady]);
 
+  const isStartingRef = useRef(false);
+
   const startScanning = useCallback(async (customCameraId = null) => {
     const idToUse = customCameraId || cameraId;
-    if (!scannerInstance || !idToUse) return;
+    if (!scannerInstance || !idToUse || isStartingRef.current) return;
 
-    if (scannerInstance.isScanning) {
-      await scannerInstance.stop();
+    if (scannerInstance.isScanning || scannerInstance.getState() === 2) { // 2 = SCANNING
+      return;
     }
 
+    isStartingRef.current = true;
     try {
       await scannerInstance.start(
         idToUse,
         {
           fps,
           qrbox: { width: qrbox, height: qrbox },
-          disableFlip: false, // Allow mirror for front, etc.
+          disableFlip: false,
         },
         (decodedText, decodedResult) => {
           if (pauseOnScan && scannerInstance.isScanning) {
@@ -87,39 +90,44 @@ export function useQRCodeScanner({
          setIsScanning(true);
       }
     } catch (err) {
-      console.error("Failed to start scanner:", err);
+      // Ignore routine errors like NotFoundError which html5-qrcode frequently throws internally
+      if (err?.name !== 'NotFoundError' && !String(err).includes('NotFound')) {
+        console.warn("Scanner start warning:", err);
+      }
       setIsScanning(false);
+    } finally {
+      isStartingRef.current = false;
     }
   }, [scannerInstance, cameraId, fps, qrbox, pauseOnScan, onScanError]);
 
   const stopScanning = useCallback(async () => {
-    if (scannerInstance && scannerInstance.isScanning) {
+    if (scannerInstance && (scannerInstance.isScanning || scannerInstance.getState() === 2)) {
       try {
         await scannerInstance.stop();
         if (isComponentMounted.current) {
            setIsScanning(false);
         }
       } catch (err) {
-        console.error("Failed to stop scanner:", err);
+        // Silently catch - often throws if already stopped or transitioning
       }
     }
   }, [scannerInstance]);
 
   const pauseScanning = useCallback(() => {
     if (scannerInstance && scannerInstance.isScanning) {
-      scannerInstance.pause();
+      try { scannerInstance.pause(); } catch(e) {}
     }
   }, [scannerInstance]);
 
   const resumeScanning = useCallback(() => {
-    if (scannerInstance && scannerInstance.isScanning) {
-      scannerInstance.resume();
+    if (scannerInstance && scannerInstance.getState() === 3) { // 3 = PAUSED
+      try { scannerInstance.resume(); } catch(e) {}
     }
   }, [scannerInstance]);
 
   // Auto-start when cameraId becomes available
   useEffect(() => {
-    if (cameraId && scannerInstance && !scannerInstance.isScanning) {
+    if (cameraId && scannerInstance && !scannerInstance.isScanning && !isStartingRef.current) {
        startScanning(cameraId);
     }
   }, [cameraId, scannerInstance, startScanning]);

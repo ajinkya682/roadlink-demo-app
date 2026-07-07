@@ -40,15 +40,24 @@ class HapticManager {
   }
 
   async vibrateSuccess() {
-    if (await this.isHapticEnabled() && navigator.vibrate) navigator.vibrate(50);
+    if (await this.isHapticEnabled() && navigator.vibrate) {
+      if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+      try { navigator.vibrate(50); } catch(e) {}
+    }
   }
 
   async vibrateError() {
-    if (await this.isHapticEnabled() && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    if (await this.isHapticEnabled() && navigator.vibrate) {
+      if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+      try { navigator.vibrate([100, 50, 100]); } catch(e) {}
+    }
   }
 
   async vibrateNotification() {
-    if (await this.isHapticEnabled() && navigator.vibrate) navigator.vibrate([50, 100, 50]);
+    if (await this.isHapticEnabled() && navigator.vibrate) {
+      if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+      try { navigator.vibrate([50, 100, 50]); } catch(e) {}
+    }
   }
 
   async playSuccessSound() {

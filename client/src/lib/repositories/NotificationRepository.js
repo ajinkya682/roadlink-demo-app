@@ -197,8 +197,14 @@ class NotificationRepository {
       if (permission === 'granted') {
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         
+        const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+        if (!vapidKey || vapidKey === "YOUR_VAPID_KEY") {
+          console.warn('[NotificationRepository] VAPID Key is missing or invalid. Skipping Web Push registration until configured.');
+          return;
+        }
+
         const currentToken = await getToken(this.messaging, {
-          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY || "YOUR_VAPID_KEY",
+          vapidKey,
           serviceWorkerRegistration: registration
         });
 
