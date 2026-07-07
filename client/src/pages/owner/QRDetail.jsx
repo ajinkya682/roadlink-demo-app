@@ -25,11 +25,29 @@ export default function QRDetail() {
   const [showClaimModal, setShowClaimModal] = useState(false);
 
   useEffect(() => {
-    // If the vehicle hasn't used its free sticker yet, show the pop-up
-    if (vehicle && vehicle.hasUsedFreeStickerOrder === false) {
-      // Small delay to let the page load first for dramatic effect
-      const timer = setTimeout(() => setShowClaimModal(true), 800);
-      return () => clearTimeout(timer);
+    if (vehicle) {
+      const vId = vehicle._id || vehicle.id;
+      if (!vId) {
+         // Mock vehicle case
+         if (!vehicle.hasUsedFreeStickerOrder) {
+           const timer = setTimeout(() => setShowClaimModal(true), 800);
+           return () => clearTimeout(timer);
+         }
+         return;
+      }
+
+      // Check live database to be absolutely sure they haven't used it
+      import('../../lib/api').then(({ default: api }) => {
+        api.get(`/vehicles/${vId}`)
+          .then(res => {
+            if (res.data.success) {
+              if (!res.data.data.vehicle.hasUsedFreeStickerOrder) {
+                setTimeout(() => setShowClaimModal(true), 800);
+              }
+            }
+          })
+          .catch(console.error);
+      });
     }
   }, [vehicle]);
 
