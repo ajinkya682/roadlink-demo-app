@@ -101,6 +101,7 @@ export default function Splash() {
   const [current, setCurrent] = useState(0);
 
   const next = () => { if (current < slides.length - 1) setCurrent(c => c + 1); };
+  const prev = () => { if (current > 0) setCurrent(c => c - 1); };
   const isLast = current === slides.length - 1;
   const slide = slides[current];
 
@@ -123,11 +124,21 @@ export default function Splash() {
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
-            className="w-full flex flex-col items-center text-center px-6 max-w-md"
+            className="w-full flex flex-col items-center text-center px-6 max-w-md cursor-grab active:cursor-grabbing"
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(e, { offset, velocity }) => {
+              if (offset.x < -20 || velocity.x < -200) {
+                next();
+              } else if (offset.x > 20 || velocity.x > 200) {
+                prev();
+              }
+            }}
           >
             {/* Visual Graphic */}
             <div className="w-full mb-8">
