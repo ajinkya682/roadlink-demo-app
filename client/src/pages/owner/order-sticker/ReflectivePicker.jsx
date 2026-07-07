@@ -91,7 +91,7 @@ export default function ReflectivePicker() {
 
   return (
     <div className="flex flex-col min-h-full bg-slate-50 relative">
-      <header className="px-6 pt-12 pb-4 bg-white shadow-sm flex items-center justify-between sticky top-0 z-10">
+      <header className="px-6 pt-12 pb-4 bg-white shadow-sm flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center">
           <button onClick={() => navigate(-1)} className="mr-4 text-slate-400 hover:text-slate-600">
             <ArrowLeft size={24} />
@@ -170,7 +170,7 @@ export default function ReflectivePicker() {
       </main>
 
       {/* Sticky Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[420px] p-6 bg-white border-t border-slate-200 z-10 pb-8">
+      <div className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[420px] p-6 bg-white border-t border-slate-200 z-30 pb-8">
         <button
           onClick={handleContinue}
           disabled={selections.length !== 2}
