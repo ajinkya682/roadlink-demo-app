@@ -293,6 +293,11 @@ export function AppProvider({ children }) {
     await UserRepository.updateSettings({ notificationPrefs: newPrefs });
   };
 
+  const updatePrivacyPref = async (key, value) => {
+    const newPrefs = { ...user.privacyPrefs, [key]: value };
+    await UserRepository.updateSettings({ privacyPrefs: newPrefs });
+  };
+
   const deleteAccount = async () => {
     try { await api.delete('/users/me'); } catch (err) {}
     await SecureStorage.clear();
@@ -474,7 +479,7 @@ export function AppProvider({ children }) {
       updateVehicleInContext, togglePrivacyMode, refreshVehicles,
       addDocument, updateDocument, removeDocument, refreshDocuments,
       refreshContacts, addContact, updateContact, deleteContact, setPrimaryContact,
-      setMedicalProfile, refreshUser, updateProfile, updateNotifPref, deleteAccount,
+      setMedicalProfile, refreshUser, updateProfile, updateNotifPref, updatePrivacyPref, deleteAccount,
     }}>
       {children}
       

@@ -7,7 +7,7 @@ import { useAppData } from '../../context/AppContext';
 import api from '../../lib/api';
 
 export default function PrivacyControls() {
-  const { user, setUser } = useAppData();
+  const { user, updatePrivacyPref } = useAppData();
   
   // Map keys used in UI to keys in user.privacyPrefs
   const keyMap = {
@@ -24,30 +24,7 @@ export default function PrivacyControls() {
     const currentVal = user.privacyPrefs[dbKey];
     const newVal = currentVal === undefined ? false : !currentVal;
 
-    // Optimistic UI update
-    setUser(prev => ({
-      ...prev,
-      privacyPrefs: {
-        ...prev.privacyPrefs,
-        [dbKey]: newVal
-      }
-    }));
-
-    try {
-      await api.patch('/users/settings', {
-        privacyPrefs: { [dbKey]: newVal }
-      });
-    } catch (err) {
-      console.error('Failed to update privacy preference', err);
-      // Revert on failure
-      setUser(prev => ({
-        ...prev,
-        privacyPrefs: {
-          ...prev.privacyPrefs,
-          [dbKey]: currentVal
-        }
-      }));
-    }
+    await updatePrivacyPref(dbKey, newVal);
   };
 
   const sections = [

@@ -188,6 +188,7 @@ export default function VehicleDetail() {
 
   const recentNotifs = notifications
     .filter(n => n.vehicleId === vehicle.id)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 3);
 
   const vehicleDocs = documents.filter(d => d.vehicleId === vehicle.id);
