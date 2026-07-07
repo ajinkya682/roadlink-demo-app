@@ -290,39 +290,18 @@ export default function MyProfile() {
              <h2 className="text-xl font-bold mb-4">{editingAddress ? 'Edit Address' : 'Add New Address'}</h2>
              
              <div className="space-y-4">
-               <div>
-                 <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                 <input type="text" value={addressForm.name} onChange={e => setAddressForm({...addressForm, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-slate-700 mb-1">Address Line 1</label>
-                 <input type="text" value={addressForm.line1} onChange={e => setAddressForm({...addressForm, line1: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-slate-700 mb-1">Address Line 2</label>
-                 <input type="text" value={addressForm.line2} onChange={e => setAddressForm({...addressForm, line2: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
-               </div>
-               <div className="grid grid-cols-2 gap-3">
-                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-                   <input type="text" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
-                 </div>
-                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">State</label>
-                   <input type="text" value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
-                 </div>
-               </div>
-               <div className="grid grid-cols-2 gap-3">
-                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">PIN Code</label>
-                   <input type="text" value={addressForm.pincode} onChange={e => setAddressForm({...addressForm, pincode: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
-                 </div>
-                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-                   <input type="text" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
-                 </div>
-               </div>
-               <div className="flex items-center pt-2">
+                <Input label="Full Name" value={addressForm.name} onChange={e => setAddressForm({...addressForm, name: e.target.value})} casing="words" />
+                <Input label="Address Line 1" value={addressForm.line1} onChange={e => setAddressForm({...addressForm, line1: e.target.value})} casing="words" />
+                <Input label="Address Line 2" value={addressForm.line2} onChange={e => setAddressForm({...addressForm, line2: e.target.value})} casing="words" />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="City" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} casing="words" />
+                  <Input label="State" value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} casing="words" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="PIN Code" value={addressForm.pincode} onChange={e => setAddressForm({...addressForm, pincode: e.target.value})} />
+                  <Input label="Phone" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} />
+                </div>
+                <div className="flex items-center pt-2">
                  <input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm({...addressForm, isDefault: e.target.checked})} className="w-4 h-4 text-[#1E3A8A] rounded" id="isDefault" />
                  <label htmlFor="isDefault" className="ml-2 text-sm text-slate-600">Set as Main Address</label>
                </div>

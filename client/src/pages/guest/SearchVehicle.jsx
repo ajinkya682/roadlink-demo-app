@@ -66,6 +66,7 @@ export default function SearchVehicle() {
               className="w-full h-full px-4 font-mono font-bold text-[28px] text-asphalt tracking-widest bg-transparent focus:outline-none placeholder:text-outline-light/50 text-center uppercase"
               value={plate}
               onChange={handleChange}
+              autoCapitalize="characters"
               placeholder="MH 12 AB 1234"
               autoFocus
               onKeyDown={e => e.key === 'Enter' && handleSearch()}

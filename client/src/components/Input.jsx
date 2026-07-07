@@ -13,11 +13,45 @@ export default function Input({
   suffix,
   maxLength,
   autoFocus,
+  casing, // 'words', 'characters', 'lowercase'
   className = '',
   inputClassName = '',
   ...rest
 }) {
   const id = useId();
+
+  const handleChange = (e) => {
+    const input = e.target;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
+    let val = input.value;
+    if (casing === 'words') {
+      // Capitalize first letter of each word
+      val = val.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    } else if (casing === 'characters') {
+      val = val.toUpperCase();
+    } else if (casing === 'lowercase') {
+      val = val.toLowerCase();
+    }
+
+    if (val !== input.value) {
+      input.value = val;
+      if (onChange) onChange(e);
+      
+      // Restore cursor position synchronously after React re-renders
+      requestAnimationFrame(() => {
+        if (document.activeElement === input) {
+          input.setSelectionRange(start, end);
+        }
+      });
+      return;
+    }
+
+    if (onChange) {
+      onChange(e);
+    }
+  };
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
@@ -49,7 +83,8 @@ export default function Input({
           id={id}
           type={type}
           value={value}
-          onChange={onChange}
+          onChange={handleChange}
+          autoCapitalize={casing === 'words' ? 'words' : casing === 'characters' ? 'characters' : casing === 'lowercase' ? 'none' : undefined}
           placeholder={placeholder}
           maxLength={maxLength}
           autoFocus={autoFocus}

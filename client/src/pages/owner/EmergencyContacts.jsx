@@ -280,7 +280,7 @@ export default function EmergencyContacts() {
 
                       <div className="space-y-4">
                         <h3 className="font-body text-[12px] font-bold text-[#737782] uppercase tracking-wider">Primary Doctor</h3>
-                        <Input label="Doctor's Name" value={medicalForm.doctorName} onChange={e => setMedicalForm(f => ({ ...f, doctorName: e.target.value }))} />
+                        <Input label="Doctor's Name" value={medicalForm.doctorName} onChange={e => setMedicalForm(f => ({ ...f, doctorName: e.target.value }))} casing="words" />
                         <Input label="Doctor's Contact Number" value={medicalForm.doctorPhone} onChange={e => setMedicalForm(f => ({ ...f, doctorPhone: e.target.value }))} />
                       </div>
 
@@ -405,7 +405,7 @@ export default function EmergencyContacts() {
               </h3>
 
               <div className="space-y-5 overflow-y-auto pr-2 pb-2">
-                <Input label="Full Name" value={form.name}
+                <Input label="Full Name" value={form.name} casing="words"
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Rahul Sharma" />
 

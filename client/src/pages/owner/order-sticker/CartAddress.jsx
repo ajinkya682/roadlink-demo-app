@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import api from '../../../lib/api';
+import Input from '../../../components/Input';
 
 export default function CartAddress() {
   const navigate = useNavigate();
@@ -185,37 +186,16 @@ export default function CartAddress() {
           <h2 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Shipping Address</h2>
           
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-              <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" placeholder="John Doe" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Address Line 1</label>
-              <input type="text" name="line1" value={formData.line1} onChange={handleInputChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" placeholder="123 Main St" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Address Line 2 (Optional)</label>
-              <input type="text" name="line2" value={formData.line2} onChange={handleInputChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" placeholder="Apt 4B" />
+            <Input label="Full Name" name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" casing="words" />
+            <Input label="Address Line 1" name="line1" value={formData.line1} onChange={handleInputChange} placeholder="123 Main St" casing="words" />
+            <Input label="Address Line 2 (Optional)" name="line2" value={formData.line2} onChange={handleInputChange} placeholder="Apt 4B" casing="words" />
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="City" name="city" value={formData.city} onChange={handleInputChange} placeholder="Mumbai" casing="words" />
+              <Input label="State" name="state" value={formData.state} onChange={handleInputChange} placeholder="MH" casing="words" />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-                <input type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" placeholder="Mumbai" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">State</label>
-                <input type="text" name="state" value={formData.state} onChange={handleInputChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" placeholder="MH" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">PIN Code</label>
-                <input type="text" name="pincode" value={formData.pincode} onChange={handleInputChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" placeholder="400001" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-                <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" placeholder="+91" />
-              </div>
+              <Input label="PIN Code" name="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="400001" />
+              <Input label="Phone" type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+91" />
             </div>
 
             <div className="pt-2 flex flex-col items-start space-y-2">

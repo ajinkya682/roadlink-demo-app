@@ -434,8 +434,8 @@ export default function VehicleDetail() {
                   ) : (
                     <div className="p-4 space-y-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <Input label="Make" value={editForm.make || ''} onChange={e => setEditForm({ ...editForm, make: e.target.value })} />
-                        <Input label="Model" value={editForm.model || ''} onChange={e => setEditForm({ ...editForm, model: e.target.value })} />
+                        <Input label="Make" value={editForm.make || ''} onChange={e => setEditForm({ ...editForm, make: e.target.value })} casing="words" />
+                        <Input label="Model" value={editForm.model || ''} onChange={e => setEditForm({ ...editForm, model: e.target.value })} casing="words" />
                       </div>
                       
                       <div className="mt-4">
@@ -462,9 +462,9 @@ export default function VehicleDetail() {
 
                       <div className="grid grid-cols-2 gap-4 mt-4">
                         <Input label="YEAR" value={editForm.year} onChange={e => setEditForm({...editForm, year: e.target.value})} />
-                        <Input label="COLOR" value={editForm.color} onChange={e => setEditForm({...editForm, color: e.target.value})} />
+                        <Input label="COLOR" value={editForm.color} onChange={e => setEditForm({...editForm, color: e.target.value})} casing="words" />
                       </div>
-                      <Input label="NICKNAME" value={editForm.nickname} onChange={e => setEditForm({...editForm, nickname: e.target.value})} />
+                      <Input label="NICKNAME" value={editForm.nickname} onChange={e => setEditForm({...editForm, nickname: e.target.value})} casing="words" />
                     </div>
                   )}
                 </div>
@@ -809,7 +809,7 @@ export default function VehicleDetail() {
               </div>
 
               <div className="space-y-5">
-                <Input label="Full Name" value={contactForm.name}
+                <Input label="Full Name" value={contactForm.name} casing="words"
                   onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Rahul Sharma" />
 

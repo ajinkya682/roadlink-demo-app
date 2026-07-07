@@ -114,6 +114,7 @@ export default function LoginRegister() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Rahul Sharma"
+                    casing="words"
                   />
                   <p className="font-body text-[13px] text-on-surface-muted mt-2 ml-1 leading-snug">
                     This name may be shown publicly if you choose to display it

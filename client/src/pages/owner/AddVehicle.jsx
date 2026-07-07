@@ -188,6 +188,7 @@ export default function AddVehicle() {
             onChange={handlePlate}
             placeholder="MH 12 AB 1234"
             inputClassName="font-mono uppercase tracking-widest text-lg"
+            casing="characters"
           />
 
           <div>
@@ -231,12 +232,14 @@ export default function AddVehicle() {
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
                   placeholder="e.g. Honda"
+                  casing="words"
                 />
                 <Input
                   label="MODEL"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   placeholder="e.g. Activa"
+                  casing="words"
                 />
               </motion.div>
             )}
@@ -260,6 +263,7 @@ export default function AddVehicle() {
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   placeholder="e.g. Blue Bullet"
+                  casing="words"
                 />
 
                 {/* Privacy Controls */}
