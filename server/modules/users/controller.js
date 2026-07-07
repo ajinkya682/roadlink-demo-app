@@ -250,6 +250,25 @@ exports.addAddress = async (req, res) => {
     
     if (!user.savedAddresses) user.savedAddresses = [];
     
+    const duplicateIndex = user.savedAddresses.findIndex(a => 
+      a.name === addressData.name && 
+      a.line1 === addressData.line1 && 
+      (a.line2 || '') === (addressData.line2 || '') && 
+      a.city === addressData.city && 
+      a.state === addressData.state && 
+      a.pincode === addressData.pincode && 
+      a.phone === addressData.phone
+    );
+
+    if (duplicateIndex > -1) {
+      if (addressData.isDefault) {
+        user.savedAddresses.forEach(a => a.isDefault = false);
+        user.savedAddresses[duplicateIndex].isDefault = true;
+      }
+      await user.save();
+      return sendSuccess(res, { savedAddresses: user.savedAddresses });
+    }
+    
     if (user.savedAddresses.length >= 3) {
       if (addressData.isDefault) {
         // Find old default and replace it

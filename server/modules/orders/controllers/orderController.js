@@ -98,19 +98,35 @@ exports.updateAddress = async (req, res) => {
       const user = await User.findById(req.user.userId);
       if (user) {
         if (!user.savedAddresses) user.savedAddresses = [];
-        const addressData = { name, line1, line2, city, state, pincode, phone, isDefault: true };
         
-        if (user.savedAddresses.length >= 3) {
-          const oldDefaultIndex = user.savedAddresses.findIndex(a => a.isDefault === true);
-          if (oldDefaultIndex > -1) {
-            user.savedAddresses.splice(oldDefaultIndex, 1);
-          } else {
-            user.savedAddresses.shift();
+        const duplicateIndex = user.savedAddresses.findIndex(a => 
+          a.name === name && 
+          a.line1 === line1 && 
+          (a.line2 || '') === (line2 || '') && 
+          a.city === city && 
+          a.state === state && 
+          a.pincode === pincode && 
+          a.phone === phone
+        );
+
+        if (duplicateIndex > -1) {
+          user.savedAddresses.forEach(a => a.isDefault = false);
+          user.savedAddresses[duplicateIndex].isDefault = true;
+        } else {
+          const addressData = { name, line1, line2, city, state, pincode, phone, isDefault: true };
+          
+          if (user.savedAddresses.length >= 3) {
+            const oldDefaultIndex = user.savedAddresses.findIndex(a => a.isDefault === true);
+            if (oldDefaultIndex > -1) {
+              user.savedAddresses.splice(oldDefaultIndex, 1);
+            } else {
+              user.savedAddresses.shift();
+            }
           }
+          
+          user.savedAddresses.forEach(a => a.isDefault = false);
+          user.savedAddresses.push(addressData);
         }
-        
-        user.savedAddresses.forEach(a => a.isDefault = false);
-        user.savedAddresses.push(addressData);
         await user.save();
       }
     }
