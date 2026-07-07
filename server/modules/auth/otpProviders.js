@@ -28,6 +28,12 @@ class Msg91Provider extends BaseOTPProvider {
     const authKey = process.env.MSG91_AUTH_KEY;
     const templateId = process.env.MSG91_TEMPLATE_ID;
 
+    // Check feature flag
+    if (process.env.SMS_ENABLED === 'false') {
+      logger.info(`[MSG91 Disabled] OTP request bypassed for ${formattedPhone}. (Cheat code 431113 is active)`);
+      return true; // Simulate success
+    }
+
     if (!authKey || !templateId) {
       logger.error('MSG91 credentials missing from environment');
       throw new Error('MSG91 configuration missing');

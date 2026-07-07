@@ -6,6 +6,11 @@ class SmsAdapter {
       return { status: 'unavailable', providerResponse: { message: 'No phone number on file' } };
     }
 
+    if (process.env.SMS_ENABLED === 'false') {
+      logger.info(`[MSG91 Disabled] SMS notification bypassed for ${owner._id}`);
+      return { status: 'delivered', providerResponse: { messageId: 'msg91-bypassed', status: 'accepted' } };
+    }
+
     try {
       logger.info(`[MSG91 SMS] Sending SMS to owner ${owner._id} for report ${report._id}`);
       
