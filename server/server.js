@@ -2,8 +2,12 @@ require('dotenv').config();
 const app = require('./app');
 const connectDB = require('./config/db');
 const { logger } = require('./middleware/logger');
+const { initFirebase } = require('./services/firebase');
 
 const PORT = process.env.PORT || 5000;
+
+// Initialize Firebase Admin
+initFirebase();
 
 // Connect to MongoDB
 connectDB().then(() => {

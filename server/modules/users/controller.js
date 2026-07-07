@@ -169,3 +169,67 @@ exports.updateProfile = async (req, res) => {
     return sendError(res, 'Failed to update profile', 500);
   }
 };
+
+exports.registerDeviceToken = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { token, platform, deviceId } = req.body;
+
+    if (!token || !platform || !deviceId) {
+      return sendError(res, 'Token, platform, and deviceId are required', 400);
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return sendError(res, 'User not found', 404);
+
+    if (!user.deviceTokens) {
+      user.deviceTokens = [];
+    }
+
+    // Check if deviceId already exists
+    const existingIndex = user.deviceTokens.findIndex(dt => dt.deviceId === deviceId);
+    
+    if (existingIndex > -1) {
+      // Update existing device token
+      user.deviceTokens[existingIndex].token = token;
+      user.deviceTokens[existingIndex].platform = platform;
+      user.deviceTokens[existingIndex].lastUsed = new Date();
+    } else {
+      // Also prevent the exact same token string being used across different device IDs (edge case)
+      user.deviceTokens = user.deviceTokens.filter(dt => dt.token !== token);
+      // Add new token
+      user.deviceTokens.push({ token, platform, deviceId, lastUsed: new Date() });
+    }
+
+    // Prune old tokens (older than 6 months)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    user.deviceTokens = user.deviceTokens.filter(dt => dt.lastUsed >= sixMonthsAgo);
+
+    await user.save();
+    
+    return sendSuccess(res, { message: 'Device token registered successfully' });
+  } catch (error) {
+    logger.error('Error registering device token:', error);
+    return sendError(res, 'Failed to register device token', 500);
+  }
+};
+
+exports.deleteDeviceToken = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { deviceId } = req.params;
+
+    if (!deviceId) return sendError(res, 'Device ID is required', 400);
+
+    await User.updateOne(
+      { _id: userId },
+      { $pull: { deviceTokens: { deviceId } } }
+    );
+
+    return sendSuccess(res, { message: 'Device token removed successfully' });
+  } catch (error) {
+    logger.error('Error removing device token:', error);
+    return sendError(res, 'Failed to remove device token', 500);
+  }
+};

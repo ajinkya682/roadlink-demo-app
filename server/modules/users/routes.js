@@ -10,4 +10,7 @@ router.patch('/me', requireAuth, upload.single('file'), controller.updateProfile
 router.delete('/me', requireAuth, controller.deleteAccount);
 router.patch('/settings', requireAuth, controller.updateSettings);
 
+router.post('/device-tokens', requireAuth, controller.registerDeviceToken);
+router.delete('/device-tokens/:deviceId', requireAuth, controller.deleteDeviceToken);
+
 module.exports = router;

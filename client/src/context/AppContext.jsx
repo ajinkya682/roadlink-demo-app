@@ -147,105 +147,40 @@ export function AppProvider({ children }) {
     SecureStorage.set('roadlink_medical_profile', medicalProfile);
   }, [medicalProfile, isAuthenticated, isInitialized]);
 
-  // ── Global Auth Listener & Real-Time Sync (SSE) ───────────────────────────
+  // ── Global Auth Listener & Notification Repository Init ───────────────────
   useEffect(() => {
-    let sseInstance = null;
-    let reconnectTimer = null;
     let isMounted = true;
-    let retryCount = 0;
-    const MAX_RETRIES = 5;
-
-    const cleanupSSE = () => {
-      if (sseInstance) {
-        sseInstance.close();
-        sseInstance = null;
-      }
-      if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
-        reconnectTimer = null;
-      }
-    };
 
     const handleLogout = () => {
-      cleanupSSE();
+      import('../lib/repositories/NotificationRepository').then(m => m.NotificationRepo.cleanup());
       signOut();
     };
 
-    const connectSSE = async (tokenOverride = null) => {
-      cleanupSSE();
+    const initializeNotifications = async (tokenOverride = null) => {
       if (!isAuthenticated || !isMounted) return;
-
       const token = tokenOverride || await SecureStorage.get('roadlink_access_token');
       if (!token) return;
-
-      const API_URL = import.meta.env.VITE_API_URL || '';
-      sseInstance = new EventSource(`${API_URL}/stream?token=${token}`);
       
-      sseInstance.addEventListener('connected', (e) => {
-        console.log('[SSE] Stream connected');
-        retryCount = 0; // Reset retries on successful connection
+      import('../lib/repositories/NotificationRepository').then(m => {
+        m.NotificationRepo.init(token);
       });
-
-      sseInstance.addEventListener('NOTIFICATION_CREATED', async (e) => {
-        try {
-          const notification = JSON.parse(e.data);
-          await db.notifications.put(notification);
-          import('../services/sound/HapticManager').then(m => {
-            m.hapticManager.playNotificationSound();
-            m.hapticManager.vibrateNotification();
-          });
-        } catch(err) { console.error('[SSE] Error parsing notification', err); }
-      });
-
-      sseInstance.addEventListener('VEHICLE_UPDATED', async (e) => {
-        try {
-          const vehicleData = JSON.parse(e.data);
-          const v = await db.vehicles.get(vehicleData._id || vehicleData.id);
-          if (v) {
-            await db.vehicles.put({ ...v, ...vehicleData, updatedAt: Date.now() });
-          } else {
-            await db.vehicles.put({ ...vehicleData, updatedAt: Date.now() });
-          }
-        } catch(err) { console.error('[SSE] Error parsing vehicle', err); }
-      });
-
-      sseInstance.onerror = (error) => {
-        console.error('[SSE] Connection error. Closing instance to prevent spam.');
-        cleanupSSE(); // Stop native infinite reconnection loop immediately
-
-        if (retryCount >= MAX_RETRIES) {
-          console.warn('[SSE] Max retries reached. Stopping reconnection attempts.');
-          return;
-        }
-
-        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
-        const delay = Math.min(30000, 2000 * Math.pow(2, retryCount));
-        retryCount++;
-        
-        console.log(`[SSE] Reconnecting in ${delay}ms (Attempt ${retryCount}/${MAX_RETRIES})`);
-        reconnectTimer = setTimeout(() => {
-          if (isMounted) connectSSE();
-        }, delay);
-      };
     };
 
     const handleTokenRefreshed = (e) => {
       const newToken = e.detail;
-      console.log('[SSE] Token refreshed, reconnecting stream immediately.');
-      retryCount = 0; // Reset retries since we have a valid token
-      connectSSE(newToken);
+      initializeNotifications(newToken);
     };
 
     window.addEventListener('auth:logout', handleLogout);
     window.addEventListener('auth:token_refreshed', handleTokenRefreshed);
 
     if (isAuthenticated) {
-      connectSSE();
+      initializeNotifications();
     }
 
     return () => {
       isMounted = false;
-      cleanupSSE();
+      import('../lib/repositories/NotificationRepository').then(m => m.NotificationRepo.cleanup());
       window.removeEventListener('auth:logout', handleLogout);
       window.removeEventListener('auth:token_refreshed', handleTokenRefreshed);
     };
@@ -263,10 +198,25 @@ export function AppProvider({ children }) {
     VehicleRepository.refreshVehiclesSilently();
     DocumentRepository.refreshDocumentsSilently();
     ContactRepository.refreshContactsSilently();
+    
+    // Register Push Notifications (FCM / APNs)
+    import('../lib/repositories/NotificationRepository').then(m => {
+      m.NotificationRepo.registerDeviceToken();
+    });
   };
 
   const signOut = async () => {
     setIsAuthenticated(false);
+    
+    // Unregister device token
+    try {
+      const deviceId = await SecureStorage.get('roadlink_device_id');
+      if (deviceId) {
+        try { await api.delete(`/users/device-tokens/${deviceId}`); } 
+        catch (err) { await syncManager.enqueueAction('deleteDeviceToken', 'DELETE', `/users/device-tokens/${deviceId}`); }
+      }
+    } catch (e) {}
+
     await UserRepository.clear();
     await VehicleRepository.clear();
     await DocumentRepository.clear();

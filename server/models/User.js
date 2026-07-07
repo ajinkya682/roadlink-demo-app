@@ -6,7 +6,12 @@ const userSchema = new mongoose.Schema({
   email: { type: String },
   avatarUrl: { type: String },
   role: { type: String, default: 'owner' },
-  fcmToken: { type: String },
+  deviceTokens: [{
+    token: String,
+    platform: { type: String, enum: ['web', 'android', 'ios'] },
+    deviceId: { type: String, required: true },
+    lastUsed: Date
+  }],
   refreshTokens: [{
     tokenHash: String,
     expiresAt: Date,
