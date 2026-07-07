@@ -12,6 +12,7 @@ export default function PlanSelection() {
   
   const [vehicle, setVehicle] = React.useState(initialVehicle);
   const [isFree, setIsFree] = React.useState(initialVehicle && !initialVehicle.hasUsedFreeStickerOrder);
+  const [isCheckingEligibility, setIsCheckingEligibility] = React.useState(true);
 
   React.useEffect(() => {
     if (initialVehicle && (initialVehicle._id || initialVehicle.id)) {
@@ -26,8 +27,11 @@ export default function PlanSelection() {
               setIsFree(!latestV.hasUsedFreeStickerOrder);
             }
           })
-          .catch(err => console.error("Failed to fetch latest vehicle status", err));
+          .catch(err => console.error("Failed to fetch latest vehicle status", err))
+          .finally(() => setIsCheckingEligibility(false));
       });
+    } else {
+      setIsCheckingEligibility(false);
     }
   }, [initialVehicle]);
 
@@ -66,15 +70,17 @@ export default function PlanSelection() {
                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white to-transparent opacity-40"></div>
             </div>
             <div className="flex-1">
-              <div className="flex justify-between items-start mb-1">
+              <div className="flex justify-between items-start mb-1 h-6">
                 <h3 className="font-bold text-[#1F2937]">Reflective</h3>
-                {isFree ? (
-                  <>
+                {isCheckingEligibility ? (
+                  <div className="h-4 w-12 bg-slate-200 rounded animate-pulse"></div>
+                ) : isFree ? (
+                  <div className="flex items-center">
                     <span className="font-mono font-medium text-slate-500 line-through mr-1 text-xs">₹299</span>
                     <span className="font-mono font-bold text-verified-green">FREE</span>
-                  </>
+                  </div>
                 ) : (
-                  <span className="font-mono font-medium text-slate-500">₹299</span>
+                  <span className="font-mono font-bold text-slate-700">₹299</span>
                 )}
               </div>
               <p className="text-sm text-slate-500">2 stickers, reflective material</p>
