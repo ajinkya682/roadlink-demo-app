@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
-import standardImg from '../../../assets/images/stickers/standard-minimal-card.png';
-import reflectiveImg from '../../../assets/images/stickers/reflective-split.png';
-import premiumImg from '../../../assets/images/stickers/sticker-template1.png';
+import standardImg from '../../../assets/images/stickers/sticker-template8.png';
+import reflectiveImg from '../../../assets/images/stickers/sticker-template9.png';
+import premiumImg from '../../../assets/images/stickers/sticker-template10.png';
 
 export default function PlanSelection() {
   const navigate = useNavigate();

@@ -1,17 +1,45 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Maximize2, X } from 'lucide-react';
 
-import img4 from '../../../assets/images/stickers/reflective-chrome-blob.png';
-import img5 from '../../../assets/images/stickers/reflective-halo-ring.png';
-import img6 from '../../../assets/images/stickers/reflective-hazard-accent.png';
-import img7 from '../../../assets/images/stickers/reflective-night-edge.png';
+import img2 from '../../../assets/images/stickers/sticker-template2.png';
+import img3 from '../../../assets/images/stickers/sticker-template3.png';
+import img4 from '../../../assets/images/stickers/sticker-template4.png';
+import img5 from '../../../assets/images/stickers/sticker-template5.png';
+import img6 from '../../../assets/images/stickers/sticker-template6.png';
+import img7 from '../../../assets/images/stickers/sticker-template7.png';
+import img8 from '../../../assets/images/stickers/sticker-template8.png';
+import img9 from '../../../assets/images/stickers/sticker-template9.png';
+import img10 from '../../../assets/images/stickers/sticker-template10.png';
+import img11 from '../../../assets/images/stickers/sticker-template11.png';
+import img12 from '../../../assets/images/stickers/sticker-template12.png';
+import img13 from '../../../assets/images/stickers/sticker-template13.png';
+import img14 from '../../../assets/images/stickers/sticker-template14.png';
+import img15 from '../../../assets/images/stickers/sticker-template15.png';
+import img16 from '../../../assets/images/stickers/sticker-template16.png';
+import img17 from '../../../assets/images/stickers/sticker-template17.png';
+import img18 from '../../../assets/images/stickers/sticker-template18.png';
+import img19 from '../../../assets/images/stickers/sticker-template19.png';
 
 const MOCK_TEMPLATES = [
-  { _id: '64f0b2c1e4b0a1d2c3e4f5a1', name: 'Reflective Chrome Blob', previewImageUrl: img4 },
-  { _id: '64f0b2c1e4b0a1d2c3e4f5a2', name: 'Reflective Halo Ring', previewImageUrl: img5 },
-  { _id: '64f0b2c1e4b0a1d2c3e4f5a3', name: 'Reflective Hazard Accent', previewImageUrl: img6 },
-  { _id: '64f0b2c1e4b0a1d2c3e4f5a4', name: 'Reflective Night Edge', previewImageUrl: img7 }
+  { _id: 'template-2', name: 'Design 1', previewImageUrl: img2 },
+  { _id: 'template-3', name: 'Design 2', previewImageUrl: img3 },
+  { _id: 'template-4', name: 'Design 3', previewImageUrl: img4 },
+  { _id: 'template-5', name: 'Design 4', previewImageUrl: img5 },
+  { _id: 'template-6', name: 'Design 5', previewImageUrl: img6 },
+  { _id: 'template-7', name: 'Design 6', previewImageUrl: img7 },
+  { _id: 'template-8', name: 'Design 7', previewImageUrl: img8 },
+  { _id: 'template-9', name: 'Design 8', previewImageUrl: img9 },
+  { _id: 'template-10', name: 'Design 9', previewImageUrl: img10 },
+  { _id: 'template-11', name: 'Design 10', previewImageUrl: img11 },
+  { _id: 'template-12', name: 'Design 11', previewImageUrl: img12 },
+  { _id: 'template-13', name: 'Design 12', previewImageUrl: img13 },
+  { _id: 'template-14', name: 'Design 13', previewImageUrl: img14 },
+  { _id: 'template-15', name: 'Design 14', previewImageUrl: img15 },
+  { _id: 'template-16', name: 'Design 15', previewImageUrl: img16 },
+  { _id: 'template-17', name: 'Design 16', previewImageUrl: img17 },
+  { _id: 'template-18', name: 'Design 17', previewImageUrl: img18 },
+  { _id: 'template-19', name: 'Design 18', previewImageUrl: img19 }
 ];
 
 export default function ReflectivePicker() {
@@ -20,6 +48,7 @@ export default function ReflectivePicker() {
   const vehicle = location.state?.vehicle;
   // Array of selected template IDs. Order matters for badge "1" and "2".
   const [selections, setSelections] = useState([]);
+  const [fullScreenImage, setFullScreenImage] = useState(null);
 
   const handleSelect = (id) => {
     setSelections(prev => {
@@ -116,6 +145,19 @@ export default function ReflectivePicker() {
                 {/* Preview */}
                 <div className="aspect-square bg-slate-100 relative">
                   <img src={template.previewImageUrl} alt={template.name} className="w-full h-full object-cover" />
+                  
+                  {/* Full Screen Button */}
+                  <div className="absolute bottom-2 right-2 z-20">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFullScreenImage(template.previewImageUrl);
+                      }}
+                      className="bg-white/80 p-1.5 rounded-full shadow-sm hover:bg-white text-slate-700"
+                    >
+                      <Maximize2 size={16} />
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="p-3 bg-white border-t border-slate-100">
@@ -141,6 +183,23 @@ export default function ReflectivePicker() {
           Continue
         </button>
       </div>
+
+      {/* Full Screen Modal */}
+      {fullScreenImage && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
+          <button 
+            onClick={() => setFullScreenImage(null)}
+            className="absolute top-6 right-6 text-white bg-white/20 p-2 rounded-full hover:bg-white/40"
+          >
+            <X size={24} />
+          </button>
+          <img 
+            src={fullScreenImage} 
+            alt="Full Screen Preview" 
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" 
+          />
+        </div>
+      )}
     </div>
   );
 }

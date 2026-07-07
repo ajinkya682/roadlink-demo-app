@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
-import img1 from '../../../assets/images/stickers/standard-immersive-gradient.png';
-import img2 from '../../../assets/images/stickers/standard-minimal-card.png';
-import img3 from '../../../assets/images/stickers/standard-split-panel.png';
+import img1 from '../../../assets/images/stickers/sticker-template2.png';
+import img2 from '../../../assets/images/stickers/sticker-template3.png';
+import img3 from '../../../assets/images/stickers/sticker-template4.png';
 
 const MOCK_TEMPLATES = [
   { _id: '64f0b2c1e4b0a1d2c3e4f5b1', name: 'Standard Immersive Gradient', previewImageUrl: img1 },
