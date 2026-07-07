@@ -51,7 +51,8 @@ exports.getUserProfile = async (req, res) => {
         role: user.role,
         notificationPrefs: user.notificationPrefs,
         privacyPrefs: user.privacyPrefs,
-        medicalProfile: user.medicalProfile
+        medicalProfile: user.medicalProfile,
+        savedAddresses: user.savedAddresses || []
       }
     });
   } catch (error) {
@@ -165,7 +166,8 @@ exports.updateProfile = async (req, res) => {
         role: user.role,
         notificationPrefs: user.notificationPrefs,
         privacyPrefs: user.privacyPrefs,
-        medicalProfile: user.medicalProfile
+        medicalProfile: user.medicalProfile,
+        savedAddresses: user.savedAddresses || []
       }
     });
   } catch (error) {
@@ -235,5 +237,99 @@ exports.deleteDeviceToken = async (req, res) => {
   } catch (error) {
     logger.error('Error removing device token:', error);
     return sendError(res, 'Failed to remove device token', 500);
+  }
+};
+
+exports.addAddress = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const addressData = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) return sendError(res, 'User not found', 404);
+    
+    if (!user.savedAddresses) user.savedAddresses = [];
+    
+    if (user.savedAddresses.length >= 3) {
+      if (addressData.isDefault) {
+        // Find old default and replace it
+        const oldDefaultIndex = user.savedAddresses.findIndex(a => a.isDefault === true);
+        if (oldDefaultIndex > -1) {
+          user.savedAddresses.splice(oldDefaultIndex, 1);
+        } else {
+          user.savedAddresses.shift();
+        }
+      } else {
+        return sendError(res, 'Maximum of 3 addresses allowed. Please replace an existing one.', 400);
+      }
+    }
+    
+    if (addressData.isDefault) {
+      user.savedAddresses.forEach(a => a.isDefault = false);
+    } else if (user.savedAddresses.length === 0) {
+      addressData.isDefault = true;
+    }
+    
+    user.savedAddresses.push(addressData);
+    await user.save();
+    
+    return sendSuccess(res, { savedAddresses: user.savedAddresses });
+  } catch (error) {
+    logger.error('Error adding address:', error);
+    return sendError(res, 'Failed to add address', 500);
+  }
+};
+
+exports.updateAddress = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    const addressData = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) return sendError(res, 'User not found', 404);
+    
+    const address = user.savedAddresses.id(id);
+    if (!address) return sendError(res, 'Address not found', 404);
+    
+    if (addressData.isDefault && !address.isDefault) {
+      user.savedAddresses.forEach(a => a.isDefault = false);
+    }
+    
+    Object.assign(address, addressData);
+    await user.save();
+    
+    return sendSuccess(res, { savedAddresses: user.savedAddresses });
+  } catch (error) {
+    logger.error('Error updating address:', error);
+    return sendError(res, 'Failed to update address', 500);
+  }
+};
+
+exports.deleteAddress = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    
+    const user = await User.findById(userId);
+    if (!user) return sendError(res, 'User not found', 404);
+    
+    const address = user.savedAddresses.id(id);
+    if (!address) return sendError(res, 'Address not found', 404);
+    
+    const wasDefault = address.isDefault;
+    user.savedAddresses.pull(id);
+    
+    // If we deleted the default and there are others left, make the first one default
+    if (wasDefault && user.savedAddresses.length > 0) {
+      user.savedAddresses[0].isDefault = true;
+    }
+    
+    await user.save();
+    
+    return sendSuccess(res, { savedAddresses: user.savedAddresses });
+  } catch (error) {
+    logger.error('Error deleting address:', error);
+    return sendError(res, 'Failed to delete address', 500);
   }
 };

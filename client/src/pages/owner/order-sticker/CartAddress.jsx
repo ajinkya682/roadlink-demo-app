@@ -18,8 +18,18 @@ export default function CartAddress() {
   
   const [vehicle, setVehicle] = useState(initialVehicle);
   const [isFree, setIsFree] = useState(initialVehicle && !initialVehicle.hasUsedFreeStickerOrder);
+  
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
   useEffect(() => {
+    // Fetch User profile to get saved addresses
+    api.get('/users/me')
+      .then(res => {
+        if (res.data.success && res.data.data.user.savedAddresses) {
+          setSavedAddresses(res.data.data.user.savedAddresses);
+        }
+      })
+      .catch(err => console.error("Failed to fetch user profile", err));
     if (initialVehicle && (initialVehicle._id || initialVehicle.id)) {
       const vId = initialVehicle._id || initialVehicle.id;
       api.get(`/vehicles/${vId}`)
@@ -88,7 +98,8 @@ export default function CartAddress() {
       }
     } catch (error) {
       console.error(error);
-      alert('Failed to process order. Please try again.');
+      const serverError = error.response?.data?.error || error.response?.data?.message || error.message;
+      alert(`Failed to process order: ${serverError}`);
       setIsSubmitting(false);
     }
   };
@@ -144,6 +155,31 @@ export default function CartAddress() {
           </div>
         </section>
 
+        {/* Saved Addresses Suggestions */}
+        {savedAddresses.length > 0 && (
+          <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+            <h2 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Saved Addresses</h2>
+            <div className="space-y-3">
+              {savedAddresses.map((addr) => (
+                <div 
+                  key={addr._id}
+                  onClick={() => setFormData({
+                    name: addr.name || '', line1: addr.line1 || '', line2: addr.line2 || '',
+                    city: addr.city || '', state: addr.state || '', pincode: addr.pincode || '',
+                    phone: addr.phone || ''
+                  })}
+                  className="p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-[#1E3A8A] hover:bg-blue-50/50 transition-colors relative"
+                >
+                  {addr.isDefault && <span className="absolute top-2 right-2 text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Main</span>}
+                  <p className="font-bold text-slate-800 text-sm">{addr.name}</p>
+                  <p className="text-xs text-slate-600 mt-1">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</p>
+                  <p className="text-xs text-slate-600">{addr.city}, {addr.state} {addr.pincode}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Shipping Address */}
         <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
           <h2 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Shipping Address</h2>
@@ -182,15 +218,22 @@ export default function CartAddress() {
               </div>
             </div>
 
-            <div className="pt-2 flex items-center">
-              <input 
-                type="checkbox" 
-                id="saveDefault" 
-                checked={saveDefault} 
-                onChange={() => setSaveDefault(!saveDefault)}
-                className="w-4 h-4 text-[#1E3A8A] border-slate-300 rounded focus:ring-[#1E3A8A]"
-              />
-              <label htmlFor="saveDefault" className="ml-2 text-sm text-slate-600">Save as default address</label>
+            <div className="pt-2 flex flex-col items-start space-y-2">
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="saveDefault" 
+                  checked={saveDefault} 
+                  onChange={() => setSaveDefault(!saveDefault)}
+                  className="w-4 h-4 text-[#1E3A8A] border-slate-300 rounded focus:ring-[#1E3A8A]"
+                />
+                <label htmlFor="saveDefault" className="ml-2 text-sm text-slate-600">Save as default address</label>
+              </div>
+              {saveDefault && savedAddresses.length >= 3 && (
+                <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded w-full border border-amber-100">
+                  Note: You have reached the maximum of 3 saved addresses. Saving this as default will replace your current Main address.
+                </p>
+              )}
             </div>
           </div>
         </section>

@@ -22,24 +22,24 @@ import img18 from '../../../assets/images/stickers/sticker-template18.png';
 import img19 from '../../../assets/images/stickers/sticker-template19.png';
 
 const MOCK_TEMPLATES = [
-  { _id: 'template-2', name: 'Design 1', previewImageUrl: img2 },
-  { _id: 'template-3', name: 'Design 2', previewImageUrl: img3 },
-  { _id: 'template-4', name: 'Design 3', previewImageUrl: img4 },
-  { _id: 'template-5', name: 'Design 4', previewImageUrl: img5 },
-  { _id: 'template-6', name: 'Design 5', previewImageUrl: img6 },
-  { _id: 'template-7', name: 'Design 6', previewImageUrl: img7 },
-  { _id: 'template-8', name: 'Design 7', previewImageUrl: img8 },
-  { _id: 'template-9', name: 'Design 8', previewImageUrl: img9 },
-  { _id: 'template-10', name: 'Design 9', previewImageUrl: img10 },
-  { _id: 'template-11', name: 'Design 10', previewImageUrl: img11 },
-  { _id: 'template-12', name: 'Design 11', previewImageUrl: img12 },
-  { _id: 'template-13', name: 'Design 12', previewImageUrl: img13 },
-  { _id: 'template-14', name: 'Design 13', previewImageUrl: img14 },
-  { _id: 'template-15', name: 'Design 14', previewImageUrl: img15 },
-  { _id: 'template-16', name: 'Design 15', previewImageUrl: img16 },
-  { _id: 'template-17', name: 'Design 16', previewImageUrl: img17 },
-  { _id: 'template-18', name: 'Design 17', previewImageUrl: img18 },
-  { _id: 'template-19', name: 'Design 18', previewImageUrl: img19 }
+  { _id: '64f0b2c1e4b0a1d2c3e4f502', name: 'Design 1', previewImageUrl: img2 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f503', name: 'Design 2', previewImageUrl: img3 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f504', name: 'Design 3', previewImageUrl: img4 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f505', name: 'Design 4', previewImageUrl: img5 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f506', name: 'Design 5', previewImageUrl: img6 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f507', name: 'Design 6', previewImageUrl: img7 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f508', name: 'Design 7', previewImageUrl: img8 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f509', name: 'Design 8', previewImageUrl: img9 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f510', name: 'Design 9', previewImageUrl: img10 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f511', name: 'Design 10', previewImageUrl: img11 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f512', name: 'Design 11', previewImageUrl: img12 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f513', name: 'Design 12', previewImageUrl: img13 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f514', name: 'Design 13', previewImageUrl: img14 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f515', name: 'Design 14', previewImageUrl: img15 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f516', name: 'Design 15', previewImageUrl: img16 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f517', name: 'Design 16', previewImageUrl: img17 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f518', name: 'Design 17', previewImageUrl: img18 },
+  { _id: '64f0b2c1e4b0a1d2c3e4f519', name: 'Design 18', previewImageUrl: img19 }
 ];
 
 export default function ReflectivePicker() {

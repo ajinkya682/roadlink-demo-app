@@ -44,6 +44,10 @@ exports.createOrder = async (req, res) => {
     if (!['standard', 'reflective', 'premium'].includes(tier)) {
       return res.status(400).json({ error: 'Invalid tier' });
     }
+    
+    if (!vehicleId) {
+      return res.status(400).json({ error: 'Vehicle ID is required' });
+    }
 
     let pricing = computePricing(tier);
     
@@ -91,9 +95,24 @@ exports.updateAddress = async (req, res) => {
     
     if (saveDefault) {
       const User = require('../../../models/User');
-      await User.findByIdAndUpdate(req.user.userId, {
-        $set: { address: { name, line1, line2, city, state, pincode, phone } }
-      });
+      const user = await User.findById(req.user.userId);
+      if (user) {
+        if (!user.savedAddresses) user.savedAddresses = [];
+        const addressData = { name, line1, line2, city, state, pincode, phone, isDefault: true };
+        
+        if (user.savedAddresses.length >= 3) {
+          const oldDefaultIndex = user.savedAddresses.findIndex(a => a.isDefault === true);
+          if (oldDefaultIndex > -1) {
+            user.savedAddresses.splice(oldDefaultIndex, 1);
+          } else {
+            user.savedAddresses.shift();
+          }
+        }
+        
+        user.savedAddresses.forEach(a => a.isDefault = false);
+        user.savedAddresses.push(addressData);
+        await user.save();
+      }
     }
     
     res.json(order);

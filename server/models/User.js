@@ -6,6 +6,16 @@ const userSchema = new mongoose.Schema({
   email: { type: String },
   avatarUrl: { type: String },
   role: { type: String, default: 'owner' },
+  savedAddresses: [{
+    name: String,
+    line1: String,
+    line2: String,
+    city: String,
+    state: String,
+    pincode: String,
+    phone: String,
+    isDefault: { type: Boolean, default: false }
+  }],
   deviceTokens: [{
     token: String,
     platform: { type: String, enum: ['web', 'android', 'ios'] },

@@ -1,12 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Camera, Mail, MapPin, Loader2, Package } from "lucide-react";
+import { Camera, Mail, MapPin, Loader2, Package, Plus, Edit2, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "../../components/AppHeader";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { useAppData } from "../../context/AppContext";
 import SyncIndicator from "../../components/SyncIndicator";
+import api from "../../lib/api";
 
 export default function MyProfile() {
   const navigate = useNavigate();
@@ -23,6 +24,44 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  
+  const [addresses, setAddresses] = useState(user.savedAddresses || []);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [addressForm, setAddressForm] = useState({ name: '', line1: '', line2: '', city: '', state: '', pincode: '', phone: '', isDefault: false });
+
+  useEffect(() => {
+    api.get('/users/me').then(res => {
+      if(res.data.success && res.data.data.user.savedAddresses) {
+        setAddresses(res.data.data.user.savedAddresses);
+      }
+    }).catch(console.error);
+  }, []);
+
+  const handleSaveAddress = async () => {
+     try {
+       if (editingAddress) {
+         const res = await api.put(`/users/me/addresses/${editingAddress._id}`, addressForm);
+         setAddresses(res.data.data.savedAddresses);
+       } else {
+         const res = await api.post('/users/me/addresses', addressForm);
+         setAddresses(res.data.data.savedAddresses);
+       }
+       setShowAddressModal(false);
+     } catch(err) {
+       alert(err.response?.data?.error?.message || "Failed to save address");
+     }
+  };
+
+  const handleDeleteAddress = async (id) => {
+    if(!window.confirm("Delete this address?")) return;
+    try {
+       const res = await api.delete(`/users/me/addresses/${id}`);
+       setAddresses(res.data.data.savedAddresses);
+    } catch(err) {
+       alert("Failed to delete address");
+    }
+  };
   
   const fileInputRef = useRef(null);
 
@@ -168,6 +207,44 @@ export default function MyProfile() {
           {success && <p className="text-green-600 text-sm text-center">Profile updated successfully!</p>}
         </motion.section>
 
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white rounded-2xl border border-[#e5e2e1] p-6 shadow-[0px_4px_12px_rgba(26,26,26,0.02)] space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="font-display text-[20px] font-semibold text-[#1c1b1b]">
+              Saved Addresses ({addresses.length}/3)
+            </h3>
+            {addresses.length < 3 && (
+              <button 
+                onClick={() => { setEditingAddress(null); setAddressForm({ name: '', line1: '', line2: '', city: '', state: '', pincode: '', phone: '', isDefault: addresses.length === 0 }); setShowAddressModal(true); }}
+                className="text-[#1E3A8A] flex items-center text-sm font-bold hover:underline"
+              >
+                <Plus size={16} className="mr-1" /> Add
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {addresses.length === 0 && <p className="text-slate-500 text-sm">No saved addresses.</p>}
+            {addresses.map(addr => (
+               <div key={addr._id} className="p-3 border border-slate-200 rounded-lg relative hover:border-[#1E3A8A] transition-colors">
+                 {addr.isDefault && <span className="absolute top-2 right-2 text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Main</span>}
+                 <p className="font-bold text-slate-800 text-sm">{addr.name}</p>
+                 <p className="text-xs text-slate-600 mt-1">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</p>
+                 <p className="text-xs text-slate-600">{addr.city}, {addr.state} {addr.pincode}</p>
+                 <p className="text-xs text-slate-600">{addr.phone}</p>
+                 <div className="flex mt-3 space-x-4 border-t border-slate-100 pt-2">
+                   <button onClick={() => { setEditingAddress(addr); setAddressForm(addr); setShowAddressModal(true); }} className="text-slate-500 hover:text-[#1E3A8A] flex items-center text-xs font-bold transition-colors"><Edit2 size={14} className="mr-1.5"/> Edit</button>
+                   <button onClick={() => handleDeleteAddress(addr._id)} className="text-slate-500 hover:text-red-600 flex items-center text-xs font-bold transition-colors"><Trash2 size={14} className="mr-1.5"/> Delete</button>
+                 </div>
+               </div>
+            ))}
+          </div>
+        </motion.section>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -202,6 +279,68 @@ export default function MyProfile() {
           </button>
         </motion.div>
       </main>
+
+      {/* Address Modal */}
+      {showAddressModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto relative">
+             <button onClick={() => setShowAddressModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <X size={24} />
+             </button>
+             <h2 className="text-xl font-bold mb-4">{editingAddress ? 'Edit Address' : 'Add New Address'}</h2>
+             
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                 <input type="text" value={addressForm.name} onChange={e => setAddressForm({...addressForm, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-1">Address Line 1</label>
+                 <input type="text" value={addressForm.line1} onChange={e => setAddressForm({...addressForm, line1: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-1">Address Line 2</label>
+                 <input type="text" value={addressForm.line2} onChange={e => setAddressForm({...addressForm, line2: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
+               </div>
+               <div className="grid grid-cols-2 gap-3">
+                 <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
+                   <input type="text" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">State</label>
+                   <input type="text" value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
+                 </div>
+               </div>
+               <div className="grid grid-cols-2 gap-3">
+                 <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">PIN Code</label>
+                   <input type="text" value={addressForm.pincode} onChange={e => setAddressForm({...addressForm, pincode: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                   <input type="text" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none bg-slate-50" />
+                 </div>
+               </div>
+               <div className="flex items-center pt-2">
+                 <input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm({...addressForm, isDefault: e.target.checked})} className="w-4 h-4 text-[#1E3A8A] rounded" id="isDefault" />
+                 <label htmlFor="isDefault" className="ml-2 text-sm text-slate-600">Set as Main Address</label>
+               </div>
+               {addressForm.isDefault && addresses.length >= 3 && !editingAddress?.isDefault && (
+                  <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-100">This will replace your current Main address.</p>
+               )}
+               
+               <button 
+                 onClick={handleSaveAddress} 
+                 disabled={!addressForm.name || !addressForm.line1 || !addressForm.city || !addressForm.state || !addressForm.pincode}
+                 className="w-full bg-[#1E3A8A] text-white py-3 rounded-xl font-bold mt-4 disabled:opacity-50"
+               >
+                 Save Address
+               </button>
+             </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,4 +13,8 @@ router.patch('/settings', requireAuth, controller.updateSettings);
 router.post('/device-tokens', requireAuth, controller.registerDeviceToken);
 router.delete('/device-tokens/:deviceId', requireAuth, controller.deleteDeviceToken);
 
+router.post('/me/addresses', requireAuth, controller.addAddress);
+router.put('/me/addresses/:id', requireAuth, controller.updateAddress);
+router.delete('/me/addresses/:id', requireAuth, controller.deleteAddress);
+
 module.exports = router;
