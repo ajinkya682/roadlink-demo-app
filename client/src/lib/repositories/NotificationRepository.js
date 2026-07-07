@@ -232,20 +232,20 @@ class NotificationRepository {
     if (!reportId) return;
 
     try {
-      const existing = await db.notifications.get(reportId);
+      const existing = await db.notifications.get(String(reportId));
 
       if (isFromSSE) {
         // SSE is the source of truth. Always overwrite.
         const notification = {
-          id: data._id,
-          type: data.categoryLabel || 'Alert',
+          ...data,
+          id: String(reportId),
+          type: data.type || data.categoryLabel || 'Alert',
           category: data.category || 'unknown',
           message: data.message || 'New vehicle alert',
-          timestamp: data.createdAt,
-          read: data.status === 'resolved',
-          resolved: data.status === 'resolved',
-          vehicleId: data.vehicleId?._id || data.vehicleId,
-          ...data // dump rest just in case
+          timestamp: data.timestamp || data.createdAt || new Date().toISOString(),
+          read: data.read || data.status === 'resolved' || false,
+          resolved: data.resolved || data.status === 'resolved' || false,
+          vehicleId: data.vehicleId?._id || data.vehicleId
         };
         await db.notifications.put(notification);
         this.playFeedback();
@@ -253,7 +253,7 @@ class NotificationRepository {
         // From FCM (background/foreground). Only insert if it doesn't exist, preventing overwrite of rich SSE data.
         if (!existing) {
           const notification = {
-            id: data.reportId,
+            id: String(reportId),
             type: 'Alert',
             category: data.category || 'unknown',
             message: data.message || 'New vehicle alert',
