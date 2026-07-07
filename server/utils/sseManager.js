@@ -54,7 +54,10 @@ class SSEManager {
     const userClients = this.clients.get(uId);
     if (userClients) {
       const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-      userClients.forEach(res => res.write(payload));
+      userClients.forEach(res => {
+        res.write(payload);
+        if (typeof res.flush === 'function') res.flush();
+      });
     }
   }
 }

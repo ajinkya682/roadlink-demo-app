@@ -62,8 +62,7 @@ class NotificationRepository {
     await this.registerDeviceToken();
   }
 
-  cleanup() {
-    this.isMounted = false;
+  disconnectSSE() {
     if (this.sseInstance) {
       this.sseInstance.close();
       this.sseInstance = null;
@@ -74,8 +73,13 @@ class NotificationRepository {
     }
   }
 
+  cleanup() {
+    this.isMounted = false;
+    this.disconnectSSE();
+  }
+
   connectSSE(token) {
-    this.cleanup();
+    this.disconnectSSE();
     if (!token || !this.isMounted) return;
 
     const API_URL = import.meta.env.VITE_API_URL || '';
@@ -248,7 +252,9 @@ class NotificationRepository {
           vehicleId: data.vehicleId?._id || data.vehicleId
         };
         await db.notifications.put(notification);
-        this.playFeedback();
+        if (!existing) {
+          this.playFeedback();
+        }
       } else {
         // From FCM (background/foreground). Only insert if it doesn't exist, preventing overwrite of rich SSE data.
         if (!existing) {
