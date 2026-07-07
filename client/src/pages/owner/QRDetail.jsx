@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Download, Truck, HelpCircle } from 'lucide-react';
+import { Download, Truck, HelpCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
@@ -22,6 +22,16 @@ export default function QRDetail() {
 
   const [downloaded, setDownloaded] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [showClaimModal, setShowClaimModal] = useState(false);
+
+  useEffect(() => {
+    // If the vehicle hasn't used its free sticker yet, show the pop-up
+    if (vehicle && vehicle.hasUsedFreeStickerOrder === false) {
+      // Small delay to let the page load first for dramatic effect
+      const timer = setTimeout(() => setShowClaimModal(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [vehicle]);
 
   const handleDownload = () => {
     const svgElement = document.getElementById('vehicle-qr-svg');
@@ -157,6 +167,68 @@ export default function QRDetail() {
           </p>
         </div>
       </main>
+
+      {/* Free Sticker Claim Modal */}
+      <AnimatePresence>
+        {showClaimModal && (
+          <motion.div 
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl relative"
+              initial={{ y: "100%", opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: "100%", opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              <button 
+                onClick={() => setShowClaimModal(false)}
+                className="absolute top-4 right-4 z-10 bg-black/10 hover:bg-black/20 p-2 rounded-full transition-colors text-white"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Premium Gradient Background */}
+              <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 p-8 text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full opacity-20" style={{ backgroundImage: 'radial-gradient(circle at top right, #fff, transparent)' }}></div>
+                
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border border-white/30">
+                  <Truck size={32} className="text-white" />
+                </div>
+                
+                <h2 className="font-display text-3xl font-bold text-white tracking-tight mb-2 leading-tight">
+                  Claim your <br/><span className="text-amber-100 font-extrabold italic">FREE</span> stickers
+                </h2>
+                <p className="font-body text-sm text-white/90 font-medium">
+                  Your protection plan includes a complimentary set of premium reflective stickers.
+                </p>
+              </div>
+
+              <div className="p-6 bg-white">
+                <Button 
+                  fullWidth 
+                  onClick={() => {
+                    setShowClaimModal(false);
+                    navigate('/order-sticker', { state: { vehicle } });
+                  }}
+                  className="bg-navy hover:bg-navy/90 text-white h-[56px] text-[15px] font-bold tracking-widest uppercase shadow-xl shadow-navy/20"
+                >
+                  Claim Now
+                </Button>
+                <button 
+                  onClick={() => setShowClaimModal(false)}
+                  className="w-full mt-4 py-2 text-sm font-bold tracking-wider text-slate-400 hover:text-slate-600 uppercase"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

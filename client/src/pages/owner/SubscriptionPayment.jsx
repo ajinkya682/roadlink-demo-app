@@ -66,7 +66,7 @@ export default function SubscriptionPayment() {
            await db.vehicles.put(v);
          }
          setTimeout(() => {
-            navigate("/dashboard", { replace: true });
+            navigate("/qr-detail", { state: { vehicle: v || vehicle }, replace: true });
          }, 1000);
          return;
       }
@@ -92,7 +92,7 @@ export default function SubscriptionPayment() {
               await db.vehicles.put(v);
             }
             hapticManager.playSuccessSound();
-            navigate("/dashboard", { replace: true });
+            navigate("/qr-detail", { state: { vehicle: v || vehicle }, replace: true });
           } catch (err) {
             setError("Payment verification failed. Please contact support.");
           }
