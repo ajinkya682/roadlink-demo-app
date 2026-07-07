@@ -14,10 +14,14 @@ exports.updateSettings = async (req, res) => {
     if (!user) return sendError(res, 'User not found', 404);
     
     if (notificationPrefs) {
-      user.notificationPrefs = { ...user.notificationPrefs, ...notificationPrefs };
+      for (const key in notificationPrefs) {
+        user.notificationPrefs[key] = notificationPrefs[key];
+      }
     }
     if (privacyPrefs) {
-      user.privacyPrefs = { ...user.privacyPrefs, ...privacyPrefs };
+      for (const key in privacyPrefs) {
+        user.privacyPrefs[key] = privacyPrefs[key];
+      }
     }
     
     await user.save();

@@ -228,7 +228,7 @@ class NotificationRepository {
 
   async handleIncomingPayload(data, isFromSSE) {
     // If it's from SSE, `data` is the full document. If from FCM, it's just the `data` map payload.
-    const reportId = data._id || data.reportId;
+    const reportId = data._id || data.reportId || data.id;
     if (!reportId) return;
 
     try {
