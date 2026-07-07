@@ -57,7 +57,7 @@ export default function NotificationsInbox() {
     if (filter === 'Unresolved') return !n.resolved;
     if (filter === 'Resolved') return n.resolved;
     return true;
-  });
+  }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const handleNotificationClick = (n) => {
     if (!n.read) markRead(n.id);

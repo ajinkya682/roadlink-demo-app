@@ -29,6 +29,8 @@ const userSchema = new mongoose.Schema({
     whatsapp: { type: Boolean, default: true },
     sms: { type: Boolean, default: true },
     email: { type: Boolean, default: true },
+    sound: { type: Boolean, default: true },
+    haptic: { type: Boolean, default: true },
     quietHours: {
       start: { type: String },
       end: { type: String }
