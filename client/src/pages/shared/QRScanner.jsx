@@ -102,7 +102,7 @@ export default function QRScanner() {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden flex flex-col bg-black">
+    <div className="fixed inset-0 z-[100] w-full h-[100dvh] overflow-hidden flex flex-col bg-black">
       {/* ── CAMERA LAYER ── */}
       {isGranted && <ScannerCamera />}
 
