@@ -1,6 +1,7 @@
 import React from 'react';
 import RoadLinkQR from './RoadLinkQR';
 import { Shield } from 'lucide-react';
+import roadlinkLogo from '../assets/roadlink-logo-qr.png';
 
 export default function QRCard({ vehicle }) {
   if (!vehicle) return null;
@@ -16,7 +17,7 @@ export default function QRCard({ vehicle }) {
       <div className="flex-1 flex flex-col justify-between p-4 pl-5">
         <div>
           <div className="flex items-center gap-1.5 mb-3">
-            <img src="/assets/roadlink-logo-qr.png" alt="RoadLink" className="w-5 h-5 object-contain" />
+            <img src={roadlinkLogo} alt="RoadLink" className="w-5 h-5 object-contain" />
             <span className="font-display font-bold text-navy text-sm tracking-wide">RoadLINK</span>
           </div>
           

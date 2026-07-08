@@ -9,7 +9,7 @@ export default function ScannerCamera() {
       */}
       <div 
         id="qr-reader-element" 
-        className="w-full h-full flex items-center justify-center [&>*:not(video)]:opacity-0 [&>*:not(video)]:pointer-events-none"
+        className="w-full h-full relative flex items-center justify-center [&_canvas]:!hidden [&>div]:!w-full [&>div]:!h-full [&>div]:!static [&_video]:!object-cover [&_video]:!w-full [&_video]:!h-full [&_video]:!absolute [&_video]:!top-0 [&_video]:!left-0"
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import RoadLinkQR from './RoadLinkQR';
 import { ShieldAlert } from 'lucide-react';
+import roadlinkLogo from '../assets/roadlink-logo-qr.png';
 
 export default function QRSticker({ vehicle }) {
   if (!vehicle) return null;
@@ -18,8 +19,8 @@ export default function QRSticker({ vehicle }) {
       
       {/* Brand */}
       <div className="flex items-center gap-1.5 mt-4 mb-2 z-10">
-        <img src="/assets/roadlink-logo-qr.png" alt="RoadLink" className="w-6 h-6 object-contain" />
-        <span className="font-display font-bold text-lg tracking-wide text-white">RoadLINK</span>
+        <img src={roadlinkLogo} alt="RoadLink" className="w-6 h-6 object-contain drop-shadow-md" />
+        <span className="font-display font-bold text-lg tracking-wide text-white drop-shadow-md">RoadLINK</span>
       </div>
       
       {/* QR Code container */}
