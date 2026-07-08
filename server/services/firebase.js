@@ -1,5 +1,4 @@
-const admin = require('firebase-admin');
-const { getApps } = require('firebase-admin/app');
+const { getApps, initializeApp, cert } = require('firebase-admin/app');
 const { logger } = require('../middleware/logger');
 
 function initFirebase() {
@@ -14,8 +13,8 @@ function initFirebase() {
         
         try {
           const serviceAccount = JSON.parse(decoded);
-          admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
+          initializeApp({
+            credential: cert(serviceAccount)
           });
           logger.info('Firebase Admin SDK initialized successfully.');
         } catch (parseError) {
@@ -30,4 +29,4 @@ function initFirebase() {
   }
 }
 
-module.exports = { admin, initFirebase };
+module.exports = { initFirebase };

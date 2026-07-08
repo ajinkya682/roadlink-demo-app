@@ -1,5 +1,5 @@
 const { logger } = require('../../middleware/logger');
-const { admin } = require('../../services/firebase');
+
 const { getApps } = require('firebase-admin/app');
 const { getMessaging } = require('firebase-admin/messaging');
 const User = require('../../models/User');
