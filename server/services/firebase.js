@@ -1,9 +1,10 @@
 const admin = require('firebase-admin');
+const { getApps } = require('firebase-admin/app');
 const { logger } = require('../middleware/logger');
 
 function initFirebase() {
   try {
-    if (!admin.apps.length) {
+    if (getApps().length === 0) {
       // For production, you should provide the service account key.
       // Usually via a base64 encoded environment variable or file path.
       if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {

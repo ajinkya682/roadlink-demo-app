@@ -145,6 +145,26 @@ class NotificationRepository {
         console.warn('[NotificationRepository] User denied push notification permissions.');
         return;
       }
+      // Create High Importance Channels for Android
+      if (Capacitor.getPlatform() === 'android') {
+        await PushNotifications.createChannel({
+          id: 'emergency_alerts',
+          name: 'Emergency Alerts',
+          description: 'High priority alerts for vehicle theft and emergencies',
+          importance: 5,
+          visibility: 1,
+          vibration: true
+        });
+
+        await PushNotifications.createChannel({
+          id: 'general_alerts',
+          name: 'General Updates',
+          description: 'General notifications regarding your vehicle',
+          importance: 3,
+          visibility: 1,
+          vibration: true
+        });
+      }
       
       await PushNotifications.register();
       

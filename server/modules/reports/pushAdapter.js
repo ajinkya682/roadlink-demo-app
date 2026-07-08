@@ -1,5 +1,7 @@
 const { logger } = require('../../middleware/logger');
 const { admin } = require('../../services/firebase');
+const { getApps } = require('firebase-admin/app');
+const { getMessaging } = require('firebase-admin/messaging');
 const User = require('../../models/User');
 
 class PushAdapter {
@@ -8,7 +10,7 @@ class PushAdapter {
       return { status: 'unavailable', providerResponse: { message: 'No FCM tokens on file' } };
     }
 
-    if (!admin.apps.length) {
+    if (getApps().length === 0) {
       logger.warn('[FCM Push] Firebase Admin not initialized. Skipping push.');
       return { status: 'unavailable', providerResponse: { message: 'Firebase Admin not initialized' } };
     }
@@ -30,9 +32,15 @@ class PushAdapter {
 
       const tokens = owner.deviceTokens.map(dt => dt.token);
 
-      const response = await admin.messaging().sendEachForMulticast({
+      const response = await getMessaging().sendEachForMulticast({
         tokens,
         notification: payload.notification,
+        android: {
+          notification: {
+            sound: 'default',
+            channelId: report.category === 'emergency' || report.category === 'theft' ? 'emergency_alerts' : 'general_alerts'
+          }
+        },
         data: payload.data
       });
 
