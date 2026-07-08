@@ -82,13 +82,13 @@ export default function PromoCarousel({ onAction }) {
   return (
     <div className="w-full flex flex-col items-center px-4 pt-4 pb-2">
       <div
-        className="relative w-full h-[160px] rounded-[20px] overflow-hidden shadow-md bg-white"
+        className="relative w-full h-[160px] rounded-[20px] overflow-hidden shadow-md bg-transparent"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
         onTouchEnd={() => setIsPaused(false)}
       >
-        <AnimatePresence initial={false} custom={direction} mode="wait">
+        <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={page}
             custom={direction}
