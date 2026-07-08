@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const { logger, requestLogger } = require('./middleware/logger');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
