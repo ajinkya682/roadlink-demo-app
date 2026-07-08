@@ -6,7 +6,7 @@ import { useDialog } from '../context/DialogContext';
 export default function ShareModal({ isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
   const { showAlert } = useDialog();
-  const shareUrl = window.location.origin;
+  const shareUrl = "https://roadlink-doc.vercel.app";
   const shareText = "Check out RoadLINK - The digital identity for your vehicles!";
 
   const handleCopy = async () => {
