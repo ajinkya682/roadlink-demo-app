@@ -109,13 +109,22 @@ export default function MyProfile() {
     setSuccess(false);
     
     try {
-      const payload = {
-        name: form.name,
-        email: form.email
-      };
+      let payload;
       
       if (selectedFile && typeof selectedFile === 'string' && selectedFile.startsWith('data:image')) {
-        payload.avatarUrl = selectedFile;
+        payload = new FormData();
+        payload.append('name', form.name);
+        payload.append('email', form.email);
+        
+        // Convert base64 to Blob
+        const res = await fetch(selectedFile);
+        const blob = await res.blob();
+        payload.append('file', blob, 'avatar.jpg');
+      } else {
+        payload = {
+          name: form.name,
+          email: form.email
+        };
       }
       
       await updateProfile(payload);

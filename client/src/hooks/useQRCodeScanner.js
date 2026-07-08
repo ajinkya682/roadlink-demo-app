@@ -32,7 +32,10 @@ export function useQRCodeScanner({
     // Create instance but don't start yet
     try {
       const instance = new Html5Qrcode('qr-reader-element', {
-        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
       });
       setScannerInstance(instance);
       scannerRef.current = instance;

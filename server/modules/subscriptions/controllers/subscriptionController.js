@@ -204,7 +204,7 @@ exports.cancelAndRefund = async (req, res) => {
     return sendSuccess(res, { message: 'Cancellation request submitted for review.', requestId });
   } catch (error) {
     logger.error('Refund cancellation error:', error);
-    return sendError(res, 'Failed to process refund cancellation', 500);
+    return sendError(res, `Failed to process refund cancellation: ${error.message || error}`, 500);
   }
 };
 

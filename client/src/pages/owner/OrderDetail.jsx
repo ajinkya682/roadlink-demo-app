@@ -37,13 +37,8 @@ export default function OrderDetail() {
     try {
       const res = await api.get(`/orders/${id}/receipt`);
       if (res.data && res.data.receiptUrl) {
-        const a = document.createElement('a');
-        a.href = res.data.receiptUrl.startsWith('http') ? res.data.receiptUrl : `${import.meta.env.VITE_API_URL}${res.data.receiptUrl}`;
-        a.target = '_blank';
-        a.download = `Receipt_${id}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const url = res.data.receiptUrl.startsWith('http') ? res.data.receiptUrl : `${import.meta.env.VITE_API_URL}${res.data.receiptUrl}`;
+        window.open(url, '_system');
       } else {
         alert('Receipt not available yet.');
       }

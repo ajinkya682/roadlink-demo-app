@@ -149,18 +149,15 @@ exports.updateProfile = async (req, res) => {
     // address is not in schema yet, but we'll accept it
     
     if (req.file) {
-      // Upload to Cloudinary
-      const result = await uploadBuffer(req.file.buffer, 'roadlink/profiles', 'image');
+      // Upload to Cloudinary (public image)
+      const result = await uploadBuffer(req.file.buffer, 'roadlink/profiles', 'image', false);
       user.avatarUrl = result.secure_url;
     } else if (req.body.avatarUrl && req.body.avatarUrl.startsWith('data:image')) {
       // Handle base64 image upload from Capacitor client
       try {
-        const { cloudinary } = require('../../services/cloudinary');
-        const uploadRes = await cloudinary.uploader.upload(req.body.avatarUrl, {
-          folder: 'roadlink/profiles',
-          type: 'upload',
-          transformation: [{ width: 400, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }]
-        });
+        const base64Data = req.body.avatarUrl.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, 'base64');
+        const uploadRes = await uploadBuffer(buffer, 'roadlink/profiles', 'image', false);
         
         // Delete old image if exists
         if (user.avatarUrl) {

@@ -24,9 +24,8 @@ export default function ScannerResult({ result, onDismiss }) {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            // Auto-open URL logic could go here, but user requirements stated:
-            // "Open only after User taps OR 3 second countdown with Cancel button."
-            // So we just enable the button state visually if we hit 0.
+            // Auto-open URL
+            window.open(result.value, '_blank', 'noopener,noreferrer');
             return 0;
           }
           return prev - 1;
