@@ -266,6 +266,7 @@ export function AppProvider({ children }) {
     const v = await db.vehicles.get(id);
     if (v) {
       await db.vehicles.put({ ...v, ...updates });
+      VehicleRepository.forceNextRefresh();
     }
   };
 

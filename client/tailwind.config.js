@@ -17,6 +17,9 @@ export default {
         // Core brand palette
         'road-navy': '#003470',
         'navy': '#1B4B8F',
+        'royal-purple': '#6D28D9',
+        'deep-indigo': '#312E81',
+        'lavender-gray': '#F4F4FB',
         'signal-amber': '#F5A623',
         'alert-red': '#D93025',
         'verified-green': '#1E8E5A',

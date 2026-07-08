@@ -7,6 +7,10 @@ let lastUserRefreshAt = 0;
 const USER_TTL_MS = 60 * 1000;
 
 export class UserRepository {
+  static forceNextRefresh() {
+    lastUserRefreshAt = 0;
+  }
+
   static async getProfile() {
     // 1. Return cached profile immediately if exists
     const cached = await db.user.get('me');

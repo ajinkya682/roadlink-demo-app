@@ -26,6 +26,7 @@ export default function VehicleDetail() {
   // Initial fallback to context, then update via API
   const contextVehicle = vehicles.find(v => v.id === id);
   const [vehicle, setVehicle] = useState(contextVehicle);
+  const [notFound, setNotFound] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -124,6 +125,10 @@ export default function VehicleDetail() {
         const res = await api.get(`/vehicles/${id}`);
         if (res.data.success) {
           const v = res.data.data.vehicle;
+          if (!v) {
+            setNotFound(true);
+            return;
+          }
           setVehicle({
             id: v._id,
             plate: v.registrationNumber,
@@ -144,9 +149,14 @@ export default function VehicleDetail() {
             refundGuaranteeExpiresAt: v.refundGuaranteeExpiresAt,
             hasUsedFreeStickerOrder: v.hasUsedFreeStickerOrder
           });
+        } else {
+          setNotFound(true);
         }
       } catch (err) {
         console.error('Failed to fetch vehicle', err);
+        if (err.response && err.response.status === 404) {
+          setNotFound(true);
+        }
       }
     }
     loadVehicle();
@@ -176,6 +186,26 @@ export default function VehicleDetail() {
   if (vehicles.length === 0 && !id) {
     navigate('/vehicles');
     return null;
+  }
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-fog pb-24 flex flex-col items-center justify-center px-6">
+        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-6 border border-outline-light/50">
+          <AlertTriangle size={32} className="text-signal-amber" />
+        </div>
+        <h1 className="font-display text-2xl font-bold text-navy mb-2 text-center">Vehicle Not Found</h1>
+        <p className="font-body text-[14px] text-on-surface-muted text-center max-w-[280px] mb-8 leading-relaxed">
+          The vehicle you are looking for may have been removed, or the link is invalid.
+        </p>
+        <Button 
+          onClick={() => navigate('/dashboard', { replace: true })}
+          className="w-full max-w-[240px]"
+        >
+          Go to Dashboard
+        </Button>
+      </div>
+    );
   }
 
   if (!vehicle) {

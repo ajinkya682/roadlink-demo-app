@@ -7,6 +7,10 @@ let lastVehicleRefreshAt = 0;
 const VEHICLE_TTL_MS = 60 * 1000;
 
 export class VehicleRepository {
+  static forceNextRefresh() {
+    lastVehicleRefreshAt = 0;
+  }
+
   static async getVehicles() {
     const cached = await db.vehicles.toArray();
     // Sort locally by date or whatever criteria (default is usually order of insertion or id)
@@ -90,6 +94,7 @@ export class VehicleRepository {
     };
 
     await db.vehicles.put(newVehicle);
+    this.forceNextRefresh();
     return newVehicle;
   }
 
@@ -110,6 +115,7 @@ export class VehicleRepository {
     } else {
       await syncManager.enqueueAction('updateVehiclePrivacy', 'PATCH', `/vehicles/${id}`, payload);
     }
+    this.forceNextRefresh();
     return v;
   }
 
