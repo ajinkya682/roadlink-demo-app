@@ -12,7 +12,7 @@ import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
 import { useDialog } from '../../context/DialogContext';
 import api from '../../lib/api';
-import { QRCodeSVG } from 'qrcode.react';
+import RoadLinkQR from '../../components/RoadLinkQR';
 
 const tabs = ['Overview', 'Documents', 'Contacts', 'QR'];
 const relations = ['Family', 'Friend', 'Colleague', 'Spouse', 'Brother', 'Other'];
@@ -781,20 +781,13 @@ export default function VehicleDetail() {
                 ) : (
                   <>
                     <motion.div
-                      className="bg-white rounded-2xl border-2 border-asphalt p-5 shadow-plate"
+                      className="bg-white rounded-2xl border-2 border-asphalt p-4 shadow-plate flex items-center justify-center"
                       initial={{ rotateX: 90, opacity: 0 }}
                       animate={{ rotateX: 0, opacity: 1 }}
                       transition={{ type: 'spring', damping: 16, stiffness: 100 }}
-                      style={{ perspective: 800, transformOrigin: 'center top' }}
+                      style={{ perspective: 800, transformOrigin: 'center top', width: 200, height: 200 }}
                     >
-                      <QRCodeSVG 
-                        value={`${window.location.origin}/scan-landing?qr=${vehicle.qrToken}`}
-                        size={160}
-                        level="Q"
-                        className="w-full h-full"
-                        fgColor="#1A1A1A"
-                        bgColor="transparent"
-                      />
+                      <RoadLinkQR url={`${window.location.origin}/scan-landing?qr=${vehicle.qrToken}`} size={160} />
                     </motion.div>
                     <p className="font-mono text-xs tracking-wider text-on-surface-muted">{vehicle.qrToken}</p>
                     <div className="flex w-full">

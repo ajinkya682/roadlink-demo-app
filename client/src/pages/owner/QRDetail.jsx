@@ -6,7 +6,7 @@ import AppHeader from '../../components/AppHeader';
 import Button from '../../components/Button';
 import { useAppData } from '../../context/AppContext';
 
-import { QRCodeSVG } from 'qrcode.react';
+import RoadLinkQR, { downloadRoadLinkQR } from '../../components/RoadLinkQR';
 
 export default function QRDetail() {
   const navigate = useNavigate();
@@ -51,40 +51,16 @@ export default function QRDetail() {
     }
   }, [vehicle]);
 
-  const handleDownload = () => {
-    const svgElement = document.getElementById('vehicle-qr-svg');
-    if (!svgElement) return;
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-
-    const xml = new XMLSerializer().serializeToString(svgElement);
-    const svg64 = btoa(unescape(encodeURIComponent(xml)));
-    const image64 = 'data:image/svg+xml;base64,' + svg64;
-
-    img.onload = () => {
-      const padding = 40;
-      canvas.width = img.width + (padding * 2);
-      canvas.height = img.height + (padding * 2);
-      
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, padding, padding);
-
-      const pngUrl = canvas.toDataURL('image/png');
-      const downloadLink = document.createElement('a');
-      downloadLink.href = pngUrl;
-      downloadLink.download = `RoadLink-QR-${vehicle.plate.replace(/\s/g, '')}.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-
+  const handleDownload = async () => {
+    try {
+      const url = `${window.location.origin}/scan-landing?qr=${vehicle.qrToken}`;
+      const filename = `RoadLink-QR-${vehicle.plate.replace(/\s/g, '')}`;
+      await downloadRoadLinkQR(url, filename, "png", 1024);
       setDownloaded(true);
       setTimeout(() => setDownloaded(false), 2500);
-    };
-
-    img.src = image64;
+    } catch (err) {
+      console.error("Failed to download QR code", err);
+    }
   };
 
   useEffect(() => {
@@ -135,15 +111,9 @@ export default function QRDetail() {
             />
             
             <div className="relative w-full h-full flex items-center justify-center p-6" style={{ transform: 'translateZ(20px)' }}>
-              <QRCodeSVG 
-                id="vehicle-qr-svg"
-                value={qrPayload}
-                size={280}
-                level="Q"
-                className="w-full h-full transition-transform duration-500 group-hover:scale-105"
-                fgColor="#1A1A1A"
-                bgColor="transparent"
-              />
+              <div className="w-[280px] h-[280px] transition-transform duration-500 group-hover:scale-105 pointer-events-none">
+                <RoadLinkQR url={qrPayload} size={280} />
+              </div>
             </div>
           </motion.div>
 
