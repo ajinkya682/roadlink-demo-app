@@ -1,6 +1,10 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { Capacitor } from '@capacitor/core'
+import { App as CapacitorApp } from '@capacitor/app'
+import { SplashScreen } from '@capacitor/splash-screen'
+import { StatusBar, Style } from '@capacitor/status-bar'
 import PageWrapper from './components/PageWrapper'
 import BottomTabBar from './components/BottomTabBar'
 import RequireAuth from './components/RequireAuth'
@@ -56,8 +60,35 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-
-
+  useEffect(() => {
+    const initCapacitor = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await SplashScreen.hide();
+          
+          await StatusBar.setStyle({ style: Style.Light });
+          await StatusBar.setOverlaysWebView({ overlay: true });
+          
+          CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+            if (canGoBack || window.history.length > 1) {
+              window.history.back();
+            } else {
+              CapacitorApp.exitApp();
+            }
+          });
+        } catch (error) {
+          console.warn('Capacitor init error:', error);
+        }
+      }
+    };
+    initCapacitor();
+    
+    return () => {
+      if (Capacitor.isNativePlatform()) {
+        CapacitorApp.removeAllListeners();
+      }
+    };
+  }, []);
   const showNavRoutes = [
     '/dashboard',       // Home
     '/document-vault',  // Docs

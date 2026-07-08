@@ -9,7 +9,7 @@ const { uploadBuffer, getSignedUrl, extractPublicId } = require('../../services/
 
 exports.createReport = async (req, res) => {
   try {
-    const { qrToken: token, category, notes, mediaUrls } = req.body;
+    const { qrToken: token, number, vehicleId: reqVehicleId, category, notes, mediaUrls } = req.body;
     let reporterLocation = req.body.reporterLocation;
     
     if (typeof reporterLocation === 'string') {
@@ -18,8 +18,11 @@ exports.createReport = async (req, res) => {
       } catch(e) {}
     }
 
-    if (!token || !category) {
-      return sendError(res, 'qrToken and category are required');
+    if (!category) {
+      return sendError(res, 'Category is required');
+    }
+    if (!token && !number && !reqVehicleId) {
+      return sendError(res, 'qrToken, number, or vehicleId is required');
     }
 
     if (token === 'RL-123456-DF' || token === 'ROADLINK-SIMULATED123') {
@@ -29,10 +32,18 @@ exports.createReport = async (req, res) => {
       }, 201);
     }
 
-    const qrTokenDoc = await QrToken.findOne({ token, active: true });
-    if (!qrTokenDoc) return sendError(res, 'Invalid or inactive QR token', 404);
-
-    const vehicleId = qrTokenDoc.vehicleId.toString();
+    let vehicleId;
+    if (token) {
+      const qrTokenDoc = await QrToken.findOne({ token, active: true });
+      if (!qrTokenDoc) return sendError(res, 'Invalid or inactive QR token', 404);
+      vehicleId = qrTokenDoc.vehicleId.toString();
+    } else if (number) {
+      const v = await Vehicle.findOne({ registrationNumber: number });
+      if (!v) return sendError(res, 'Vehicle not found', 404);
+      vehicleId = v._id.toString();
+    } else if (reqVehicleId) {
+      vehicleId = reqVehicleId;
+    }
 
     const vehicle = await Vehicle.findById(vehicleId);
     if (!vehicle || vehicle.status === 'deleted') {

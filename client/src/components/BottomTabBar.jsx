@@ -28,8 +28,10 @@ export default function BottomTabBar() {
     /* Extra top padding so the scan button (which peeks above) is clickable */
     <div
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] z-50"
-      style={{ height: "80px", overflow: "visible" }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
+      <div className="absolute bottom-0 left-0 w-full bg-white" style={{ height: "env(safe-area-inset-bottom, 0px)", zIndex: -1 }} />
+      <div style={{ height: "80px", position: "relative", overflow: "visible" }}>
       {/* ── SVG scalloped bar background ────────────────────── */}
       <svg
         viewBox="0 0 375 72"
@@ -126,6 +128,7 @@ export default function BottomTabBar() {
             </motion.button>
           );
         })}
+      </div>
       </div>
     </div>
   );

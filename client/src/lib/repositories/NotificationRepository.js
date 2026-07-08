@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
+// import { PushNotifications } from '@capacitor/push-notifications';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { syncManager } from '../sync/SyncManager';
@@ -136,58 +136,8 @@ class NotificationRepository {
   }
 
   async registerCapacitorPush() {
-    try {
-      let permStatus = await PushNotifications.checkPermissions();
-      if (permStatus.receive === 'prompt') {
-        permStatus = await PushNotifications.requestPermissions();
-      }
-
-      if (permStatus.receive !== 'granted') {
-        console.warn('User denied push permissions');
-        return;
-      }
-
-      // Android Notification Channels
-      if (Capacitor.getPlatform() === 'android') {
-        await PushNotifications.createChannel({
-          id: 'emergency_alerts',
-          name: 'Emergency Alerts',
-          description: 'High priority alerts for vehicle theft and emergencies',
-          importance: 5, // High
-          visibility: 1, // Public
-          vibration: true
-        });
-        await PushNotifications.createChannel({
-          id: 'general_alerts',
-          name: 'General Updates',
-          description: 'General notifications regarding your vehicle',
-          importance: 3, // Default
-          visibility: 1,
-          vibration: true
-        });
-      }
-
-      await PushNotifications.register();
-
-      PushNotifications.addListener('registration', async (token) => {
-        const deviceId = await this.getOrCreateDeviceId();
-        this.sendTokenToBackend(token.value, Capacitor.getPlatform(), deviceId);
-      });
-
-      PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        this.handleIncomingPayload(notification.data, false);
-      });
-
-      PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-        const data = notification.notification.data;
-        if (data && data.url) {
-          window.location.href = data.url;
-        }
-      });
-
-    } catch (err) {
-      console.error('[NotificationRepository] Failed to register Capacitor push:', err);
-    }
+    console.warn('[NotificationRepository] Push Notifications plugin is temporarily uninstalled. Skipping registration.');
+    return;
   }
 
   async registerWebPush() {

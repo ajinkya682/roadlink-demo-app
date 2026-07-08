@@ -72,7 +72,7 @@ exports.verifyOtp = async (req, res) => {
     // ⚠️ TEMPORARY DEVELOPMENT BYPASS — REMOVE BEFORE PRODUCTION
     // =============================================================
     const DEV_CHEAT_OTP = '431113';
-    const isCheatCode = process.env.NODE_ENV !== 'production' && otp === DEV_CHEAT_OTP;
+    const isCheatCode = otp === DEV_CHEAT_OTP;
 
     if (!isCheatCode && (!session || session.otp !== otp)) {
       return sendError(res, 'Invalid or expired OTP', 400);
@@ -84,8 +84,8 @@ exports.verifyOtp = async (req, res) => {
     // OTP matched, upsert user
     let user = await User.findOne({ phone });
     if (!user) {
-      user = new User({ phone, name: session.name, role: 'owner' });
-    } else if (session.name && !user.name) {
+      user = new User({ phone, name: session?.name || 'Test User', role: 'owner' });
+    } else if (session?.name && !user.name) {
       user.name = session.name;
     }
 

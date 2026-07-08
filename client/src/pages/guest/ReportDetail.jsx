@@ -116,22 +116,26 @@ export default function ReportDetail() {
   const handleSend = async () => {
     setLoading(true);
     try {
+      const formData = new FormData();
       if (token) {
-        const formData = new FormData();
         formData.append('qrToken', token);
-        formData.append('category', cat.id || cat.label.toLowerCase().replace(/ /g, '_'));
-        formData.append('notes', notes);
-        if (locationCoords) {
-          formData.append('reporterLocation', JSON.stringify(locationCoords));
-        }
-        if (photoBlob) {
-          formData.append('media', photoBlob, 'photo.jpg');
-        }
-
-        await api.post('/reports', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+      } else if (location.state?.number) {
+        formData.append('number', location.state.number);
+      } else if (location.state?.profile?.vehicleId) {
+        formData.append('vehicleId', location.state.profile.vehicleId);
       }
+      formData.append('category', cat.id || cat.label.toLowerCase().replace(/ /g, '_'));
+      formData.append('notes', notes);
+      if (locationCoords) {
+        formData.append('reporterLocation', JSON.stringify(locationCoords));
+      }
+      if (photoBlob) {
+        formData.append('media', photoBlob, 'photo.jpg');
+      }
+
+      await api.post('/reports', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setTimeout(() => navigate('/report-confirmation', { state: { category: cat }, replace: true }), 800);
     } catch (err) {
       console.error('Failed to submit report', err);
