@@ -1,9 +1,28 @@
 import { db } from '../../lib/db/database';
+import { NativeAudio } from '@capacitor-community/native-audio';
+import { Capacitor } from '@capacitor/core';
 import notificationSound from '../../assets/sounds/notification.wav';
 import successSound from '../../assets/sounds/success.mp3';
 import errorSound from '../../assets/sounds/error.mp3';
 
 class HapticManager {
+  constructor() {
+    this.initialized = false;
+    this.initAudio();
+  }
+
+  async initAudio() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await NativeAudio.preload({ assetId: 'notification', assetPath: 'public/assets/sounds/notification.wav', isComplex: false, volume: 1.0 });
+      await NativeAudio.preload({ assetId: 'success', assetPath: 'public/assets/sounds/success.mp3', isComplex: false, volume: 1.0 });
+      await NativeAudio.preload({ assetId: 'error', assetPath: 'public/assets/sounds/error.mp3', isComplex: false, volume: 1.0 });
+      this.initialized = true;
+    } catch (e) {
+      console.warn('NativeAudio preload error:', e);
+    }
+  }
+
   async isHapticEnabled() {
     try {
       const user = await db.user.get('me');
@@ -28,14 +47,23 @@ class HapticManager {
     }
   }
 
-  async playAudio(audioSrc) {
+  async playAudio(assetId, webAudioSrc) {
     if (!(await this.isSoundEnabled())) return;
-    try {
-      const audio = new Audio(audioSrc);
-      audio.volume = 0.5; // reasonable default volume
-      await audio.play();
-    } catch (e) {
-      console.log('Audio playback prevented by browser:', e);
+    
+    if (Capacitor.isNativePlatform() && this.initialized) {
+      try {
+        await NativeAudio.play({ assetId });
+      } catch (e) {
+        console.warn('NativeAudio play error:', e);
+      }
+    } else {
+      try {
+        const audio = new Audio(webAudioSrc);
+        audio.volume = 0.5;
+        await audio.play();
+      } catch (e) {
+        console.log('Audio playback prevented by browser:', e);
+      }
     }
   }
 
@@ -61,15 +89,15 @@ class HapticManager {
   }
 
   async playSuccessSound() {
-    this.playAudio(successSound);
+    this.playAudio('success', successSound);
   }
 
   async playErrorSound() {
-    this.playAudio(errorSound);
+    this.playAudio('error', errorSound);
   }
 
   async playNotificationSound() {
-    this.playAudio(notificationSound);
+    this.playAudio('notification', notificationSound);
   }
 }
 

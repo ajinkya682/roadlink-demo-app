@@ -8,13 +8,19 @@ function initFirebase() {
       // For production, you should provide the service account key.
       // Usually via a base64 encoded environment variable or file path.
       if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-        const serviceAccount = JSON.parse(
-          Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('ascii')
-        );
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount)
-        });
-        logger.info('Firebase Admin SDK initialized successfully.');
+        // Strip out any accidental spaces or newlines from copy-pasting
+        const cleanBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.replace(/\s+/g, '');
+        const decoded = Buffer.from(cleanBase64, 'base64').toString('utf8');
+        
+        try {
+          const serviceAccount = JSON.parse(decoded);
+          admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+          });
+          logger.info('Firebase Admin SDK initialized successfully.');
+        } catch (parseError) {
+          logger.error('CRITICAL: Failed to parse FIREBASE_SERVICE_ACCOUNT_BASE64 JSON. The base64 string might be invalid or truncated.', parseError);
+        }
       } else {
         logger.warn('Firebase Admin SDK not initialized: Missing FIREBASE_SERVICE_ACCOUNT_BASE64 env var.');
       }
