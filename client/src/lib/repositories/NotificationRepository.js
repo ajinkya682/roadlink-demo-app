@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-// import { PushNotifications } from '@capacitor/push-notifications';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { syncManager } from '../sync/SyncManager';
@@ -136,8 +136,40 @@ class NotificationRepository {
   }
 
   async registerCapacitorPush() {
-    console.warn('[NotificationRepository] Push Notifications plugin is temporarily uninstalled. Skipping registration.');
-    return;
+    try {
+      let permStatus = await PushNotifications.checkPermissions();
+      if (permStatus.receive === 'prompt') {
+        permStatus = await PushNotifications.requestPermissions();
+      }
+      if (permStatus.receive !== 'granted') {
+        console.warn('[NotificationRepository] User denied push notification permissions.');
+        return;
+      }
+      
+      await PushNotifications.register();
+      
+      PushNotifications.addListener('registration', async (token) => {
+        console.log('[NotificationRepository] Push registration success, token: ' + token.value);
+        const deviceId = await this.getOrCreateDeviceId();
+        await this.sendTokenToBackend(token.value, 'android', deviceId);
+      });
+
+      PushNotifications.addListener('registrationError', (error) => {
+        console.error('[NotificationRepository] Error on push registration: ', error);
+      });
+
+      PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        console.log('[NotificationRepository] Push received: ', notification);
+        this.handleIncomingPayload(notification.data, false);
+      });
+
+      PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+        console.log('[NotificationRepository] Push action performed: ', notification);
+        // routing can be added here if needed
+      });
+    } catch (err) {
+      console.error('[NotificationRepository] Failed to register capacitor push:', err);
+    }
   }
 
   async registerWebPush() {

@@ -67,7 +67,13 @@ export class UserRepository {
 
     if (navigator.onLine) {
       try {
-        await api.patch('/users/me', formDataObj);
+        const res = await api.patch('/users/me', formDataObj);
+        if (res.data && res.data.success) {
+           this.forceNextRefresh();
+           await this.refreshProfileSilently();
+           const refreshedUser = await db.user.get('me');
+           return refreshedUser;
+        }
       } catch (err) {
         console.error('[UserRepository] Update failed online, queuing:', err);
         await syncManager.enqueueAction('updateProfile', 'PATCH', '/users/me', updates);

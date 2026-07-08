@@ -39,7 +39,7 @@ class NotificationOrchestrator {
       const prefs = owner.notificationPrefs || {};
 
       // Try Push
-      if (prefs.push !== false && owner.fcmToken) {
+      if (prefs.push !== false && owner.deviceTokens && owner.deviceTokens.length > 0) {
         let result = await pushAdapter.send(owner, report);
         
         // If push failed (but was available), retry once
