@@ -185,7 +185,10 @@ class NotificationRepository {
 
       PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
         console.log('[NotificationRepository] Push action performed: ', notification);
-        // routing can be added here if needed
+        const data = notification.notification.data;
+        if (data && data.url) {
+          window.location.href = data.url;
+        }
       });
     } catch (err) {
       console.error('[NotificationRepository] Failed to register capacitor push:', err);

@@ -36,6 +36,7 @@ class PushAdapter {
         tokens,
         notification: payload.notification,
         android: {
+          priority: 'high',
           notification: {
             sound: 'default',
             channelId: report.category === 'emergency' || report.category === 'theft' ? 'emergency_alerts' : 'general_alerts'

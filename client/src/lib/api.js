@@ -9,10 +9,7 @@ if (!API_URL) {
 
 // Create an Axios instance pointing to the Phase 3 backend
 const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_URL
 });
 
 // Flag to prevent infinite retry loops
