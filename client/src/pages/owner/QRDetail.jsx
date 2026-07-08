@@ -110,9 +110,9 @@ export default function QRDetail() {
               style={{ backgroundImage: 'radial-gradient(#1A1A1A 1px, transparent 1px)', backgroundSize: '20px 20px' }}
             />
             
-            <div className="relative w-full h-full flex items-center justify-center p-6" style={{ transform: 'translateZ(20px)' }}>
-              <div className="w-[280px] h-[280px] transition-transform duration-500 group-hover:scale-105 pointer-events-none">
-                <RoadLinkQR url={qrPayload} size={280} />
+            <div className="relative w-full h-full flex items-center justify-center p-2 sm:p-4" style={{ transform: 'translateZ(20px)' }}>
+              <div className="w-full h-full transition-transform duration-500 group-hover:scale-105 pointer-events-none">
+                <RoadLinkQR url={qrPayload} size={800} />
               </div>
             </div>
           </motion.div>
