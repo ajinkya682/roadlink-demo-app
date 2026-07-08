@@ -36,10 +36,11 @@ button { background: none; border: none; cursor: pointer; outline: none; }
 .app-shell {
   width: 100%;
   max-width: 420px;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   background: #F7F8FA;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
   box-shadow: 0 0 40px rgba(0,0,0,0.08);
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -55,6 +56,9 @@ button { background: none; border: none; cursor: pointer; outline: none; }
   width: 100%;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Scrollbar (thin on webkit) ────────────────────────────── */
