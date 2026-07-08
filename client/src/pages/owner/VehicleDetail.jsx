@@ -41,6 +41,11 @@ export default function VehicleDetail() {
   const fileInputRef = React.useRef(null);
   const [showImageOptions, setShowImageOptions] = useState(false);
 
+  // Cancel Request state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isCancelling, setIsCancelling] = useState(false);
+
   const handleImageClick = () => {
     const currentImageUrl = isEditing && editForm.imageUrl !== undefined ? editForm.imageUrl : vehicle.imageUrl;
     if (currentImageUrl) {
@@ -147,7 +152,8 @@ export default function VehicleDetail() {
             imageUrl: v.imageUrl,
             protectionStatus: v.protectionStatus || 'pending_payment',
             refundGuaranteeExpiresAt: v.refundGuaranteeExpiresAt,
-            hasUsedFreeStickerOrder: v.hasUsedFreeStickerOrder
+            hasUsedFreeStickerOrder: v.hasUsedFreeStickerOrder,
+            cancelRequestStatus: v.cancelRequestStatus || 'none'
           });
         } else {
           setNotFound(true);
@@ -617,25 +623,19 @@ export default function VehicleDetail() {
                 {vehicle.protectionStatus === 'active' && vehicle.refundGuaranteeExpiresAt && new Date() < new Date(vehicle.refundGuaranteeExpiresAt) && (
                   <div className="mt-6 bg-alert-red/5 border border-alert-red/20 rounded-xl p-4">
                      <h4 className="font-body text-sm font-bold text-alert-red mb-2">Cancel & Refund</h4>
-                     <p className="font-body text-xs text-on-surface-muted mb-3">You are within your 7-day money-back guarantee. If you haven't received free physical stickers yet, you can cancel and refund.</p>
-                     <button
-                        className="text-alert-red text-xs font-bold uppercase tracking-wider hover:underline"
-                        onClick={async () => {
-                           if (await showConfirm('Cancel & Refund', 'Are you sure you want to cancel your subscription and request a refund?')) {
-                             try {
-                               const res = await api.post(`/subscriptions/cancel-refund/${vehicle.id}`);
-                               if (res.data.success) {
-                                 showAlert('Success', res.data.data.message);
-                                 setVehicle(prev => ({ ...prev, protectionStatus: 'pending_payment' }));
-                               }
-                             } catch (err) {
-                               showAlert('Error', err.response?.data?.error?.message || 'Failed to process refund');
-                             }
-                           }
-                        }}
-                     >
-                       REQUEST REFUND
-                     </button>
+                     {vehicle.cancelRequestStatus === 'pending' ? (
+                       <p className="font-body text-xs text-on-surface-muted font-semibold">Your cancellation request is currently under review. The QR code remains active until approved.</p>
+                     ) : (
+                       <>
+                         <p className="font-body text-xs text-on-surface-muted mb-3">You are within your 7-day money-back guarantee. If you haven't received free physical stickers yet, you can request a cancellation and refund.</p>
+                         <button
+                            className="text-alert-red text-xs font-bold uppercase tracking-wider hover:underline"
+                            onClick={() => setShowCancelModal(true)}
+                         >
+                           REQUEST REFUND
+                         </button>
+                       </>
+                     )}
                   </div>
                 )}
                 {/* Delete Vehicle Section */}
@@ -805,6 +805,47 @@ export default function VehicleDetail() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Cancel Request Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
+           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl relative">
+             <button onClick={() => setShowCancelModal(false)} className="absolute top-4 right-4 text-outline hover:text-on-surface transition-colors">
+               <X size={24} />
+             </button>
+             <h2 className="font-display text-xl font-bold mb-2">Request Cancellation</h2>
+             <p className="font-body text-sm text-on-surface-muted mb-4">Please tell us why you want to cancel. This helps us improve our service.</p>
+             <textarea 
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="w-full bg-surface-low border border-outline-light rounded-xl p-3 font-body text-sm focus:outline-none focus:border-navy focus:ring-1 focus:ring-navy min-h-[100px] mb-4 resize-none"
+                placeholder="E.g., I no longer have this vehicle..."
+             />
+             <Button 
+                fullWidth 
+                isLoading={isCancelling} 
+                disabled={!cancelReason.trim()}
+                onClick={async () => {
+                   setIsCancelling(true);
+                   try {
+                     const res = await api.post(`/subscriptions/cancel-refund/${vehicle.id}`, { reason: cancelReason });
+                     if (res.data.success) {
+                       showAlert('Success', res.data.data.message);
+                       setVehicle(prev => ({ ...prev, cancelRequestStatus: 'pending' }));
+                       setShowCancelModal(false);
+                     }
+                   } catch (err) {
+                     showAlert('Error', err.response?.data?.error?.message || 'Failed to submit request');
+                   } finally {
+                     setIsCancelling(false);
+                   }
+                }}
+             >
+               Submit Request
+             </Button>
+           </div>
+        </div>
+      )}
 
       {/* Add Contact Modal */}
       <AnimatePresence>

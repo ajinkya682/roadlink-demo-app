@@ -25,7 +25,8 @@ const vehicleSchema = new mongoose.Schema({
   currentPeriodEnd: { type: Date },
   gracePeriodEndsAt: { type: Date },
   hasUsedFreeStickerOrder: { type: Boolean, default: false },
-  refundGuaranteeExpiresAt: { type: Date }
+  refundGuaranteeExpiresAt: { type: Date },
+  cancelRequestStatus: { type: String, enum: ['none', 'pending'], default: 'none' }
 }, { timestamps: true });
 
 // Pre-save to normalize registrationNumber by removing spaces

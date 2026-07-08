@@ -8,11 +8,11 @@ export default function ScannerOverlay({ scanned, errorFlash }) {
       <div className="flex-1 bg-black/60 backdrop-blur-[2px]" />
 
       {/* Center cutout area */}
-      <div className="flex justify-center">
-        <div className="w-[15vw] bg-black/60 backdrop-blur-[2px]" />
+      <div className="flex justify-center w-full">
+        <div className="flex-1 bg-black/60 backdrop-blur-[2px]" />
         
         {/* The Clear Cutout */}
-        <div className="relative w-[70vw] aspect-square">
+        <div className="relative w-[70vw] max-w-[320px] aspect-square">
           {/* 4 Corner Brackets */}
           <motion.div
             className={`absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 rounded-tl-2xl shadow-lg ${errorFlash ? 'border-alert-red' : 'border-[#1E8E5A]'}`}
@@ -51,7 +51,7 @@ export default function ScannerOverlay({ scanned, errorFlash }) {
           )}
         </div>
         
-        <div className="w-[15vw] bg-black/60 backdrop-blur-[2px]" />
+        <div className="flex-1 bg-black/60 backdrop-blur-[2px]" />
       </div>
 
       {/* Bottom dark area */}

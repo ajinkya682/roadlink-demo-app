@@ -11,4 +11,8 @@ router.post('/verify', requireAuth, subscriptionController.verifySubscription);
 // Public webhook route (Razorpay sends this, uses signature validation)
 router.post('/webhook', subscriptionController.webhook);
 
+// Admin route to approve cancellations
+// In a real app, you would add a requireAdmin middleware here
+router.post('/admin/cancel-requests/:id/approve', requireAuth, subscriptionController.approveCancelRequest);
+
 module.exports = router;

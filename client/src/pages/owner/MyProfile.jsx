@@ -68,9 +68,38 @@ export default function MyProfile() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const base64String = canvas.toDataURL('image/jpeg', 0.8);
+          
+          setSelectedFile(base64String);
+          setPreviewUrl(base64String);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -80,16 +109,16 @@ export default function MyProfile() {
     setSuccess(false);
     
     try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("email", form.email);
-      // address not fully modeled on backend yet but can append
+      const payload = {
+        name: form.name,
+        email: form.email
+      };
       
-      if (selectedFile) {
-        formData.append("file", selectedFile);
+      if (selectedFile && typeof selectedFile === 'string' && selectedFile.startsWith('data:image')) {
+        payload.avatarUrl = selectedFile;
       }
       
-      await updateProfile(formData);
+      await updateProfile(payload);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {

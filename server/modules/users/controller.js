@@ -152,6 +152,26 @@ exports.updateProfile = async (req, res) => {
       // Upload to Cloudinary
       const result = await uploadBuffer(req.file.buffer, 'roadlink/profiles', 'image');
       user.avatarUrl = result.secure_url;
+    } else if (req.body.avatarUrl && req.body.avatarUrl.startsWith('data:image')) {
+      // Handle base64 image upload from Capacitor client
+      try {
+        const { cloudinary } = require('../../services/cloudinary');
+        const uploadRes = await cloudinary.uploader.upload(req.body.avatarUrl, {
+          folder: 'roadlink/profiles',
+          type: 'upload',
+          transformation: [{ width: 400, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }]
+        });
+        
+        // Delete old image if exists
+        if (user.avatarUrl) {
+          const publicId = extractPublicId(user.avatarUrl);
+          if (publicId) await deleteResource(publicId, 'image').catch(e => logger.error('Cloudinary delete failed', e));
+        }
+        
+        user.avatarUrl = uploadRes.secure_url;
+      } catch (err) {
+        logger.error('Failed to upload base64 avatar', err);
+      }
     }
     
     await user.save();

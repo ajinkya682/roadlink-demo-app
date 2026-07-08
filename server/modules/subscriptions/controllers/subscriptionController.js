@@ -159,6 +159,7 @@ exports.cancelAndRefund = async (req, res) => {
   try {
     const { id } = req.params; // vehicle id
     const userId = req.user.userId || req.user.id;
+    const { reason } = req.body;
     
     const vehicle = await Vehicle.findOne({ _id: id, ownerId: userId });
     if (!vehicle) return sendError(res, 'Vehicle not found', 404);
@@ -179,6 +180,46 @@ exports.cancelAndRefund = async (req, res) => {
        return sendError(res, 'Cannot refund because your free stickers have already been shipped. You can still cancel future renewals.', 400);
     }
     
+    const CancelRequest = require('../../../models/CancelRequest');
+    const existingReq = await CancelRequest.findOne({ vehicleId: id, status: 'pending' });
+    if (existingReq) {
+      return sendError(res, 'A cancellation request is already pending for this vehicle', 400);
+    }
+
+    const requestId = 'CR-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    
+    const newReq = new CancelRequest({
+      requestId,
+      vehicleId: id,
+      userId,
+      reason: reason || 'No reason provided',
+      status: 'pending'
+    });
+    
+    await newReq.save();
+    
+    vehicle.cancelRequestStatus = 'pending';
+    await vehicle.save();
+    
+    return sendSuccess(res, { message: 'Cancellation request submitted for review.', requestId });
+  } catch (error) {
+    logger.error('Refund cancellation error:', error);
+    return sendError(res, 'Failed to process refund cancellation', 500);
+  }
+};
+
+exports.approveCancelRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const CancelRequest = require('../../../models/CancelRequest');
+    
+    const cancelReq = await CancelRequest.findOne({ requestId: id });
+    if (!cancelReq) return sendError(res, 'Cancel request not found', 404);
+    if (cancelReq.status !== 'pending') return sendError(res, 'Request is not pending', 400);
+    
+    const vehicle = await Vehicle.findById(cancelReq.vehicleId);
+    if (!vehicle) return sendError(res, 'Vehicle not found', 404);
+    
     if (vehicle.razorpaySubscriptionId && !vehicle.razorpaySubscriptionId.startsWith('sub_mock')) {
       const instance = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
@@ -194,14 +235,18 @@ exports.cancelAndRefund = async (req, res) => {
     vehicle.protectionStatus = 'pending_payment';
     vehicle.hasUsedFreeStickerOrder = false;
     vehicle.razorpaySubscriptionId = null;
+    vehicle.cancelRequestStatus = 'none';
     await vehicle.save();
     
-    await QrToken.updateMany({ vehicleId: id }, { $set: { active: false, revokedAt: new Date() } });
+    await QrToken.updateMany({ vehicleId: vehicle._id }, { $set: { active: false, revokedAt: new Date() } });
     
-    return sendSuccess(res, { message: 'Subscription cancelled and refunded successfully. Vehicle protection is now pending.' });
+    cancelReq.status = 'approved';
+    await cancelReq.save();
+    
+    return sendSuccess(res, { message: 'Cancel request approved and subscription cancelled.' });
   } catch (error) {
-    logger.error('Refund cancellation error:', error);
-    return sendError(res, 'Failed to process refund cancellation', 500);
+    logger.error('Approve cancel request error:', error);
+    return sendError(res, 'Failed to approve cancel request', 500);
   }
 };
 

@@ -58,12 +58,8 @@ export default function QRScanner() {
           return navigate(`/scan-landing?qr=${token}`, { state: { qrId: token, profile: { publicDisplayName: 'TEST VEHICLE' } } });
         }
 
-        const res = await api.get(`/vehicles/resolve?token=${token}`);
-        if (res.data.success) {
-          navigate(`/scan-landing?qr=${token}`, { state: { qrId: token, profile: res.data.data.profile } });
-        } else {
-          throw new Error('Invalid QR');
-        }
+        // Navigate directly to scan-landing and let it handle resolution
+        navigate(`/scan-landing?qr=${token}`);
       } catch (err) {
         console.error(err);
         handleErrorFlash();

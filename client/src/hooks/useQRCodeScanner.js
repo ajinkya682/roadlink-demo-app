@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 export function useQRCodeScanner({
   cameraId,
   onScanSuccess,
   onScanError,
   pauseOnScan = true,
-  fps = 10,
-  qrbox = 250,
+  fps = 20,
+  qrbox = undefined,
   isReady = true,
 }) {
   const [isScanning, setIsScanning] = useState(false);
@@ -31,7 +31,9 @@ export function useQRCodeScanner({
 
     // Create instance but don't start yet
     try {
-      const instance = new Html5Qrcode('qr-reader-element', false);
+      const instance = new Html5Qrcode('qr-reader-element', {
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+      });
       setScannerInstance(instance);
       scannerRef.current = instance;
     } catch (e) {
@@ -66,13 +68,14 @@ export function useQRCodeScanner({
 
     isStartingRef.current = true;
     try {
+      const config = { fps, disableFlip: false };
+      if (qrbox) {
+        config.qrbox = { width: qrbox, height: qrbox };
+      }
+      
       await scannerInstance.start(
         idToUse,
-        {
-          fps,
-          qrbox: { width: qrbox, height: qrbox },
-          disableFlip: false,
-        },
+        config,
         (decodedText, decodedResult) => {
           if (pauseOnScan && scannerInstance.isScanning) {
              scannerInstance.pause();
