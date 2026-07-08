@@ -36,7 +36,8 @@ const uploadPDFBuffer = (buffer, folder = 'roadlink/receipts', isPrivate = false
   return new Promise((resolve, reject) => {
     const uploadOptions = { 
       folder, 
-      resource_type: 'raw', // Use raw for PDF files
+      resource_type: 'image', // Use image for PDFs to allow inline viewing
+      format: 'pdf',
     };
     if (isPrivate) {
       uploadOptions.type = 'private';
